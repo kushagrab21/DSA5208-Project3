@@ -2221,6 +2221,10 @@
   {
    "job": "atlas-validate",
    "reason": "1040044.venus01 exit 2: binary could not load (old /opt/amazon/efa libfabric found before the toolchain's; FABRIC_1.7 missing); env.sh now strips the EFA dir and prepends EBROOTLIBFABRIC (12 Nov)"
+  },
+  {
+   "job": "atlas-validate",
+   "reason": "1040045.venus01 exit 2: EFA libfabric still loaded despite LD_LIBRARY_PATH order (preloaded before the search); env.sh now LD_PRELOADs the toolchain libfabric and logs /etc/ld.so.preload (12 Nov)"
   }
  ],
  "fallback": true,
