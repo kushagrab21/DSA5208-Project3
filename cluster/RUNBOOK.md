@@ -80,6 +80,51 @@ git -C ~/Desktop/final_assignment/build status --short        # must be empty
    `python3 checks/run_plan.py status --plan vanda` shows cells filled and core-hours used. When every graded cell is
    filled, `scripts/make_report.sh`.
 
+## Atlas (fallback and early start)
+
+What the first real discovery (11 Nov, 18:33 UTC) established, and what the plan does about it:
+
+- **Queues.** This user can use `parallel` (12–96 cores per job, 96 cores per user at once, at most 4 running jobs,
+  pool `par12`) and `serial` (1 core, 2–15 GB, 40 running). `hpc6a` (192 cores) is restricted to named users;
+  `normal` is a disabled routing queue.
+  - Atlas can never reach 256 cores, so the ≥256-core strong and weak cells exist only in the Vanda plan.
+  - `run_plan.py check --plan atlas` prints "PASS AS A FALLBACK PLAN" and lists what is NOT MET.
+- **Nodes.** The compute nodes listed are 96-core (`cnode-33-*`, about 358 GB). The new `discover.sh` prints
+  `node_pool`, so the next discovery confirms which nodes form `par12`.
+- **Jobs.** Each parallel job is one whole 96-core node. Because of the per-user cap, only one runs at a time.
+  - The 1-core baselines of every speedup run inside those jobs, on the same node type and binary.
+  - The serial sweep runs in `serial`, one core of a shared node; the report says so.
+- **Modules.** `source /app1/ebenv` must come first (Lecture 8). Without it, `PATH` has the 2013 `mvapich2-1.9`
+  `mpicxx`. `cluster/atlas/env.sh` sources it, loads the newest `foss` toolchain (or the module `apply_discovery.py`
+  wrote), prints what it loaded into the job log, and stops if the old `mpicxx` is still first.
+- **CMake.** CentOS 7's `/usr/bin/cmake` is older than 3.16, so `scripts/build.sh` compiles with `mpicxx` directly
+  unless a newer CMake is loaded.
+- **Queue load.** `gstat` showed the parallel queue busy (887 waiting). Submit early; poll every 20–30 minutes.
+
+**Tonight's sequence (from a working key to the calibration job):**
+```bash
+cd ~/Desktop/final_assignment/build && git status --short            # must print nothing
+ssh -o BatchMode=yes atlas8 true && echo key-ok
+cluster/ops/discover.sh atlas8                                        # sources ebenv; full module list; user; node pools
+python3 scripts/apply_discovery.py results/atlas/env/discover-<utc>.txt          # READ: queues, pool, modules, warnings
+python3 scripts/apply_discovery.py results/atlas/env/discover-<utc>.txt --apply  # writes exactly that diff
+python3 checks/run_plan.py check --plan atlas                         # PASS AS A FALLBACK PLAN + the NOT MET list
+git add config/run_plan.atlas.json cluster/atlas/env.sh && git commit -m "Atlas queues, memory and modules from discovery"
+cluster/ops/sync.sh atlas8
+cluster/ops/submit.sh atlas8 atlas-validate
+cluster/ops/poll.sh atlas8          # repeat until finished; then read cluster/logs/atlas/ after fetch:
+cluster/ops/fetch.sh atlas8         #   "p3 env (atlas): loaded foss/..." and validate.py's QUALIFICATION line
+cluster/ops/submit.sh atlas8 atlas-calibrate
+cluster/ops/poll.sh atlas8; cluster/ops/fetch.sh atlas8              # prints the measured bandwidths
+```
+
+If `apply_discovery.py` warns that the `par12` nodes are not 96-core, fix the plan before going on: change `cpn`/`top`
+and the limits in `build_atlas_plan()` in `scripts/make_plan.py`, run `python3 scripts/make_plan.py atlas`, run the
+check, then commit. Then freeze `config/run_plan.atlas.json`, commit, `sync.sh atlas8`, and submit `atlas-serial`
+(serial queue, runs alongside), `atlas-1node-scaling`, `atlas-variants-layouts`.
+
+`cluster/ops/test_fake_atlas.sh` rehearses exactly this sequence on a fake Atlas.
+
 ## Failures
 
 **Job killed at the walltime.** poll shows `FAILED (exit 271)` (or `-29`), `walltime exceeded`, `missing records k/n`.
@@ -106,7 +151,9 @@ needed: nothing was submitted).
 **Vanda is down.** Scripts stop with an ssh error, or poll later shows jobs killed. Jobs queued before an outage may
 or may not survive; poll tells which. The CPU sections move to Atlas as a whole (figures never mix clusters; the
 report uses the cluster with the most graded cells filled): `atlas-validate` should already be done (step 4), then
-freeze `config/run_plan.atlas.json`, commit, sync, and submit the Atlas jobs in the same order (11-node job first).
+freeze `config/run_plan.atlas.json`, commit, sync, and submit the Atlas jobs (see "Atlas" above). Atlas reaches only
+96 cores: the report then says that the 256-core requirement is not met, and `requirements_check.py` shows E3/E4 as NOT
+MET instead of filled.
 The GPU run (E7) exists only on Vanda: if Vanda stays down too long for it, that is the user's decision (wait for an
 extension or write to the instructor; circuit D5).
 

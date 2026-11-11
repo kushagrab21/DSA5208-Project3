@@ -296,6 +296,7 @@ def fig_layout(D):
 def build(results, out, names=None, stamp_text=None):
     style()
     os.makedirs(out, exist_ok=True)
+    RD._CACHE.clear()  # every build reads the records afresh: a row added since the last build must be seen
     report = []
     for name, (fn, groups, gpu) in FIGURES.items():
         if names and name not in names:

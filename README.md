@@ -172,7 +172,8 @@ scripts/make_report.sh        # figures -> generated numbers/tables -> PDF (Tect
 
 `cluster/RUNBOOK.md` is the procedure: `cluster/ops/discover.sh`, `scripts/apply_discovery.py`, `cluster/ops/sync.sh`,
 `cluster/ops/submit.sh` (the only way a job is submitted), `cluster/ops/poll.sh`, `cluster/ops/fetch.sh`, and what to do
-when a job fails. `cluster/ops/test_fake_cluster.sh` runs all of them against a fake cluster.
+when a job fails. `cluster/ops/test_fake_cluster.sh` runs all of them against a fake Vanda, and `cluster/ops/test_fake_atlas.sh` rehearses
+the Atlas sequence (queue rules, `/app1/ebenv`, the 96-core limit) on a fake Atlas.
 
 ## Local development
 

@@ -78,6 +78,26 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 - Report: CPU sections use the cluster plan with the most graded cells filled (Vanda on ties).
 - env.sh has an inert test seam (P3_FAKE_LAUNCH) used only by the fake cluster.
 
+## Turn 4 (12 Nov 2026): Atlas findings from the first real discovery
+- Real discovery: results/atlas/env/discover-20261111T183351Z.txt (parent ran discover.sh atlas8).
+  Usable: parallel (12-96 cores/job, 96/user, 4 running, pool par12), serial (1 core, 2-15 GB). hpc6a ACL; normal disabled.
+  Compute nodes listed: 33 x cnode-33-* with 96 cores, ~358 GB (par12 membership not printed by the old filter).
+  Module list in that file was cut at 300 lines (A-B only): OpenMPI/foss/CMake fell off; EasyBuild names were visible.
+- Fixes: apply_discovery queue rules (Execution, enabled+started, not from_route_only, ACL only if user listed,
+  resources_min.ncpus, per-user max_run_res; every job checked); discover.sh records user, node_pool, ebenv status, one
+  module query per name, Atlas hpc help pages; atlas env.sh sources ebenv (P3_EBENV), loads newest foss by pattern,
+  prints it, refuses the 2013 mvapich2 mpicxx; build.sh uses CMake only if >= 3.16; run_plan status with
+  "unlimited" budget (crash fixed); per-job memory (job mem_gb or pbs.mem_per_cpu_gb) and serial queue routing.
+- Atlas plan regenerated (scripts/make_plan.py build_atlas_plan): 114 cells, 5 jobs, <= 96 cores, fallback flag,
+  limits recorded; check says PASS AS A FALLBACK PLAN + NOT MET (>=256 cores is Vanda-only).
+- Report: each section uses the cluster that completed it (Vanda first); captions name the cluster; series must be one
+  binary (else unfilled); E3/E4 NOT MET (with reason) if scaling is complete only below 256 cores; the text says so.
+- Tests: cluster/ops/test_fake_atlas.sh (19 steps), requirements selftest scenarios (Atlas only, mixed clusters,
+  mixed build), test_fake_cluster.sh (32 steps) unchanged and passing.
+
+## Tonight (parent): cluster/RUNBOOK.md "Atlas" - discover atlas8 again -> apply_discovery (read, --apply) -> check ->
+commit -> sync -> submit atlas-validate -> poll/fetch -> submit atlas-calibrate -> poll/fetch.
+
 ## First real session (parent): see cluster/RUNBOOK.md "First session, in order"
 key works -> discover vanda/atlas8 -> apply_discovery (read diff, --apply) -> run_plan check -> commit -> sync both ->
 submit vanda-validate + atlas-validate -> poll/fetch -> submit vanda-calibrate -> poll/fetch -> freeze, commit, sync ->
