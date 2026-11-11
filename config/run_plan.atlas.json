@@ -2235,14 +2235,16 @@
   "E3 strong scaling to >=256 cores: Atlas allows 96 cores per job and per user",
   "E4 weak scaling to >=256 cores: Atlas allows 96 cores per job and per user"
  ],
- "core_hour_budget": null,
- "budget_source": "unknown until first login (Vanda allocation; Atlas is unlimited per Lecture 8)",
+ "core_hour_budget": "unlimited",
+ "budget_source": "Lecture 8: Atlas is CPU only, slow, unlimited use (no allocation shown by hpc)",
  "pbs": {
-  "queue_cpu": "",
+  "queue_cpu": "parallel",
   "queue_gpu": "",
   "project": "",
   "place": "excl",
-  "note": "fill queue/project from `hpc cpu`, `hpc gpu` and `qstat -Qf` on first login"
+  "note": "fill queue/project from `hpc cpu`, `hpc gpu` and `qstat -Qf` on first login",
+  "queue_serial": "serial",
+  "mem_per_cpu_gb": 3.1
  },
  "model": {
   "note": "core-hour estimate model; ASSUMED server values until the first cluster rows recalibrate them",

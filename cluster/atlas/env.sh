@@ -12,7 +12,7 @@ if [[ -f "${P3_EBENV:-/app1/ebenv}" ]]; then
   # shellcheck disable=SC1090
   source "${P3_EBENV:-/app1/ebenv}"
 fi
-: "${P3_MODULES:=}"
+: "${P3_MODULES:=foss/2025b}"
 if command -v module >/dev/null 2>&1; then
   module purge >/dev/null 2>&1 || true
   if [[ -z "$P3_MODULES" ]]; then
