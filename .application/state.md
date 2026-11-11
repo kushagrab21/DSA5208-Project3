@@ -63,8 +63,28 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 3. Write the interpretation boxes (\interpslot) in the .tex: serial, mpi, mpix, discussion.
 4. requirements_check.py must print PASS; the user reads the first full render (that is the pass example).
 
+## Turn 3 (11 Nov 2026): cluster operations, tested on a fake cluster (no real cluster contact)
+- cluster/ops/: common.sh (P3_SSH/P3_RSYNC transport), discover.sh, sync.sh, submit.sh (only route to qsub), poll.sh,
+  fetch.sh, opslib.py (rules, ledger, qstat parsing, merge, calibration, missing-cells); scripts/apply_discovery.py
+  (diff; writes only with --apply); cluster/RUNBOOK.md (procedure + failure playbook, skill-shaped).
+- Fake cluster: cluster/ops/fake/ (fake ssh/rsync, fake qsub/qstat/hpc/module/pbsnodes, fake launcher);
+  cluster/ops/test_fake_cluster.sh runs 32 steps; output kept in results/ops_tests/ (gitignored). The validation job
+  runs for real in the fake home; timed jobs run the generated PBS script with the fake launcher.
+- Plan change: <cluster>-calibrate job (4 graded cells: serial 2D n=4096, 3D n=256; strong 2D/3D on one full node),
+  the only timed job allowed before the freeze. Vanda 8 jobs, est. 164 core-h (<=328 worst case).
+- Ledger: results/<cluster>/jobs.csv, events submit/start/end/final, merged by fetch, never rewritten.
+- Calibration: results/<cluster>/calibration.json (bandwidths) feeds run_plan estimates and PBS walltimes.
+- Cluster builds embed "<commit>-synced" (SYNCED file) instead of git "unknown".
+- Report: CPU sections use the cluster plan with the most graded cells filled (Vanda on ties).
+- env.sh has an inert test seam (P3_FAKE_LAUNCH) used only by the fake cluster.
+
+## First real session (parent): see cluster/RUNBOOK.md "First session, in order"
+key works -> discover vanda/atlas8 -> apply_discovery (read diff, --apply) -> run_plan check -> commit -> sync both ->
+submit vanda-validate + atlas-validate -> poll/fetch -> submit vanda-calibrate -> poll/fetch -> freeze, commit, sync ->
+submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, vanda-1node-variants-layouts.
+
 ## Next step
-Parent: first-login checklist (README "Cluster runs"), then the vanda-validate job, then the timed jobs.
+Parent: the first real session above (needs the HPC account approval, the key installed, the VPN).
 Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
 whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
 place; GitHub link optional), first full render acceptance, the Canvas upload.
