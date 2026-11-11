@@ -277,10 +277,15 @@ def cmd_status(plan, require_complete):
                     walltime(secs, safety), len(j["cells"])))
     used = used_core_hours(jobs)
     budget = plan.get("core_hour_budget")
+    if isinstance(budget, (int, float)):
+        btxt = "%.0f" % budget
+    elif budget:
+        btxt = "%s (%s)" % (budget, plan.get("budget_source", ""))
+    else:
+        btxt = "UNKNOWN (%s)" % plan.get("budget_source", "")
     out.append("  CORE-HOURS: estimated %.0f (up to %.0f with safety x%.0f); used so far %.1f; budget %s" %
-               (est_total, est_hi, safety, used, ("%.0f" % budget) if budget else
-                "UNKNOWN (%s)" % plan.get("budget_source", "")))
-    if budget and est_hi > budget:
+               (est_total, est_hi, safety, used, btxt))
+    if isinstance(budget, (int, float)) and est_hi > budget:
         out.append("  WARNING: the plan may exceed the budget")
     print("\n".join(out))
     complete = uf == len(uniq) and not unexplained and not bad_unplanned and not problems and not off_plan_jobs
