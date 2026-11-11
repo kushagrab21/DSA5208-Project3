@@ -32,6 +32,13 @@ else
   exit 2
 fi
 
+# CMake only if >= 3.16 (CMakeLists.txt minimum); otherwise one direct mpicxx line per binary.
+use_cmake=0
+if command -v cmake >/dev/null 2>&1 && [[ "${P3_NO_CMAKE:-0}" != "1" ]]; then
+  cv="$(cmake --version | head -1 | sed 's/[^0-9.]*\([0-9][0-9.]*\).*/\1/')"
+  if [[ "$(printf '%s\n3.16\n' "$cv" | sort -V | head -1)" == "3.16" ]]; then use_cmake=1
+  else echo "build.sh: cmake $cv < 3.16, compiling directly with $MPICXX" >&2; fi
+fi
 git_sha="$(git rev-parse --short=12 HEAD 2>/dev/null || true)"
 if [[ -z "$git_sha" && -f SYNCED ]]; then git_sha="$(awk '$1=="commit"{print substr($2,1,12)"-synced"}' SYNCED)"; fi
 git_sha="${git_sha:-unknown}"
@@ -40,7 +47,7 @@ srcs=(src/main.cpp src/grid.cpp src/halo.cpp src/kernels.cpp src/cg.cpp src/reco
 for bug in 0 1 2; do
   name="p3cg${suffix}"
   [[ "$bug" != "0" ]] && name="${name}_bug${bug}"
-  if command -v cmake >/dev/null 2>&1 && [[ "${P3_NO_CMAKE:-0}" != "1" ]]; then
+  if [[ "$use_cmake" == "1" ]]; then
     bdir="_build/${flavor}_bug${bug}"
     mkdir -p _build
     cmake -S . -B "$bdir" -DCMAKE_BUILD_TYPE=Release -DMPI_CXX_COMPILER="$(command -v "$MPICXX")" \

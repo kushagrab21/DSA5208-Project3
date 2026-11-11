@@ -5,14 +5,29 @@
 # P3_MODULES here (or qsub -v P3_MODULES=...). The default loads EasyBuild's default OpenMPI (with its GCC).
 # Atlas is CPU only, so there is no offload flavour here.
 
-if [[ -f /app1/ebenv ]]; then
-  # shellcheck disable=SC1091
-  source /app1/ebenv
+# Lecture 8: on Atlas, `source /app1/ebenv` first, then `module avail` / `module load`. Without it, PATH has the old
+# /app1/centos6.3 mvapich2-1.9 (2013) mpicxx. P3_MODULES may name modules explicitly (set by apply_discovery.py after
+# discover.sh); if it is empty the newest foss toolchain (GCC + OpenMPI) is chosen by pattern, else the newest OpenMPI.
+if [[ -f "${P3_EBENV:-/app1/ebenv}" ]]; then
+  # shellcheck disable=SC1090
+  source "${P3_EBENV:-/app1/ebenv}"
 fi
-: "${P3_MODULES:=OpenMPI}"
+: "${P3_MODULES:=}"
 if command -v module >/dev/null 2>&1; then
+  module purge >/dev/null 2>&1 || true
+  if [[ -z "$P3_MODULES" ]]; then
+    P3_MODULES="$(module -t avail foss 2>&1 | grep -E '^foss/20[0-9]{2}[ab]$' | sort -V | tail -1)"
+    [[ -n "$P3_MODULES" ]] || P3_MODULES="$(module -t avail OpenMPI 2>&1 | grep -E '^OpenMPI/' | sort -V | tail -1)"
+  fi
   for m in $P3_MODULES; do module load "$m"; done
+  echo "p3 env (atlas): loaded $(module -t list 2>&1 | grep -v ':$' | tr '\n' ' ')" >&2
 fi
+echo "p3 env (atlas): mpicxx=$(command -v mpicxx) ($(mpicxx --version 2>/dev/null | head -1))" >&2
+case "$(command -v mpicxx)" in
+  */centos6.3/*|*mvapich2-1.9*)
+    echo "p3 env (atlas): ERROR the 2013 mvapich2-1.9 mpicxx is still first on PATH; no OpenMPI module loaded" >&2
+    return 1 2>/dev/null || exit 1;;
+esac
 
 export P3_CLUSTER=atlas
 export CXX_MPI="${CXX_MPI:-mpicxx}"

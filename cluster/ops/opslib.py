@@ -185,12 +185,7 @@ def cmd_record_submit(a):
     plan = RP.load_plan(cl)
     job = RP.job_of(plan, a.job)
     secs, cores, ch, worst, wt = estimate(plan, job)
-    pbs = plan.get("pbs", {})
-    select = "select=%d:ncpus=%d:mpiprocs=%d" % (job["nodes"], job["ncpus_per_node"], job["ncpus_per_node"])
-    if job.get("gpus_per_node"):
-        select += ":ngpus=%d" % job["gpus_per_node"] + pbs.get("select_extra_gpu", "")
-    else:
-        select += pbs.get("select_extra", "")
+    select = RP.job_select(plan, job)
     append_ledger(cl, {"pbs_jobid": a.pbs_id, "plan": plan["plan"], "job": a.job, "event": "submit", "utc": now(),
                        "nodes": job["nodes"], "ncpus_per_node": job["ncpus_per_node"],
                        "gpus_per_node": job.get("gpus_per_node", 0), "host": a.alias or cl, "commit": a.commit,

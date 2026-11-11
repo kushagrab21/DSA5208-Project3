@@ -18,6 +18,29 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+# Fake queue tables. "atlas8" mirrors the real Atlas discovery of 11 Nov 2026 in the parts that matter: a route queue,
+# `parallel` (12-96 cores per job and per user, pool par12), `serial` (1 core), an ACL queue with more cores that the
+# user may not use (hpc6a), an ACL queue that does list the user, and a routing-only queue.
+Q = lambda **k: k  # noqa: E731
+QUEUES = {
+    "vanda": [Q(name="parallel", ncpus_max=576, nodect_max=8, wall="24:00:00"),
+              Q(name="gpu", ncpus_max=32, nodect_max=2, wall="12:00:00")],
+    "atlas8": [Q(name="normal", qtype="Route", enabled=False, started=False),
+               Q(name="parallel", ncpus_min=12, ncpus_max=96, run_res="[u:PBS_GENERIC=96]", max_run="[u:PBS_GENERIC=4]",
+                 pool="par12", wall="720:00:00", prio=100, mem_min="2gb"),
+               Q(name="serial", ncpus_min=1, ncpus_max=1, max_run="[u:PBS_GENERIC=40]", pool="horse",
+                 wall="720:00:00", prio=151, mem_min="2gb", mem_max="15gb"),
+               Q(name="hpc6a", acl=["someone@*", "other.user@*", "e0123456@*", "e0234567@*", "e0345678@*",
+                                    "e0456789@*", "e0567890@*"], ncpus_max=192, run_res="[u:PBS_GENERIC=192]",
+                 wall="72:00:00"),
+               Q(name="labq", acl=["colleague@*", "fakeuser@*"], ncpus_max=48, wall="24:00:00"),
+               Q(name="routed", from_route_only=True, ncpus_max=1000, wall="24:00:00")],
+}
+
+
+def queues():
+    return QUEUES.get(os.environ.get("P3_FAKE_ALIAS", "vanda"), QUEUES["vanda"])
+
 
 def pbsdir(alias=None):
     d = os.path.join(os.environ["P3_FAKE_ROOT"], alias or os.environ["P3_FAKE_ALIAS"], "pbs", "jobs")
@@ -53,6 +76,23 @@ def qsub(args):
         print("qsub: Unknown resource: Resource_List.%s (FAKE rejection of %r)" % (bad.strip(":=").split("=")[0], bad),
               file=sys.stderr)
         return 38
+    qn = (re.search(r"^#PBS -q (\S+)", text, re.M) or [None, None])[1]
+    qd = next((q for q in queues() if q["name"] == qn), None)
+    sel = (re.search(r"^#PBS -l select=(\S+)", text, re.M) or [None, "1:ncpus=1"])[1]
+    tot = int(sel.split(":")[0]) * int(re.search(r"ncpus=(\d+)", sel).group(1))
+    if qn and qd is None and os.environ.get("P3_FAKE_ALIAS", "").startswith("atlas"):
+        print("qsub: Unknown queue", file=sys.stderr)
+        return 170
+    if qd:
+        if not qd.get("enabled", True) or qd.get("qtype", "Execution") != "Execution":
+            print("qsub: Queue is not enabled", file=sys.stderr)
+            return 173
+        if qd.get("acl") and not any(a.split("@")[0] == "fakeuser" for a in qd["acl"]):
+            print("qsub: Unauthorized Request", file=sys.stderr)
+            return 159
+        if tot < qd.get("ncpus_min", 1) or tot > qd.get("ncpus_max", tot):
+            print("qsub: Job violates queue and/or server resource limits", file=sys.stderr)
+            return 188
     name = (re.search(r"^#PBS -N (\S+)", text, re.M) or [None, "job"])[1]
     select = (re.search(r"^#PBS -l (select=\S+)", text, re.M) or [None, "select=1:ncpus=1"])[1]
     wall = (re.search(r"^#PBS -l walltime=(\S+)", text, re.M) or [None, "01:00:00"])[1]
@@ -81,8 +121,12 @@ def run(jid, alias=None):
     j = load(jid, alias)
     alias = alias or os.environ["P3_FAKE_ALIAS"]
     home = os.path.join(os.environ["P3_FAKE_ROOT"], alias, "home")
+    old = (os.path.join(os.environ["P3_FAKE_ROOT"], alias, "app1/centos6.3/gnu/mvapich2-1.9/bin") + ":"
+           if alias.startswith("atlas") else "")
     env = {"HOME": home, "USER": "fakeuser", "LANG": "C", "TMPDIR": os.environ.get("TMPDIR", "/tmp"),
-           "PATH": os.path.join(HERE, "bin") + ":/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+           "PATH": os.path.join(HERE, "bin") + ":" + old + "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+           "P3_EBENV": os.path.join(os.environ["P3_FAKE_ROOT"], alias, "app1", "ebenv") if alias.startswith("atlas")
+           else "",
            "PBS_JOBID": jid, "PBS_O_WORKDIR": j["workdir"], "PBS_JOBNAME": j["name"],
            "P3_FAKE_ROOT": os.environ["P3_FAKE_ROOT"], "P3_FAKE_ALIAS": alias,
            "P3_FAKE_LAUNCH": os.path.join(HERE, "fake_launch.py"), "P3_FAKE_JOB": j["plan_job"]}
@@ -117,13 +161,33 @@ def qstat(args):
     if "-Q" in args or "-Qf" in args:
         full = "-Qf" in args or ("-Q" in args and "-f" in args)
         if not full:
-            print("FAKE (test double)\nQueue              Max   Tot Ena Str   Que   Run   Hld\n"
-                  "parallel             0     2 yes yes     1     1     0\ngpu                  0     0 yes yes     0     0     0")
+            print("FAKE (test double)\nQueue              Max   Tot Ena Str   Que   Run   Hld")
+            for q in queues():
+                yn = "yes" if q.get("enabled", True) else " no"
+                print("%-18s   0     0 %s %s     0     0     0" % (q["name"], yn, yn))
             return 0
-        for q, ncpus, wall, nodes in (("parallel", 576, "24:00:00", 8), ("gpu", 32, "12:00:00", 2)):
-            print("Queue: %s\n    queue_type = Execution\n    resources_max.ncpus = %d\n    resources_max.nodect = %d\n"
-                  "    resources_max.walltime = %s\n    resources_default.walltime = 01:00:00\n    enabled = True\n"
-                  "    started = True\n    comment = FAKE (test double)\n" % (q, ncpus, nodes, wall))
+        for q in queues():
+            print("Queue: %s" % q["name"])
+            print("    queue_type = %s" % q.get("qtype", "Execution"))
+            if q.get("prio"):
+                print("    Priority = %d" % q["prio"])
+            if q.get("acl"):
+                print("    acl_user_enable = True")
+                acl = ",".join(q["acl"]) + ","
+                print("    acl_users = %s" % acl[:40])
+                for i in range(40, len(acl), 40):  # PBS wraps long values on tab-indented lines
+                    print("\t%s" % acl[i:i + 40])
+            print("    from_route_only = %s" % q.get("from_route_only", False))
+            for k, f in (("ncpus_max", "resources_max.ncpus"), ("nodect_max", "resources_max.nodect"),
+                         ("ncpus_min", "resources_min.ncpus"), ("mem_min", "resources_min.mem"),
+                         ("mem_max", "resources_max.mem"), ("wall", "resources_max.walltime"),
+                         ("pool", "default_chunk.node_pool"), ("run_res", "max_run_res.ncpus"),
+                         ("max_run", "max_run")):
+                if q.get(k) is not None:
+                    print("    %s = %s" % (f, q[k]))
+            print("    enabled = %s" % q.get("enabled", True))
+            print("    started = %s" % q.get("started", True))
+            print("    comment = FAKE (test double)\n")
         return 0
     ids = [a for a in args if not a.startswith("-")]
     hist = "-x" in args or "-H" in args

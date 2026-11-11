@@ -42,6 +42,8 @@ def cell_id(c):
     s += "-i%d" % c["iters"] if c["mode"] == "fixed" else "-tol%g" % c["tol"]
     if c.get("gpus", 0):
         s += "-g%d" % c["gpus"]
+    if c.get("queue"):
+        s += "-q%s" % c["queue"]  # same parameters, different queue (node type): a different cell
     return s
 
 
@@ -53,11 +55,13 @@ class Plan:
                   "unplanned": [], "reruns": []}
 
     def cell(self, group, dim, n, ranks, threads=1, nodes=1, decomp=None, cg="classic", halo="blocking",
-             mode="fixed", gpus=0, binary="cpu"):
+             mode="fixed", gpus=0, binary="cpu", queue=None):
         c = {"dim": dim, "n": n, "ranks": ranks, "threads": threads, "nodes": nodes,
              "decomp": dim if decomp is None else decomp, "cg": cg, "halo": halo, "mode": mode,
              "iters": FIXED_ITERS if mode == "fixed" else 0, "tol": TOL if mode == "tol" else None,
              "repeats": REPEATS if mode == "fixed" else 1, "gpus": gpus, "binary": binary}
+        if queue:
+            c["queue"] = queue
         cid = cell_id(c)
         self.p["cells"].setdefault(cid, c)
         g = self.p["groups"][group]
@@ -223,6 +227,78 @@ def build_cluster_plan(name, cpn, max_nodes, has_gpu, notes):
     return P
 
 
+ATLAS_DISCOVERY = "results/atlas/env/discover-20261111T183351Z.txt"
+
+
+def build_atlas_plan():
+    """Atlas as it is for this user (discovery of 11 Nov 2026, 18:33 UTC): queue `parallel` takes 12-96 cores per
+    job and 96 per user at once (pool par12; the compute nodes listed are 96-core, ~358 GB), at most 4 running jobs;
+    queue `serial` takes 1 core, 2-15 GB, 40 running; hpc6a (192 cores) is restricted to named users. So Atlas
+    cannot reach 256 cores: it is a fallback and an early start for everything except the >=256-core cells."""
+    cpn, top = 96, 96
+    P = Plan("atlas", "atlas", cpn, [
+        "FALLBACK and early start, not a replacement for Vanda: the >=256-core strong and weak cells (E3, E4) are "
+        "Vanda-only, because queue parallel allows at most 96 cores per job and per user.",
+        "Serial sweep in queue serial (1 core, shared node type 'horse'); every parallel job is one whole 96-core "
+        "node of pool par12, and the 1-core baselines of every speedup run inside those jobs (same node type and "
+        "build as the curves).",
+        "Cores per node 96: the 33 cnode-33-* compute nodes in the discovery; pool membership of par12 was not in "
+        "that discovery (the new discover.sh prints node_pool).",
+        "No GPU on Atlas: the GPU cell stays in the Vanda plan."])
+    P.p.update({"fallback": True, "max_cores_per_job": top, "limits_source": ATLAS_DISCOVERY,
+                "limits": {"parallel": {"min_cpus": 12, "max_cpus": 96, "max_running": 4, "node_pool": "par12"},
+                           "serial": {"min_cpus": 1, "max_cpus": 1, "max_mem_gb": 15, "max_running": 40}},
+                "not_met": ["E3 strong scaling to >=256 cores: Atlas allows 96 cores per job and per user",
+                            "E4 weak scaling to >=256 cores: Atlas allows 96 cores per job and per user"]})
+    A = P.p["arithmetic"]
+    counts = [1, 2, 4, 6, 12, 24, 48, 96]
+    A.append("Fixed %d iterations, %d repeats in one process, median reported (as on Vanda)." % (FIXED_ITERS, REPEATS))
+    A.append("Strong grids as on Vanda: 2D n=%d, 3D n=%d (~6.7e7 unknowns each); ranks %s on one 96-core node." %
+             (STRONG[2], STRONG[3], counts))
+    A.append("Weak: ~2.1e6 unknowns per rank; at 96 ranks 2D n=%d, 3D n=%d." % (weak_n(2, top), weak_n(3, top)))
+    A.append("Serial sweep in queue serial: 2D n=%s, 3D n=%s, plus iterations to tolerance; memory request 12 GB "
+             "(largest classic run ~3 GB)." % (SERIAL[2], SERIAL[3]))
+    P.group("serial", "E2", "serial runtime vs problem size, 2D and 3D (queue serial)")
+    for d in (2, 3):
+        for n in SERIAL[d]:
+            P.cell("serial", d, n, 1, queue="serial")
+    P.group("serial-tol", "E2", "serial iterations and time to tolerance vs n (queue serial)")
+    for d in (2, 3):
+        for n in SERIAL_TOL[d]:
+            P.cell("serial-tol", d, n, 1, mode="tol", queue="serial")
+    P.group("strong", "E3,E5", "strong scaling 1..96 cores on one Atlas node (NOT the 256 cores E3 needs)")
+    P.group("weak", "E4,E5", "weak scaling 1..96 cores on one Atlas node (NOT the 256 cores E4 needs)")
+    for d in (2, 3):
+        for (cg, halo) in (("classic", "blocking"), ("pipelined", "overlap")):
+            for r in counts:
+                P.cell("strong", d, STRONG[d], r, cg=cg, halo=halo)
+                P.cell("weak", d, weak_n(d, r), r, cg=cg, halo=halo)
+    P.group("variants", "E8,E5", "methods of parallelisation at 96 cores (one Atlas node)")
+    for d in (2, 3):
+        for dc in range(1, d + 1):
+            for cg in ("classic", "pipelined"):
+                for halo in ("blocking", "overlap"):
+                    P.cell("variants", d, STRONG[d], top, decomp=dc, cg=cg, halo=halo)
+    P.group("layout", "E6", "MPI+OpenMP: ranks x threads on one 96-core Atlas node")
+    for (rpn, th) in ((1, 96), (2, 48), (4, 24), (8, 12), (96, 1)):
+        for d in (2, 3):
+            P.cell("layout", d, STRONG[d], rpn, threads=th)
+    calib = [P.cell("strong", 2, STRONG[2], 1), P.cell("strong", 3, STRONG[3], 1),
+             P.cell("strong", 2, STRONG[2], top), P.cell("strong", 3, STRONG[3], top)]
+    P.job("atlas-validate", 1, 12, [], validate_first=True, place="pack",
+          note="build + qualify validate.py on a par12 node (queue parallel needs >= 12 cores)")
+    P.job("atlas-calibrate", 1, cpn, calib, note="calibration: 1-core and 96-core strong runs, 2D and 3D")
+    P.p["jobs"][-1]["calibration"] = True
+    ser = P.p["groups"]["serial"]["cells"] + P.p["groups"]["serial-tol"]["cells"]
+    P.job("atlas-serial", 1, 1, ser, place="pack", note="serial sweep in queue serial (1 core, 12 GB)")
+    P.p["jobs"][-1].update({"queue": "serial", "mem_gb": 12})
+    sw = [c for c in P.p["groups"]["strong"]["cells"] + P.p["groups"]["weak"]["cells"] if c not in calib]
+    P.job("atlas-1node-scaling", 1, cpn, sorted(set(sw)), note="strong and weak, 1-96 cores, two variants")
+    rest = sorted(set(P.p["groups"]["variants"]["cells"] + P.p["groups"]["layout"]["cells"]) - set(sw) - set(calib))
+    P.job("atlas-variants-layouts", 1, cpn, rest, note="variants at 96 cores; ranks x threads on one node")
+    return P
+
+
 def build_local_plan():
     P = Plan("local", "local", 10, ["Development only: proves plan -> gate -> run -> record -> status -> figure on "
                                     "the Mac (Apple M5: 4 performance + 6 efficiency cores, shared memory "
@@ -284,10 +360,7 @@ def main(argv):
                 "GPU node shape (GPUs and CPU cores per node) unknown until `hpc gpu`; the gpu job is a placeholder "
                 "shape."])
         elif w == "atlas":
-            P = build_cluster_plan("atlas", 24, 11, False, [
-                "Fallback if Vanda is down (circuit D5). 24 cores per node is UNVERIFIED (older NUS material); "
-                "check `pbsnodes`/`qstat -Qf` and the queue's node and core caps before using this plan.",
-                "Atlas has no GPUs: the GPU cell stays in the Vanda plan."])
+            P = build_atlas_plan()
         elif w == "local":
             P = build_local_plan()
         else:

@@ -108,10 +108,37 @@ def job_estimate(plan, j):
     secs = sum(cell_seconds(plan, plan["cells"][cid]) for cid in j["cells"]) + M["job_overhead_s"]
     if j.get("validate_first"):
         secs += 600.0
-    cores = j["nodes"] * (plan["cores_per_node"] if j.get("binary") != "offload" else j["ncpus_per_node"])
-    if j["id"].endswith("-validate"):
+    # A job that reserves whole nodes (place=excl) is charged for them; otherwise for the cores it asks for.
+    if j.get("place", plan.get("pbs", {}).get("place", "excl")) == "excl" and j.get("binary", "cpu") != "offload":
+        cores = j["nodes"] * max(plan["cores_per_node"], j["ncpus_per_node"])
+    else:
         cores = j["nodes"] * j["ncpus_per_node"]
     return secs, cores
+
+
+def job_queue(plan, j):
+    pbs = plan.get("pbs", {})
+    if j.get("binary") == "offload":
+        return pbs.get("queue_gpu")
+    if j.get("queue") == "serial":
+        return pbs.get("queue_serial")
+    return pbs.get("queue_cpu")
+
+
+def job_select(plan, j):
+    """PBS select string: chunks, cores, MPI ranks, GPUs, memory (per job, or per core from the discovery)."""
+    pbs = plan.get("pbs", {})
+    n = j["ncpus_per_node"]
+    select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], n, n)
+    if j.get("gpus_per_node"):
+        select += ":ngpus=%d" % j["gpus_per_node"] + pbs.get("select_extra_gpu", "")
+    else:
+        select += pbs.get("select_extra", "")
+    if j.get("mem_gb"):
+        select += ":mem=%dgb" % j["mem_gb"]
+    elif pbs.get("mem_per_cpu_gb"):
+        select += ":mem=%dgb" % max(2, int(math.ceil(n * float(pbs["mem_per_cpu_gb"]))))
+    return select
 
 
 def walltime(secs, safety):
@@ -274,6 +301,7 @@ def coverage(plan):
         return c["ranks"] * c["threads"]
 
     dev = P["cluster"] == "local"  # the local plan is development-only: job structure is checked, coverage is not
+    not_met = []  # requirements a FALLBACK plan states it cannot meet (printed, never hidden)
     for need in (() if dev else ("serial", "strong", "weak", "layout", "variants")):
         if need not in g or not g[need]["cells"]:
             bad.append("group %s missing or empty" % need)
@@ -289,7 +317,8 @@ def coverage(plan):
         for grp in ("strong", "weak"):
             cs = [cells[x] for x in g[grp]["cells"] if cells[x]["dim"] == d]
             if not cs or max(cores(c) for c in cs) < 256:
-                bad.append("%s %dD: no run on >= 256 cores" % (grp, d))
+                msg = "%s %dD: no run on >= 256 cores (largest %d)" % (grp, d, max([cores(c) for c in cs] or [0]))
+                (not_met if P.get("fallback") else bad).append(msg)
             for v in set((c["cg"], c["halo"]) for c in cs):
                 series = [c for c in cs if (c["cg"], c["halo"]) == v]
                 if not any(cores(c) == 1 for c in series):
@@ -305,7 +334,8 @@ def coverage(plan):
                                                                                                    "pipelined"}:
             bad.append("variants %dD: halo or CG variant missing" % d)
     cpn = P["cores_per_node"]
-    want = {72: [(1, 72), (2, 36), (4, 18), (8, 9), (72, 1)], 24: [(1, 24), (2, 12), (4, 6), (24, 1)]}.get(cpn, [])
+    want = {72: [(1, 72), (2, 36), (4, 18), (8, 9), (72, 1)], 24: [(1, 24), (2, 12), (4, 6), (24, 1)],
+            96: [(1, 96), (2, 48), (4, 24), (8, 12), (96, 1)]}.get(cpn, [])
     got = set((cells[x]["ranks"] // cells[x]["nodes"], cells[x]["threads"]) for x in g.get("layout", {}).get(
         "cells", []))
     if dev:
@@ -329,12 +359,25 @@ def coverage(plan):
                 bad.append("cell %s needs %d nodes, job %s has %d" % (cid, c["nodes"], j["id"], j["nodes"]))
             if c.get("binary", "cpu") != j.get("binary", "cpu"):
                 bad.append("cell %s binary %s in job %s (%s)" % (cid, c.get("binary"), j["id"], j.get("binary")))
+            if c["ranks"] * c["threads"] > j["nodes"] * j["ncpus_per_node"]:
+                bad.append("cell %s needs %d cores, job %s has %d" % (cid, c["ranks"] * c["threads"], j["id"],
+                                                                       j["nodes"] * j["ncpus_per_node"]))
+            if (c.get("queue") or "cpu") != (j.get("queue") or "cpu"):
+                bad.append("cell %s is for queue %s but job %s goes to %s" % (cid, c.get("queue") or "cpu",
+                                                                             j["id"], j.get("queue") or "cpu"))
+        lim = P.get("limits", {}).get("serial" if j.get("queue") == "serial" else "parallel")
+        if lim:
+            tot = j["nodes"] * j["ncpus_per_node"]
+            if tot < lim.get("min_cpus", 1) or tot > lim.get("max_cpus", tot):
+                bad.append("job %s asks for %d cores; its queue takes %d-%d (%s)" % (
+                    j["id"], tot, lim.get("min_cpus", 1), lim.get("max_cpus", tot), P.get("limits_source", "")))
     for cid in cells:
         if seen.get(cid, 0) != 1:
             bad.append("cell %s is in %d jobs (must be exactly 1)" % (cid, seen.get(cid, 0)))
     for u in P.get("unplanned", []):
         if not u.get("reason"):
             bad.append("unplanned entry without a reason: %s" % u)
+    P["_not_met"] = not_met
     return bad
 
 
@@ -347,6 +390,16 @@ def cmd_check(plan):
         return 1
     if plan["cluster"] == "local":
         print("RUN PLAN CHECK local: PASS (development plan: job structure only; its rows never reach the report)")
+        return 0
+    if plan.get("fallback"):
+        print("RUN PLAN CHECK %s: PASS AS A FALLBACK PLAN (serial 2D+3D sizes, strong and weak with 1-core baselines, "
+              "variants, layouts; every cell in exactly one job; every job inside its queue's limits)" % plan["plan"])
+        print("  NOT MET on %s, by design:" % plan["plan"])
+        for x in plan.get("_not_met", []):
+            print("    - %s" % x)
+        for x in plan.get("not_met", []):
+            print("    - %s" % x)
+        print("  The >=256-core strong and weak cells exist only in the Vanda plan.")
         return 0
     print("RUN PLAN CHECK %s: PASS (serial 2D+3D sizes, strong and weak to >=256 cores with 1-core baselines, "
           "variants, layouts%s; every cell in exactly one job)" %
@@ -367,6 +420,17 @@ def cmd_selftest():
                                                                                      "REFUSED: %s" % a[:2]))
     print("  same plan without the >=256-core weak cells: expected REFUSED  got %s" %
           (("REFUSED: " + "; ".join(x for x in b if "weak" in x)) if b else "PASS"))
+    at = load_plan("atlas")
+    c0 = coverage(copy.deepcopy(at))
+    big = copy.deepcopy(at)
+    big["jobs"].append(dict(big["jobs"][-1], id="atlas-too-big", nodes=2, ncpus_per_node=96, cells=[]))
+    big["jobs"].append(dict(big["jobs"][-1], id="atlas-too-small", nodes=1, ncpus_per_node=8, cells=[]))
+    c1 = coverage(big)
+    lim_ok = (not c0) and sum(1 for x in c1 if "its queue takes" in x) == 2
+    ok = ok and lim_ok
+    print("  atlas plan (fallback, real queue limits):    expected PASS     got %s" % ("PASS" if not c0 else c0[:2]))
+    print("  atlas + a 192-core and an 8-core job:        expected REFUSED  got %s" %
+          ("REFUSED: " + "; ".join(x for x in c1 if "its queue takes" in x)[:200] if c1 else "PASS"))
     print("SELFTEST run_plan check: %s" % ("QUALIFIED" if ok else "FAILED"))
     return 0 if ok else 1
 
@@ -397,11 +461,7 @@ def cmd_pbs(plan, jid):
     pbs = plan.get("pbs", {})
     binary = "bin/p3cg_offload" if j.get("binary") == "offload" else "bin/p3cg"
     ncpus = j["ncpus_per_node"]
-    select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], ncpus, ncpus)
-    if j.get("gpus_per_node"):
-        select += ":ngpus=%d" % j["gpus_per_node"] + pbs.get("select_extra_gpu", "")
-    else:
-        select += pbs.get("select_extra", "")  # e.g. ":mem=200gb" when the site's sample script asks for it
+    select = job_select(plan, j)
     body = []
     if j.get("validate_first"):
         flavor = "offload" if j.get("binary") == "offload" else "cpu"
@@ -426,11 +486,8 @@ def cmd_pbs(plan, jid):
         "{{SELECT}}": select,
         "{{PLACE}}": j.get("place", pbs.get("place", "excl")),
         "{{WALLTIME}}": walltime(secs, plan["model"]["safety"]),
-        "{{QUEUE_LINE}}": ("#PBS -q %s" % (pbs.get("queue_gpu") if j.get("binary") == "offload"
-                                           else pbs.get("queue_cpu"))) if (pbs.get("queue_gpu") if
-                                                                           j.get("binary") == "offload" else
-                                                                           pbs.get("queue_cpu")) else
-        "# queue: cluster default (set pbs.queue_cpu / queue_gpu in the plan after `hpc cpu` / `hpc gpu`)",
+        "{{QUEUE_LINE}}": ("#PBS -q %s" % job_queue(plan, j)) if job_queue(plan, j) else
+        "# queue: cluster default (set pbs.queue_cpu / queue_serial / queue_gpu in the plan from the discovery)",
         "{{PROJECT_LINE}}": ("#PBS -P %s" % pbs["project"]) if pbs.get("project") else
         "# project: none set (set pbs.project in the plan if the cluster requires one)",
         "{{ESTIMATE}}": "%.0f s, %.1f core-hours (x%.0f safety in walltime)" %
