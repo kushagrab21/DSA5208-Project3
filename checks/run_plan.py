@@ -446,7 +446,8 @@ def cmd_pbs(plan, jid):
     outp = os.path.join(outd, "%s.pbs" % jid)
     with open(outp, "w") as f:
         f.write(tpl)
-    print("wrote %s (%d cells, walltime %s)" % (os.path.relpath(outp, C.REPO), len(j["cells"]), repl["{{WALLTIME}}"]))
+    shown = os.path.relpath(outp, C.REPO) if outp.startswith(C.REPO) else outp
+    print("wrote %s (%d cells, walltime %s)" % (shown, len(j["cells"]), repl["{{WALLTIME}}"]))
     return 0
 
 

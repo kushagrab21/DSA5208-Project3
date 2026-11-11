@@ -109,7 +109,7 @@ def budget_lines(plan, extra_worst=0.0, extra_job=None):
         lines.append("  budget: unlimited (%s)" % plan.get("budget_source", ""))
     else:
         rem = float(b) - used - pend_worst - extra_worst
-        lines.append("  budget %.0f -> remaining after %s, worst case: %.1f core-hours" %
+        lines.append("  budget %.1f -> remaining after %s, worst case: %.1f core-hours" %
                      (float(b), "this job" if extra_job else "jobs in flight", rem))
     return b, used, pend_worst, lines
 

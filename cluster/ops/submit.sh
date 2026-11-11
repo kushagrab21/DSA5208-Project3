@@ -24,8 +24,8 @@ rbin="$(awk '$1=="bin"{print $2}' <<<"$state")"
 "$PY" "$REPO/checks/run_plan.py" pbs --plan "$cl" --job "$job" | grep -v '^note:' || exit 1
 script="$GENERATED/$cl/$job.pbs"
 if [[ "$dry" == "--dry-run" ]]; then echo "DRY RUN: would copy ${script#$REPO/} and qsub it on $alias"; exit 0; fi
-remote "$alias" "$REMOTE_DIR/cluster/generated/$cl" <<'EOS'
-mkdir -p "$HOME/$1"
+remote "$alias" "$REMOTE_DIR" "$cl" <<'EOS'
+mkdir -p "$HOME/$1/cluster/generated/$2" "$HOME/$1/cluster/logs" "$HOME/$1/results/$2"
 EOS
 rsync_or_explain -a "$script" "$alias:$REMOTE_DIR/cluster/generated/$cl/"
 out="$(remote "$alias" "$REMOTE_DIR" "$cl" "$job" <<'EOS'

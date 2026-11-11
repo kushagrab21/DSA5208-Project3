@@ -34,7 +34,15 @@ endif()
 execute_process(COMMAND git rev-parse --short=12 HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE P3_GIT_SHA OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET RESULT_VARIABLE _git_rc)
 if(NOT _git_rc EQUAL 0 OR P3_GIT_SHA STREQUAL "")
+  # A cluster copy has no .git; cluster/ops/sync.sh writes the commit into SYNCED.
   set(P3_GIT_SHA "unknown")
+  if(EXISTS "${CMAKE_SOURCE_DIR}/SYNCED")
+    file(STRINGS "${CMAKE_SOURCE_DIR}/SYNCED" _synced REGEX "^commit ")
+    if(_synced)
+      string(SUBSTRING "${_synced}" 7 12 _c)
+      set(P3_GIT_SHA "${_c}-synced")
+    endif()
+  endif()
 else()
   execute_process(COMMAND git status --porcelain --untracked-files=no -- src CMakeLists.txt
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _dirty OUTPUT_STRIP_TRAILING_WHITESPACE)

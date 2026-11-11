@@ -12,4 +12,4 @@ here="$(cd "$(dirname "$0")" && pwd)"
 exec env -i HOME="$home" USER="fakeuser" LANG="${LANG:-C}" TMPDIR="${TMPDIR:-/tmp}" \
   PATH="$here/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
   P3_FAKE_ROOT="$root" P3_FAKE_ALIAS="$alias" FAKE_SPEED="${FAKE_SPEED:-1}" FAKE_FAIL_JOBS="${FAKE_FAIL_JOBS:-}" \
-  FAKE_QUEUE_ONLY="${FAKE_QUEUE_ONLY:-}" FAKE_FORGET="${FAKE_FORGET:-}" "${args[@]}"
+  FAKE_QUEUE_ONLY="${FAKE_QUEUE_ONLY:-}" FAKE_FORGET="${FAKE_FORGET:-}" FAKE_QSUB_REJECT="${FAKE_QSUB_REJECT:-}" "${args[@]}"

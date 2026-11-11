@@ -32,7 +32,9 @@ else
   exit 2
 fi
 
-git_sha="$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
+git_sha="$(git rev-parse --short=12 HEAD 2>/dev/null || true)"
+if [[ -z "$git_sha" && -f SYNCED ]]; then git_sha="$(awk '$1=="commit"{print substr($2,1,12)"-synced"}' SYNCED)"; fi
+git_sha="${git_sha:-unknown}"
 srcs=(src/main.cpp src/grid.cpp src/halo.cpp src/kernels.cpp src/cg.cpp src/record.cpp)
 
 for bug in 0 1 2; do

@@ -48,6 +48,11 @@ def fmt(s):
 def qsub(args):
     script = os.path.abspath(args[-1])
     text = open(script).read()
+    bad = os.environ.get("FAKE_QSUB_REJECT")
+    if bad and bad in text:
+        print("qsub: Unknown resource: Resource_List.%s (FAKE rejection of %r)" % (bad.strip(":=").split("=")[0], bad),
+              file=sys.stderr)
+        return 38
     name = (re.search(r"^#PBS -N (\S+)", text, re.M) or [None, "job"])[1]
     select = (re.search(r"^#PBS -l (select=\S+)", text, re.M) or [None, "select=1:ncpus=1"])[1]
     wall = (re.search(r"^#PBS -l walltime=(\S+)", text, re.M) or [None, "01:00:00"])[1]
