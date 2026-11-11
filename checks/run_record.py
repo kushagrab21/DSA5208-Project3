@@ -36,7 +36,8 @@ def expand(paths):
         else:
             out.append(p)
     # validated_binaries.csv and the per-cluster jobs.csv (PBS job start/end) are not run records
-    return [p for p in out if os.path.basename(p) not in (os.path.basename(C.VALIDATED), "jobs.csv")]
+    return [p for p in out if os.path.basename(p) not in (os.path.basename(C.VALIDATED), "jobs.csv", "sync.csv")
+            and "/.staging/" not in p]
 
 
 def check_row(r):

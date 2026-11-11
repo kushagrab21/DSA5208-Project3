@@ -2620,6 +2620,23 @@
    "note": "build correct + planted-bug binaries on a compute node, qualify validate.py, record the hash"
   },
   {
+   "id": "vanda-calibrate",
+   "nodes": 1,
+   "ncpus_per_node": 72,
+   "gpus_per_node": 0,
+   "binary": "cpu",
+   "validate_first": false,
+   "place": "excl",
+   "cells": [
+    "2d-n4096-r1x1-N1-d2-clas-bloc-i100",
+    "3d-n256-r1x1-N1-d3-clas-bloc-i100",
+    "2d-n8192-r72x1-N1-d2-clas-bloc-i100",
+    "3d-n406-r72x1-N1-d3-clas-bloc-i100"
+   ],
+   "note": "calibration: serial 2D n=4096 and 3D n=256 (one core's bandwidth), strong 2D/3D on one full node (the node's bandwidth); measured before the plan is frozen",
+   "calibration": true
+  },
+  {
    "id": "vanda-serial",
    "nodes": 1,
    "ncpus_per_node": 72,
@@ -2634,7 +2651,6 @@
     "2d-n512-r1x1-N1-d2-clas-bloc-i100",
     "2d-n1024-r1x1-N1-d2-clas-bloc-i100",
     "2d-n2048-r1x1-N1-d2-clas-bloc-i100",
-    "2d-n4096-r1x1-N1-d2-clas-bloc-i100",
     "2d-n8192-r1x1-N1-d2-clas-bloc-i100",
     "3d-n16-r1x1-N1-d3-clas-bloc-i100",
     "3d-n25-r1x1-N1-d3-clas-bloc-i100",
@@ -2642,7 +2658,6 @@
     "3d-n64-r1x1-N1-d3-clas-bloc-i100",
     "3d-n101-r1x1-N1-d3-clas-bloc-i100",
     "3d-n161-r1x1-N1-d3-clas-bloc-i100",
-    "3d-n256-r1x1-N1-d3-clas-bloc-i100",
     "3d-n406-r1x1-N1-d3-clas-bloc-i100",
     "2d-n64-r1x1-N1-d2-clas-bloc-tol1e-08",
     "2d-n128-r1x1-N1-d2-clas-bloc-tol1e-08",
@@ -2687,7 +2702,6 @@
     "2d-n8192-r36x1-N1-d2-pipe-over-i100",
     "2d-n8192-r4x1-N1-d2-clas-bloc-i100",
     "2d-n8192-r4x1-N1-d2-pipe-over-i100",
-    "2d-n8192-r72x1-N1-d2-clas-bloc-i100",
     "2d-n8192-r72x1-N1-d2-pipe-over-i100",
     "2d-n8192-r9x1-N1-d2-clas-bloc-i100",
     "2d-n8192-r9x1-N1-d2-pipe-over-i100",
@@ -2712,7 +2726,6 @@
     "3d-n406-r36x1-N1-d3-pipe-over-i100",
     "3d-n406-r4x1-N1-d3-clas-bloc-i100",
     "3d-n406-r4x1-N1-d3-pipe-over-i100",
-    "3d-n406-r72x1-N1-d3-clas-bloc-i100",
     "3d-n406-r72x1-N1-d3-pipe-over-i100",
     "3d-n406-r9x1-N1-d3-clas-bloc-i100",
     "3d-n406-r9x1-N1-d3-pipe-over-i100",

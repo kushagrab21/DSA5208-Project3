@@ -335,46 +335,54 @@ def build(results, out, names=None, stamp_text=None):
 FAKE_SHA = "d0" * 32
 
 
+def fake_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
+    """TEST-DOUBLE record rows for one cell, shaped like real ones (times from the plan's cost model x speed)."""
+    import p3common as C
+    from run_plan import cell_seconds, model_of
+    M = model_of(plan)
+    c = plan["cells"][cid]
+    N = c["n"] ** c["dim"]
+    P = c["ranks"]
+    reps = c.get("repeats", 1)
+    local = N / float(P)
+    per = speed * (cell_seconds(plan, c) - M["launch_s"] - M["setup_s_per_point"] * local * 1.02) / reps
+    iters = c["iters"] if c["mode"] == "fixed" else int(M["tol_iters_per_n"] * (c["n"] + 1))
+    out = []
+    for rep in range(1, reps + 1):
+        t = per * (1 + 0.01 * rep)
+        halo = 0.12 * t if P > 1 else 0.0
+        red = 0.04 * t * math.log(P, 2) / 8 if P > 1 else 0.0
+        row = dict((k, "0") for k in C.RECORD_COLUMNS)
+        row.update({
+            "schema": C.RECORD_SCHEMA, "utc": utc, "cluster": plan["cluster"], "host": host, "pbs_jobid": jobid,
+            "cell": cid, "tag": "test", "nodes": c["nodes"], "ranks": P, "threads": c["threads"],
+            "gpus": c.get("gpus", 0), "dim": c["dim"], "n": c["n"], "unknowns": N,
+            "nonzeros": N + 2 * c["dim"] * (c["n"] - 1) * c["n"] ** (c["dim"] - 1),
+            "decomp": "%dD" % c["decomp"], "pdims": "x", "local_max": -(-N // P), "local_min": N // P,
+            "cg": c["cg"], "halo": c["halo"], "mode": c["mode"],
+            "iters_req": c["iters"] if c["mode"] == "fixed" else 1000000,
+            "tol": "na" if c["mode"] == "fixed" else repr(c["tol"]), "iters": iters, "repeat": rep,
+            "t_total": "%.6e" % t, "t_halo": "%.6e" % halo, "t_reduce": "%.6e" % red,
+            "t_compute": "%.6e" % (t - halo - red), "t_other": "0", "t_halo_max": "%.6e" % halo,
+            "t_reduce_max": "%.6e" % red, "t_compute_max": "%.6e" % (t - halo - red), "t_setup": "1",
+            "msgs_per_exch": 2 * c["decomp"] if P > 1 else 0, "doubles_per_exch_max": 0,
+            "allreduces": 0, "exchanges": iters, "rel_res": "1e-9", "true_rel_res": "1e-9",
+            "err_max": "1e-5", "err_l2": "1e-5", "converged": "na" if c["mode"] == "fixed" else "1",
+            "breakdown": "0", "binary_sha256": sha, "git_sha": "testdouble",
+            "build": "omp=1;offload=%d;bug=0;cxx=TEST DOUBLE;mpi=TEST DOUBLE" % (1 if c.get("gpus") else 0),
+            "mpi_thread": "funneled", "problem": "expoly"})
+        out.append(row)
+    return out
+
+
 def fabricate(results, plan_name="vanda"):
     """Writes TEST-DOUBLE rows for every cell of a plan, shaped like real records, plus a validated list."""
     import p3common as C
-    from run_plan import cell_seconds
     plan = RD.load_plan(plan_name)
-    M = plan["model"]
     for jobi, job in enumerate(plan["jobs"]):
         path = os.path.join(results, plan["cluster"], "TESTDOUBLE.%d.csv" % jobi)
         for cid in job["cells"]:
-            c = plan["cells"][cid]
-            N = c["n"] ** c["dim"]
-            P = c["ranks"]
-            reps = c.get("repeats", 1)
-            local = N / float(P)
-            per = (cell_seconds(plan, c) - M["launch_s"] - M["setup_s_per_point"] * local * 1.02) / reps
-            iters = c["iters"] if c["mode"] == "fixed" else int(M["tol_iters_per_n"] * (c["n"] + 1))
-            for rep in range(1, reps + 1):
-                t = per * (1 + 0.01 * rep)
-                halo = 0.12 * t if P > 1 else 0.0
-                red = 0.04 * t * math.log(P, 2) / 8 if P > 1 else 0.0
-                row = dict((k, "0") for k in C.RECORD_COLUMNS)
-                row.update({
-                    "schema": C.RECORD_SCHEMA, "utc": "2026-11-13T0%d:00:00Z" % (jobi % 10), "cluster": plan["cluster"],
-                    "host": "TEST-DOUBLE", "pbs_jobid": "TESTDOUBLE.%d" % jobi, "cell": cid, "tag": "test",
-                    "nodes": c["nodes"], "ranks": P, "threads": c["threads"], "gpus": c.get("gpus", 0),
-                    "dim": c["dim"], "n": c["n"], "unknowns": N,
-                    "nonzeros": N + 2 * c["dim"] * (c["n"] - 1) * c["n"] ** (c["dim"] - 1),
-                    "decomp": "%dD" % c["decomp"], "pdims": "x", "local_max": -(-N // P), "local_min": N // P,
-                    "cg": c["cg"], "halo": c["halo"], "mode": c["mode"],
-                    "iters_req": c["iters"] if c["mode"] == "fixed" else 1000000,
-                    "tol": "na" if c["mode"] == "fixed" else repr(c["tol"]), "iters": iters, "repeat": rep,
-                    "t_total": "%.6e" % t, "t_halo": "%.6e" % halo, "t_reduce": "%.6e" % red,
-                    "t_compute": "%.6e" % (t - halo - red), "t_other": "0", "t_halo_max": "%.6e" % halo,
-                    "t_reduce_max": "%.6e" % red, "t_compute_max": "%.6e" % (t - halo - red), "t_setup": "1",
-                    "msgs_per_exch": 2 * c["decomp"] if P > 1 else 0, "doubles_per_exch_max": 0,
-                    "allreduces": 0, "exchanges": iters, "rel_res": "1e-9", "true_rel_res": "1e-9",
-                    "err_max": "1e-5", "err_l2": "1e-5", "converged": "na" if c["mode"] == "fixed" else "1",
-                    "breakdown": "0", "binary_sha256": FAKE_SHA, "git_sha": "testdouble",
-                    "build": "omp=1;offload=%d;bug=0;cxx=TEST DOUBLE;mpi=TEST DOUBLE" % (1 if c.get("gpus") else 0),
-                    "mpi_thread": "funneled", "problem": "expoly"})
+            for row in fake_rows(plan, cid, "TESTDOUBLE.%d" % jobi, "2026-11-13T0%d:00:00Z" % (jobi % 10), FAKE_SHA):
                 C.append_csv(path, C.RECORD_COLUMNS, row)
     envd = os.path.join(results, plan["cluster"], "env")
     os.makedirs(envd, exist_ok=True)

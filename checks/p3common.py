@@ -8,6 +8,9 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # P3_RESULTS redirects all check outputs (used for scratch qualifications that must not touch results/).
 RESULTS = os.environ.get("P3_RESULTS") or os.path.join(REPO, "results")
+# P3_CONFIG / P3_GENERATED redirect the run plans and the generated PBS scripts (fake-cluster tests use scratch copies).
+CONFIG = os.environ.get("P3_CONFIG") or os.path.join(REPO, "config")
+GENERATED = os.environ.get("P3_GENERATED") or os.path.join(REPO, "cluster", "generated")
 VALIDATED = os.path.join(RESULTS, "validated_binaries.csv")
 CLUSTERS = ("atlas", "vanda")  # the only clusters whose rows may reach a report figure
 

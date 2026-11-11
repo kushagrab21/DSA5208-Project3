@@ -30,11 +30,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import p3common as C  # noqa: E402
 import run_record  # noqa: E402
 
-JOBS_COLUMNS = ["pbs_jobid", "plan", "job", "event", "utc", "nodes", "ncpus_per_node", "gpus_per_node", "host"]
+# One append-only ledger per cluster, results/<cluster>/jobs.csv. Events:
+#   submit  written locally by cluster/ops/submit.sh (job, cells, commit, resources, estimate)
+#   start, end  written on the cluster by the job itself (job-start / job-end below)
+#   final   written locally by cluster/ops/poll.sh from qstat -xf (exit status, walltime and core-hours used, flags)
+# cluster/ops/fetch.sh merges the cluster's rows into the local file; no row is ever rewritten.
+JOBS_COLUMNS = ["pbs_jobid", "plan", "job", "event", "utc", "nodes", "ncpus_per_node", "gpus_per_node", "host",
+                "commit", "cells", "select", "walltime", "est_core_hours", "state", "exit_status", "walltime_used",
+                "core_hours_used", "note"]
 
 
 def plan_path(name):
-    return os.path.join(C.REPO, "config", "run_plan.%s.json" % name)
+    return os.path.join(C.CONFIG, "run_plan.%s.json" % name)
+
+
+def model_of(plan):
+    """The plan's cost model, with bandwidths replaced by results/<cluster>/calibration.json when fetch.sh has
+    measured them (the plan file itself is never rewritten by calibration)."""
+    M = dict(plan["model"])
+    p = os.path.join(C.RESULTS, plan["cluster"], "calibration.json")
+    if os.path.exists(p):
+        with open(p) as f:
+            cal = json.load(f)
+        for k in ("bw_core_gbs", "bw_node_gbs"):
+            if cal.get(k):
+                M[k] = cal[k]
+        M["calibrated_from"] = cal.get("from_jobs", [])
+    return M
 
 
 def load_plan(name):
@@ -57,7 +79,7 @@ def job_of(plan, jid):
 # ----------------------------------------------------------------------------------------------------------------
 def cell_seconds(plan, c):
     """Estimated seconds for one cell (all repeats), from the plan's model. Rough by design; see plan['model']."""
-    M = plan["model"]
+    M = model_of(plan)
     N = c["n"] ** c["dim"]
     P = c["ranks"]
     local = N / float(P) * 1.02
@@ -82,7 +104,7 @@ def cell_seconds(plan, c):
 
 
 def job_estimate(plan, j):
-    M = plan["model"]
+    M = model_of(plan)
     secs = sum(cell_seconds(plan, plan["cells"][cid]) for cid in j["cells"]) + M["job_overhead_s"]
     if j.get("validate_first"):
         secs += 600.0
@@ -152,6 +174,26 @@ def read_jobs(plan):
     return C.read_csv(p) if os.path.exists(p) else []
 
 
+def used_core_hours(jobs):
+    """Core-hours charged so far: from the 'final' rows (qstat), else from the job's own start/end rows."""
+    used, finals, starts = 0.0, set(), {}
+    for r in jobs:
+        if r["event"] == "final" and r.get("core_hours_used"):
+            used += float(r["core_hours_used"])
+            finals.add(r["pbs_jobid"])
+    for r in jobs:
+        if r["pbs_jobid"] in finals:
+            continue
+        if r["event"] == "start":
+            starts[r["pbs_jobid"]] = r
+        elif r["event"] == "end" and r["pbs_jobid"] in starts:
+            s = starts[r["pbs_jobid"]]
+            t0 = datetime.datetime.strptime(s["utc"], "%Y-%m-%dT%H:%M:%SZ")
+            t1 = datetime.datetime.strptime(r["utc"], "%Y-%m-%dT%H:%M:%SZ")
+            used += (t1 - t0).total_seconds() * int(s["nodes"]) * int(s["ncpus_per_node"]) / 3600.0
+    return used
+
+
 # ----------------------------------------------------------------------------------------------------------------
 # Commands
 # ----------------------------------------------------------------------------------------------------------------
@@ -174,6 +216,9 @@ def cmd_status(plan, require_complete):
     out.append("  GRADED CELLS FILLED: %d/%d unique cells (%d/%d counted per group)" % (uf, len(uniq), tot_f, tot_n))
 
     reasons = set(x.get("cell") for x in plan.get("reruns", []) if x.get("reason"))
+    for x in plan.get("reruns", []):  # a job-level rerun reason covers every cell of that job
+        if x.get("job") and x.get("reason") and job_of(plan, x["job"]):
+            reasons |= set(job_of(plan, x["job"])["cells"])
     reruns = [cid for cid, jobs in per.items() if len(jobs) > 1]
     unexplained = [cid for cid in reruns if cid not in reasons]
     out.append("  reruns (cell run in >1 job): %d, without a recorded reason: %d%s" %
@@ -203,16 +248,7 @@ def cmd_status(plan, require_complete):
         out.append("    %-30s %d node%s x %3d cores  %6.1f / %6.1f core-h  walltime %s  (%d cells)" %
                    (j["id"], j["nodes"], "s" if j["nodes"] > 1 else " ", cores // j["nodes"], ch, ch * safety,
                     walltime(secs, safety), len(j["cells"])))
-    used = 0.0
-    starts = {}
-    for r in jobs:
-        if r["event"] == "start":
-            starts[r["pbs_jobid"]] = r
-        elif r["event"] == "end" and r["pbs_jobid"] in starts:
-            s = starts[r["pbs_jobid"]]
-            t0 = datetime.datetime.strptime(s["utc"], "%Y-%m-%dT%H:%M:%SZ")
-            t1 = datetime.datetime.strptime(r["utc"], "%Y-%m-%dT%H:%M:%SZ")
-            used += (t1 - t0).total_seconds() * int(s["nodes"]) * int(s["ncpus_per_node"]) / 3600.0
+    used = used_core_hours(jobs)
     budget = plan.get("core_hour_budget")
     out.append("  CORE-HOURS: estimated %.0f (up to %.0f with safety x%.0f); used so far %.1f; budget %s" %
                (est_total, est_hi, safety, used, ("%.0f" % budget) if budget else
@@ -363,7 +399,9 @@ def cmd_pbs(plan, jid):
     ncpus = j["ncpus_per_node"]
     select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], ncpus, ncpus)
     if j.get("gpus_per_node"):
-        select += ":ngpus=%d" % j["gpus_per_node"]
+        select += ":ngpus=%d" % j["gpus_per_node"] + pbs.get("select_extra_gpu", "")
+    else:
+        select += pbs.get("select_extra", "")  # e.g. ":mem=200gb" when the site's sample script asks for it
     body = []
     if j.get("validate_first"):
         flavor = "offload" if j.get("binary") == "offload" else "cpu"
@@ -402,7 +440,7 @@ def cmd_pbs(plan, jid):
     }
     for k, v in repl.items():
         tpl = tpl.replace(k, v)
-    outd = os.path.join(C.REPO, "cluster", "generated", plan["plan"])
+    outd = os.path.join(C.GENERATED, plan["plan"])
     if not os.path.isdir(outd):
         os.makedirs(outd)
     outp = os.path.join(outd, "%s.pbs" % jid)

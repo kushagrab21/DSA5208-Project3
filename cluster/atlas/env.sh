@@ -28,3 +28,7 @@ p3_launch() {
     mpirun -np "$np" --map-by "ppr:${rpn}:node:PE=${th}" --bind-to core \
     ${P3_REPORT_BINDINGS:+--report-bindings} -x OMP_NUM_THREADS -x OMP_PLACES -x OMP_PROC_BIND -x P3_CLUSTER "$@"
 }
+
+# Test seam for cluster/ops/fake only (never set on a real cluster): the fake qsub replaces the MPI launch with a
+# writer of TEST-DOUBLE rows, so the rest of the generated job script (job-start, timing gate, job-end) runs as is.
+if [[ -n "${P3_FAKE_LAUNCH:-}" ]]; then p3_launch() { "$P3_FAKE_LAUNCH" "$@"; }; fi

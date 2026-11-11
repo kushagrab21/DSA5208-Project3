@@ -197,9 +197,17 @@ def build_cluster_plan(name, cpn, max_nodes, has_gpu, notes):
     P.job("%s-validate" % name, 1, min(cpn, 8) if cpn > 8 else cpn, [], validate_first=True,
           note="build correct + planted-bug binaries on a compute node, qualify validate.py, record the hash",
           place="pack")
+    # Calibration job: four graded cells that measure what the cost model needs (bandwidth of one core, of a whole
+    # node) and are cheap. It is the only timed job allowed before the plan is frozen (cluster/ops/submit.sh).
+    calib = [P.cell("serial", 2, 4096, 1), P.cell("serial", 3, 256, 1),
+             P.cell("strong", 2, STRONG[2], cpn), P.cell("strong", 3, STRONG[3], cpn)]
+    P.job("%s-calibrate" % name, 1, cpn, calib, note="calibration: serial 2D n=4096 and 3D n=256 (one core's "
+          "bandwidth), strong 2D/3D on one full node (the node's bandwidth); measured before the plan is frozen")
+    P.p["jobs"][-1]["calibration"] = True
+    serial_cells = [c for c in serial_cells if c not in calib]
     P.job("%s-serial" % name, 1, cpn, serial_cells, note="serial sweep, whole node reserved so memory bandwidth is "
           "not shared")
-    one = sorted(set(c for c in by_nodes(P).get(1, []) if c not in serial_cells))
+    one = sorted(set(c for c in by_nodes(P).get(1, []) if c not in serial_cells and c not in calib))
     strong_weak_1 = [c for c in one if c in P.p["groups"]["strong"]["cells"] or c in P.p["groups"]["weak"]["cells"]]
     rest_1 = [c for c in one if c not in strong_weak_1]
     P.job("%s-1node-scaling" % name, 1, cpn, strong_weak_1, note="strong and weak scaling up to %d ranks" % cpn)
