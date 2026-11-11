@@ -2213,7 +2213,12 @@
   }
  ],
  "unplanned": [],
- "reruns": [],
+ "reruns": [
+  {
+   "job": "atlas-validate",
+   "reason": "1040043.venus01 exited 127 after 11 s: python3 not on compute nodes; env.sh now loads Python/3.13.5-GCCcore-14.3.0 (12 Nov)"
+  }
+ ],
  "fallback": true,
  "max_cores_per_job": 96,
  "limits_source": "results/atlas/env/discover-20261111T183351Z.txt",

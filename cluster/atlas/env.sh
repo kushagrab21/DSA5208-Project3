@@ -12,7 +12,7 @@ if [[ -f "${P3_EBENV:-/app1/ebenv}" ]]; then
   # shellcheck disable=SC1090
   source "${P3_EBENV:-/app1/ebenv}"
 fi
-: "${P3_MODULES:=foss/2025b}"
+: "${P3_MODULES:=foss/2025b Python/3.13.5-GCCcore-14.3.0}"
 if command -v module >/dev/null 2>&1; then
   module purge >/dev/null 2>&1 || true
   if [[ -z "$P3_MODULES" ]]; then
@@ -28,6 +28,14 @@ case "$(command -v mpicxx)" in
     echo "p3 env (atlas): ERROR the 2013 mvapich2-1.9 mpicxx is still first on PATH; no OpenMPI module loaded" >&2
     return 1 2>/dev/null || exit 1;;
 esac
+
+# Compute nodes have no system python3 (atlas-validate 1040043.venus01, 12 Nov: "python3: command not found");
+# the checks run inside jobs, so a Python module built on the same GCCcore as foss is loaded above.
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "p3 env (atlas): ERROR no python3 on this node; load a Python/*-GCCcore module via P3_MODULES" >&2
+  return 1 2>/dev/null || exit 1
+fi
+echo "p3 env (atlas): python3=$(command -v python3) ($(python3 --version 2>&1))" >&2
 
 export P3_CLUSTER=atlas
 export CXX_MPI="${CXX_MPI:-mpicxx}"
