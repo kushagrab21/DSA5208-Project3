@@ -118,15 +118,15 @@ class ClusterData:
 
 
 def cpu_data(results):
-    """The CPU plan the report uses: the first of CPU_PLANS that has any rows, else the primary (empty)."""
-    first = None
+    """The CPU plan the report uses: the one with the most graded cells filled (Vanda first on a tie), so a
+    complete Atlas fallback wins over a Vanda run cut short by downtime. Figures never mix clusters."""
+    best = None
     for name in CPU_PLANS:
         d = ClusterData(results, name)
-        if first is None:
-            first = d
-        if d.rows:
-            return d
-    return first
+        filled = len(d.cell_rows)
+        if best is None or filled > best[0]:
+            best = (filled, d)
+    return best[1]
 
 
 def gpu_data(results):

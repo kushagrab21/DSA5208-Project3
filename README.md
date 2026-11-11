@@ -168,6 +168,12 @@ scripts/make_report.sh        # figures -> generated numbers/tables -> PDF (Tect
 - The orange "to write once the cluster runs are in" boxes are the interpretation paragraphs. They are written by
   hand once the numbers exist; everything else fills automatically.
 
+## Operating the clusters
+
+`cluster/RUNBOOK.md` is the procedure: `cluster/ops/discover.sh`, `scripts/apply_discovery.py`, `cluster/ops/sync.sh`,
+`cluster/ops/submit.sh` (the only way a job is submitted), `cluster/ops/poll.sh`, `cluster/ops/fetch.sh`, and what to do
+when a job fails. `cluster/ops/test_fake_cluster.sh` runs all of them against a fake cluster.
+
 ## Local development
 
 ```bash

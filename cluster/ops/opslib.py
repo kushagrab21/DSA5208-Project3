@@ -466,12 +466,34 @@ def cmd_calibrate(a):
     return 0
 
 
+def cmd_missing_cells(a):
+    """Cells of a job that no fetched record fills yet, and a ready-to-paste "unplanned" entry that runs only those
+    (the alternative to a full rerun after a walltime kill)."""
+    plan = RP.load_plan(a.cluster)
+    job = RP.job_of(plan, a.job)
+    if job is None:
+        print("no job %s in plan %s" % (a.job, plan["plan"]))
+        return 1
+    per = RP.gather(plan)[0]
+    missing = [c for c in job["cells"] if not RP.filled(plan, c, per)]
+    print("%s: %d of %d cells still unfilled" % (a.job, len(missing), len(job["cells"])))
+    if missing:
+        spec = dict(job)
+        spec.update({"id": a.job + "-rest", "cells": missing, "note": "unfilled cells of %s" % a.job})
+        entry = {"job": spec["id"], "reason": "REPLACE: why (e.g. walltime exceeded in <PBS id>)", "spec": spec}
+        print("paste into \"unplanned\" in config/run_plan.%s.json, fill the reason, commit, sync, then "
+              "submit.sh <alias> %s:" % (plan["plan"], spec["id"]))
+        print(json.dumps(entry, indent=1))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd")
     p = sub.add_parser("cluster")
     p.add_argument("alias")
-    for name in ("submit-check", "record-submit", "pending", "poll-parse", "merge-fetched", "calibrate", "plan-sha"):
+    for name in ("submit-check", "record-submit", "pending", "poll-parse", "merge-fetched", "calibrate", "plan-sha",
+                 "missing-cells"):
         p = sub.add_parser(name)
         p.add_argument("--cluster", required=True)
         p.add_argument("--job")
@@ -490,7 +512,8 @@ def main():
         print(sha256(RP.plan_path(a.cluster)))
         return 0
     return {"submit-check": cmd_submit_check, "record-submit": cmd_record_submit, "pending": cmd_pending,
-            "poll-parse": cmd_poll_parse, "merge-fetched": cmd_merge_fetched, "calibrate": cmd_calibrate}[a.cmd](a)
+            "poll-parse": cmd_poll_parse, "merge-fetched": cmd_merge_fetched, "calibrate": cmd_calibrate,
+            "missing-cells": cmd_missing_cells}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ mkdir -p "$HOME/$1/cluster/generated/$2" "$HOME/$1/cluster/logs" "$HOME/$1/resul
 EOS
 rsync_or_explain -a "$script" "$alias:$REMOTE_DIR/cluster/generated/$cl/"
 out="$(remote "$alias" "$REMOTE_DIR" "$cl" "$job" <<'EOS'
-cd "$HOME/$1" && qsub "cluster/generated/$2/$3.pbs"
+cd "$HOME/$1" && qsub "cluster/generated/$2/$3.pbs" 2>&1
 EOS
 )" || { echo "SUBMIT: qsub failed on $alias:"; echo "$out" | sed 's/^/  /'; exit 1; }
 pbsid="$(echo "$out" | grep -E '^[0-9]+(\.[A-Za-z0-9._-]+)?$' | tail -1)"

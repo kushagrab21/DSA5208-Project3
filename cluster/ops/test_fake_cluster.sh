@@ -58,6 +58,7 @@ step "poll: one failed job, one queued" cluster/ops/poll.sh vanda
 step "the queue moves (fake scheduler runs the queued job)" env P3_FAKE_ALIAS=vanda python3 "$OPS/fake/fakepbs.py" run-queued vanda
 step "poll" cluster/ops/poll.sh vanda
 step "fetch after the failure" cluster/ops/fetch.sh vanda
+step "unfilled cells of the killed job, as an unplanned job to paste" python3 cluster/ops/opslib.py missing-cells --cluster vanda --job vanda-4node
 step "qsub rejects the select syntax: nothing is recorded as submitted" env FAKE_QSUB_REJECT=mem= cluster/ops/submit.sh vanda vanda-2node
 step "vanda-2node runs and then drops out of the PBS history" env FAKE_FORGET=1 FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-2node
 step "poll: qstat no longer knows the job; the job's own start/end record is used" cluster/ops/poll.sh vanda
