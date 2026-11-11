@@ -19,6 +19,11 @@ from run_plan import matches  # noqa: E402
 
 CPU_PLANS = ("vanda", "atlas")  # report preference order for the CPU sections
 GPU_PLAN = "vanda"
+NAMES = {"vanda": "Vanda", "atlas": "Atlas"}
+
+
+class MixedBuild(Exception):
+    """A speedup or efficiency series whose runs come from more than one binary."""
 
 
 def sha256(path):
@@ -106,6 +111,17 @@ class ClusterData:
         rs = self.cell_rows.get(cid)
         return rs[0] if rs else None
 
+    def max_cores(self, group):
+        cs = [self.plan["cells"][c] for c in self.group_cells(group)]
+        return max([c["ranks"] * c["threads"] for c in cs] or [0])
+
+    def check_same_build(self, cids, label):
+        """Every speedup/efficiency uses a 1-core baseline from the same cluster AND build: refuse a mixed series."""
+        shas = sorted(set(r["binary_sha256"] for c in cids for r in self.cell_rows.get(c, [])))
+        if len(shas) > 1:
+            raise MixedBuild("%s on %s mixes binaries %s: rerun the series with one binary" %
+                             (label, self.cluster, ", ".join(s[:12] for s in shas)))
+
     def used_rows(self, cids):
         return [r for c in cids for r in self.cell_rows.get(c, [])]
 
@@ -117,17 +133,32 @@ class ClusterData:
                  "rows_used": sum(1 for r in used if r["_file"] == p)} for p in files]
 
 
+_CACHE = {}
+
+
+def data(results, name):
+    key = (os.path.abspath(results), name)
+    if key not in _CACHE:
+        _CACHE[key] = ClusterData(results, name)
+    return _CACHE[key]
+
+
+def choose(results, groups):
+    """The cluster whose runs a figure/table/section uses, per group of cells: the first of CPU_PLANS (Vanda first)
+    that has every planned run of these groups; otherwise the one with the most of them filled (Vanda on a tie).
+    One section never mixes clusters, so no speedup curve does either."""
+    cands = [data(results, n) for n in CPU_PLANS]
+    for d in cands:
+        if all(g in d.plan["groups"] for g in groups) and d.complete(*groups):
+            return d
+    score = lambda d: (sum(d.group_status(g)[0] for g in groups if g in d.plan["groups"]), d is cands[0])  # noqa
+    return max(cands, key=score)
+
+
 def cpu_data(results):
-    """The CPU plan the report uses: the one with the most graded cells filled (Vanda first on a tie), so a
-    complete Atlas fallback wins over a Vanda run cut short by downtime. Figures never mix clusters."""
-    best = None
-    for name in CPU_PLANS:
-        d = ClusterData(results, name)
-        filled = len(d.cell_rows)
-        if best is None or filled > best[0]:
-            best = (filled, d)
-    return best[1]
+    """Kept for callers that want one CPU cluster: the choice for strong and weak scaling."""
+    return choose(results, ["strong", "weak"])
 
 
 def gpu_data(results):
-    return ClusterData(results, GPU_PLAN)
+    return data(results, GPU_PLAN)

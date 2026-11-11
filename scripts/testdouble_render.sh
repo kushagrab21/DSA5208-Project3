@@ -11,7 +11,8 @@ import os, sys
 sys.path.insert(0, "scripts"); sys.path.insert(0, "checks")
 import figures as F
 out = sys.argv[1]
-F.fabricate(os.path.join(out, "results"))
+for plan in (os.environ.get("P3_TD_PLANS") or "vanda").split(","):  # e.g. P3_TD_PLANS=atlas: Vanda never arrives
+    F.fabricate(os.path.join(out, "results"), plan)
 for line in F.build(os.path.join(out, "results"), os.path.join(out, "figures"), stamp_text="TEST DOUBLE"):
     print(line)
 PY

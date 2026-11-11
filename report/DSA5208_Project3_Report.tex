@@ -68,9 +68,10 @@ shows that the error falls as $h^2$ and that every parallel configuration reprod
 and it refuses two deliberately broken versions of the boundary exchange. On \val{cl.name}, with the problem fixed
 and the cores increased to \val{topcores}, classic CG keeps a \term{parallel efficiency} (how close the run
 comes to being $P$ times as fast on $P$ cores) of \val{st.3.classic.Etop} in 3D and \val{st.2.classic.Etop} in 2D; with the work per core fixed,
-it keeps \val{wk.3.classic.Etop} (3D) and \val{wk.2.classic.Etop} (2D) of the one-core speed. At \val{topcores}
+it keeps \val{wk.3.classic.Etop} (3D) and \val{wk.2.classic.Etop} (2D) of the one-core speed.\val{scale.note} At \val{topcores}
 cores, exchanging boundary values takes \val{cm.3.halo} and global sums \val{cm.3.red} of the 3D run time. One GPU
-runs the 3D problem \val{gpu.3.vsnode} times as fast as the best layout on one \val{cpn}-core node.
+runs the 3D problem \val{gpu.3.vsnode} times as fast as the best layout on one \val{lay.cpn}-core node of
+\val{cl.layout}.
 
 % ======================================================================================================
 \section{The algorithm}\label{sec:algorithm}
@@ -174,16 +175,15 @@ edges or corners, so a rank sends at most two messages per split direction.
 The choice of split decides how much each rank sends. A slab of the 3D grid exchanges two full planes whatever the
 number of ranks, while a block's faces shrink as the number of ranks grows. Table~\ref{tab:geometry} works this out
 for the strong-scaling grids. At \val{topcores} ranks a slab of the 3D grid is only \val{slab.thick} planes thick on
-average, the thickest slabs are two planes, and such a rank exchanges as many values as it owns
-(\val{geo.3d.slab.ratio}); with blocks the halo is \val{geo.3d.cube.ratio} of the points, at the price of six
-messages instead of two. We kept all three splits, so the measured times can show where fewer, larger messages beat
+average and at most \val{slab.max}, so its halo is \val{geo.3d.slab.ratio} of the points it owns; with blocks the
+halo is \val{geo.3d.cube.ratio} of the points, at the price of six messages instead of two. We kept all three splits, so the measured times can show where fewer, larger messages beat
 more, smaller ones.
 
 \begin{table}[H]\centering\footnotesize
 \input{generated/tab_geometry.tex}
 \caption{Halo per rank and exchange for the strong-scaling grids (2D $n=\val{strong.n2}$, 3D $n=\val{strong.n3}$),
-computed from the geometry for an interior rank with the largest box. Splitting the 3D grid into slabs makes the
-halo as large as the box at \val{topcores} ranks; blocks cut it to about a tenth. \src{scripts/report\_macros.py}}
+computed from the geometry for an interior rank with the largest box. At \val{topcores} ranks the halo of a 3D slab
+is \val{geo.3d.slab.ratio} of its points and that of a 3D block \val{geo.3d.cube.ratio}. \src{scripts/report\_macros.py}}
 \label{tab:geometry}
 \end{table}
 
@@ -279,8 +279,9 @@ advance in a run plan (Table~\ref{tab:plan}), and a run outside the plan needs a
 
 \begin{table}[H]\centering\small
 \input{generated/tab_plan.tex}
-\caption{The planned runs on \val{cl.name}: \val{plan.cells} distinct runs, each solved \val{repeats} times,
-in \val{plan.jobs} batch jobs, on up to \val{topcores} cores. \src{config/run\_plan.vanda.json}}\label{tab:plan}
+\caption{The planned runs: \val{plan.vanda.cells} on Vanda and \val{plan.atlas.cells} on Atlas, a fallback that
+allows at most \val{atlas.topcores} cores per job and per user, each solved \val{repeats} times. Every speedup uses
+the one-core run of the same cluster and program file. \src{config/run\_plan.vanda.json, run\_plan.atlas.json}}\label{tab:plan}
 \end{table}
 
 % ======================================================================================================
@@ -290,7 +291,7 @@ We kept the validation to \val{val.ncases} named cases (Table~\ref{tab:cases}), 
 each tests a different way the program could be wrong: the discretisation, the parallel bookkeeping, or the second
 CG variant. The checking program runs them together, and its verdict on a program file decides whether that file may
 be used for timing. The results below were obtained on \val{val.where} (run \val{val.stamp}, program
-\code{\val{val.sha}}). The program file used for the timed runs on \val{cl.name} (\code{\val{val.cl.sha}}) passed the
+\code{\val{val.sha}}). The program file used for the timed runs on \val{cl.used} (\code{\val{val.cl.sha}}) passed the
 same cases on that cluster before any timed run started.
 
 \begin{table}[H]\centering\small
@@ -363,10 +364,10 @@ for. This
 pipelined CG.
 
 % ======================================================================================================
-\section{\texorpdfstring{Runs on \val{cl.name}}{Runs on the cluster}}\label{sec:env}
+\section{Where the runs were made}\label{sec:env}
 \req{E10}
-All timed runs were made on \val{cl.name} as batch jobs with whole nodes reserved, so that no other job shared a
-node's memory bandwidth or network links during a measurement (Table~\ref{tab:env}). The program was compiled on a
+All timed runs were made on \val{cl.used}. Parallel runs were batch jobs with whole nodes reserved, so that no other
+job shared a node's memory bandwidth or network links during a measurement (Table~\ref{tab:env}).\val{env.serialnote} The program was compiled on a
 compute node of the same type. The local laptop was used only to develop the program and to run the validation
 during development; none of its timings appear in this report.
 
@@ -379,7 +380,7 @@ during development; none of its timings appear in this report.
 % ======================================================================================================
 \section{Serial runtime and problem size}\label{sec:serial}
 \req{E2}\req{E14}
-The serial runs vary the matrix dimension and the number of nonzeros together: 2D grids with
+The serial runs, made on \val{cl.serial}, vary the matrix dimension and the number of nonzeros together: 2D grids with
 $n=\val{serial.list2}$ and 3D grids with $n=\val{serial.list3}$, from \val{serial.Nmin} to \val{serial.Nmax}
 unknowns. The 3D sizes were chosen so that each has about as many unknowns as a 2D size; at the same matrix dimension
 the 3D matrix has seven nonzeros per row against five, so the pair separates the effect of the dimension from that
@@ -389,12 +390,12 @@ grids one iteration costs \val{ser.ns2}\,ns per unknown in 2D and \val{ser.ns3}\
 \val{ser.nsnnz3}\,ns per nonzero (Table~\ref{tab:serial}).
 
 \figslot{fig_serial}{0.98\linewidth}{Serial time for \val{iters} iterations against the matrix dimension (left) and
-the number of nonzeros (right), one core. A slope of one means constant cost per unknown; the fitted slopes are
+the number of nonzeros (right), one core of \val{cl.serial}. A slope of one means constant cost per unknown; the fitted slopes are
 \val{ser.slope2} (2D) and \val{ser.slope3} (3D). \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\small
 \input{generated/tab_serial.tex}
-\caption{Serial runs: median time for \val{iters} iterations, and the cost per unknown and per nonzero per
+\caption{Serial runs on \val{cl.serial}: median time for \val{iters} iterations, and the cost per unknown and per nonzero per
 iteration. \src{scripts/report\_macros.py}}\label{tab:serial}
 \end{table}
 
@@ -403,7 +404,7 @@ The time to a fixed tolerance (\val{serialtol.tol}) grows faster, because the it
 \val{ser.itslope3} in 3D, against one predicted by $\sqrt{\kappa}\propto n$.
 
 \figslot{fig_serial_tol}{0.98\linewidth}{Iterations to a relative residual of \val{serialtol.tol} against $n$
-(left) and the serial time to reach it against $N$ (right). The fitted exponent of iterations against $n+1$ is
+(left) and the serial time to reach it against $N$ (right), on \val{cl.serialtol}. The fitted exponent of iterations against $n+1$ is
 \val{ser.itslope2} (2D) and \val{ser.itslope3} (3D). \src{scripts/figures.py}}
 
 \interpslot{serial}{Say whether the cost per unknown stays constant from the smallest to the largest grid, and
@@ -416,20 +417,20 @@ per unknown with the ratio of nonzeros (seven against five) and of memory traffi
 \term{Strong scaling} keeps the problem fixed and adds cores; \term{weak scaling} grows the problem with the cores so
 that each core keeps the same amount of work. With $T(P)$ the time on $P$ cores, the \term{speedup} is
 $S=T(1)/T(P)$ and the parallel efficiency is $E=S/P$ for strong scaling and $E=T(1)/T(P)$ for weak scaling;
-$E=1$ is perfect. Each series is measured against the one-core run of the same variant. All runs in this section
-use one thread per rank.
+$E=1$ is perfect. Each series is measured against the one-core run of the same variant, cluster and program file.
+All runs in this section were made on \val{cl.strong}, \val{scale.where}, with one thread per rank.\val{scale.note}
 
 \subsection{Strong scaling}
 The strong-scaling grids have \val{strong.N2} unknowns in 2D ($n=\val{strong.n2}$) and \val{strong.N3} in 3D
 ($n=\val{strong.n3}$): the same work, so 2D and 3D differ only in the stencil and in how much halo each rank has.
 They fit in one node's memory (at most \val{strong.mem3}\,GB for pipelined CG), and \val{iters} iterations of
-classic CG take \val{st.2.classic.T1}\,s (2D) and \val{st.3.classic.T1}\,s (3D) on one core. Ranks are \val{rankcounts}, up to \val{topnodes} nodes of \val{cpn} cores.
+classic CG take \val{st.2.classic.T1}\,s (2D) and \val{st.3.classic.T1}\,s (3D) on one core. Ranks are \val{rankcounts}.
 With classic CG, the efficiency at \val{topcores} cores is \val{st.2.classic.Etop} in 2D and
 \val{st.3.classic.Etop} in 3D (speedups \val{st.2.classic.Stop} and \val{st.3.classic.Stop}); on one full node it
 is \val{st.2.classic.Enode} and \val{st.3.classic.Enode}. With pipelined CG and overlapped halos the efficiency at
 \val{topcores} cores is \val{st.2.pipelined.Etop} (2D) and \val{st.3.pipelined.Etop} (3D).
 
-\figslot{fig_strong}{0.98\linewidth}{Strong scaling: time for \val{iters} iterations on the fixed grids, against
+\figslot{fig_strong}{0.98\linewidth}{Strong scaling on \val{cl.strong}: time for \val{iters} iterations on the fixed grids, against
 cores. The dotted line is perfect scaling from the classic one-core time. At \val{topcores} cores the classic speedup is
 \val{st.2.classic.Stop} (2D) and \val{st.3.classic.Stop} (3D), against \val{topcores} for perfect scaling.
 \src{scripts/figures.py}}
@@ -437,7 +438,7 @@ cores. The dotted line is perfect scaling from the classic one-core time. At \va
 \begin{table}[H]\centering\small
 \input{generated/tab_strong2.tex}\\[4pt]
 \input{generated/tab_strong3.tex}
-\caption{Strong scaling, 2D (top) and 3D (bottom): median time $T$ for \val{iters} iterations, speedup $S$ and
+\caption{Strong scaling on \val{cl.strong}, 2D (top) and 3D (bottom): median time $T$ for \val{iters} iterations, speedup $S$ and
 efficiency $E$. \src{scripts/report\_macros.py}}\label{tab:strong}
 \end{table}
 
@@ -449,20 +450,20 @@ fixed tolerance the iteration count would grow with $n$ as well (Section~\ref{se
 efficiency at \val{topcores} cores is \val{wk.2.classic.Etop} (2D) and \val{wk.3.classic.Etop} (3D), and on one full
 node \val{wk.2.classic.Enode} and \val{wk.3.classic.Enode}.
 
-\figslot{fig_weak}{0.98\linewidth}{Weak scaling: time for \val{iters} iterations with the work per core held fixed.
+\figslot{fig_weak}{0.98\linewidth}{Weak scaling on \val{cl.strong}: time for \val{iters} iterations with the work per core held fixed.
 A flat line is perfect; the efficiency at \val{topcores} cores is \val{wk.2.classic.Etop} (2D) and
 \val{wk.3.classic.Etop} (3D) for classic CG. \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\small
 \input{generated/tab_weak2.tex}\\[4pt]
 \input{generated/tab_weak3.tex}
-\caption{Weak scaling, 2D (top) and 3D (bottom): median time for \val{iters} iterations and efficiency.
+\caption{Weak scaling on \val{cl.strong}, 2D (top) and 3D (bottom): median time for \val{iters} iterations and efficiency.
 \src{scripts/report\_macros.py}}\label{tab:weak}
 \end{table}
 
 \figslot{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments, all four
-series; the dotted line is perfect efficiency. Points up to \val{cpn} cores are inside one node; beyond that, ranks
-on different nodes communicate over the network. \src{scripts/figures.py}}
+series, on \val{cl.strong}; the dotted line is perfect efficiency. Points up to \val{cpn} cores are inside one
+node\val{scale.beyond}. \src{scripts/figures.py}}
 
 \subsection{The cost of communication}
 Figure~\ref{fig:fig_comm} splits the classic strong-scaling runs into computation, halo exchange and global sums per
@@ -471,13 +472,13 @@ the 2D one, and the global sums take \val{cm.3.red} and \val{cm.2.red}. Table~\r
 one node and at \val{topcores} cores, with the number of messages and halo values per exchange.
 
 \figslot{fig_comm}{0.98\linewidth}{Time per iteration in computation, halo exchange and global sums, mean over
-ranks, classic CG with blocking halos; at one rank there is no halo exchange or global sum to time. At
+ranks, classic CG with blocking halos, on \val{cl.strong}; at one rank there is no halo exchange or global sum to time. At
 \val{topcores} cores the halo exchange takes \val{cm.3.halo} (3D) and \val{cm.2.halo} (2D) of the run time.
 \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\footnotesize
 \input{generated/tab_comm.tex}
-\caption{Time per iteration (ms) by part, classic CG with blocking halos, at one node and at \val{topcores} cores;
+\caption{Time per iteration (ms) by part on \val{cl.strong}, classic CG with blocking halos, at one node and at \val{topcores} cores;
 messages and halo values per exchange for the rank with the most. \src{scripts/report\_macros.py}}\label{tab:comm}
 \end{table}
 
@@ -491,7 +492,7 @@ takes \val{var.3.top.spread} times as long; in 2D the fastest is the \val{var.2.
 \begin{table}[H]\centering\footnotesize
 \input{generated/tab_variants.tex}
 \caption{Time per iteration (ms) for every combination of split, CG variant and halo exchange, at
-\val{plan.variantsP} cores. \src{scripts/report\_macros.py}}\label{tab:variants}
+\val{plan.variantsP} cores on \val{cl.variants}. \src{scripts/report\_macros.py}}\label{tab:variants}
 \end{table}
 
 \interpslot{mpi}{Explain the efficiency loss inside one node (memory bandwidth shared by the cores) and across nodes
@@ -503,21 +504,21 @@ overtook classic CG, if it did, and why it costs more per iteration on one node;
 % ======================================================================================================
 \section{MPI with OpenMP threads, and the GPU}\label{sec:mpix}
 \req{E6}\req{E7}
-On a \val{cpn}-core node the same cores can be used as many ranks with one thread each or as fewer ranks with
-several threads. We timed \val{plan.layouts} ranks $\times$ threads per node, on one node and on \val{topnodes}
-nodes, with the strong-scaling grids. Fewer ranks mean fewer and larger messages and a shallower global sum, but
+On a \val{lay.cpn}-core node of \val{cl.layout} the same cores can be used as many ranks with one thread each or as
+fewer ranks with several threads. We timed \val{plan.layouts} ranks $\times$ threads per node, on \val{lay.nodes},
+with the strong-scaling grids. Fewer ranks mean fewer and larger messages and a shallower global sum, but
 threads pay for starting and joining every parallel loop and for memory placement across sockets. On one node the
-fastest layout is \val{lay.3.1.best} in 3D and \val{lay.2.1.best} in 2D, and on \val{topnodes} nodes
-\val{lay.3.top.best} and \val{lay.2.top.best}. On \val{topnodes} nodes the slowest 3D layout takes
-\val{lay.3.top.spread} times as long as the fastest, and the slowest 2D layout \val{lay.2.top.spread} times.
+fastest layout is \val{lay.3.1.best} in 3D and \val{lay.2.1.best} in 2D\val{lay.top.sent}. On
+\val{lay.topnodes.phrase} the slowest 3D layout takes \val{lay.3.top.spread} times as long as the fastest, and the
+slowest 2D layout \val{lay.2.top.spread} times.
 
 \figslot{fig_layout}{0.98\linewidth}{Time for \val{iters} iterations for each split of a node's \val{cpn} cores into
-ranks and threads, on one node and on \val{topnodes} nodes. The right end of each line is pure MPI.
+ranks and threads, on \val{lay.nodes} of \val{cl.layout}. The right end of each line is pure MPI.
 \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\small
 \input{generated/tab_layout.tex}
-\caption{Median time (s) for \val{iters} iterations by ranks $\times$ threads per node. \src{scripts/report\_macros.py}}
+\caption{Median time (s) for \val{iters} iterations by ranks $\times$ threads per node, on \val{cl.layout}. \src{scripts/report\_macros.py}}
 \label{tab:layout}
 \end{table}
 
@@ -550,7 +551,7 @@ halo additionally crosses between device and host.
 Which part needs the most communication depends on the scale. By volume it is the halo exchange: at \val{topcores}
 ranks a 3D block sends \val{geo.3d.cube.halo} values per exchange, while a global sum sends one or two numbers. By
 number of waits it is the global sums: two per iteration in classic CG, each involving every rank. In the measured
-3D runs at \val{topcores} cores the halo took \val{cm.3.halo} and the global sums \val{cm.3.red} of the time.
+3D runs at \val{topcores} cores on \val{cl.strong} the halo took \val{cm.3.halo} and the global sums \val{cm.3.red} of the time.
 
 \interpslot{discussion}{State the conclusions: which split, halo exchange, CG variant and rank-thread layout we would
 use at which scale, and what limited scaling in our runs; keep to what the tables show.}

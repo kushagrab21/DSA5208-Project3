@@ -288,6 +288,13 @@ def run(tex_path, no_pdf=False, quiet=False):
         v = status["tables"][t]
         if not v["filled"]:
             wait(v["reqs"], "cluster data: " + v["waiting_for"])
+    notmet = {}  # E row -> reason (the runs exist but do not meet the requirement, e.g. Atlas's 96 cores for E3/E4)
+    for rid, v in status.get("requirements", {}).items():
+        if not v.get("filled"):
+            if v.get("kind") == "not_met":
+                notmet[rid] = v["waiting_for"]
+            else:
+                wait([rid], "cluster data: " + (v.get("waiting_for") or "runs missing"))
     fig_bad = []
     validated = []
     vpath = os.path.join(status.get("results", os.path.join(REPO, "results")), "validated_binaries.csv")
@@ -384,6 +391,10 @@ def run(tex_path, no_pdf=False, quiet=False):
         elif rid in rowprob:
             state = "REFUSED: " + "; ".join(rowprob[rid])
             unfilled.append(rid)
+        elif rid in notmet:
+            state = "NOT MET: " + notmet[rid] + (("; also " + "; ".join(sorted(waiting[rid])))
+                                                  if rid in waiting else "")
+            unfilled.append(rid)
         elif rid not in rowmap:
             state = "UNMAPPED"
             unfilled.append(rid)
@@ -406,6 +417,9 @@ def run(tex_path, no_pdf=False, quiet=False):
         verdict = "PASS"
     for p in problems:
         say("  PROBLEM: %s" % p)
+    if notmet:
+        say("  E rows NOT MET by the runs available: %s (%s)" % (", ".join(sorted(notmet)),
+                                                            "; ".join(sorted(set(notmet.values())))))
     waiting_rows = [r for r in unfilled if any(w.startswith("cluster data") for w in waiting.get(r, ()))]
     say("  E rows waiting for cluster data: %s" % (", ".join(waiting_rows) or "none"))
     interp_rows = [r for r in unfilled if any(w.startswith("interpretation") for w in waiting.get(r, ()))]
@@ -413,7 +427,7 @@ def run(tex_path, no_pdf=False, quiet=False):
     say("REQUIREMENTS: %s" % verdict)
     say("  qualification: refuses broken copies (--selftest); pass example: none yet - it will be the first full "
         "render the user accepts")
-    return verdict, problems, unfilled, waiting
+    return verdict, problems, unfilled, waiting, notmet
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -437,7 +451,7 @@ def selftest():
         def attempt(label, expect, tex_text=None, fig_patch=None):
             if tex_text is not None:
                 open(texp, "w").write(tex_text)
-            v, probs, unfilled, waiting = run(texp, no_pdf=True, quiet=True)
+            v, probs, unfilled, waiting, _nm = run(texp, no_pdf=True, quiet=True)
             open(texp, "w").write(base)
             ok = expect(v, probs, unfilled, waiting)
             results.append((label, v, probs, ok))
@@ -474,7 +488,71 @@ def selftest():
             f.write(content.replace("TEST-DOUBLE", "TEST-DOUBLX", 1))
         attempt("a source CSV edited after the figures were drawn",
                 lambda v, p, u, w: any("changed or missing" in x for x in p))
-        # 5) the real (unfilled) report must list cluster-data rows, not pass
+    # 6-8) which cluster each section uses, and the >=256-core rule (fabricated rows, scratch directories)
+    def scenario(label, setup, expect):
+        with tempfile.TemporaryDirectory(prefix="p3req_") as td:
+            res, figs, rep = os.path.join(td, "results"), os.path.join(td, "figures"), os.path.join(td, "report")
+            setup(res)
+            F.RD._CACHE.clear()
+            F.build(res, figs, stamp_text="TEST DOUBLE")
+            shutil.copytree(os.path.join(REPO, "report"), rep, ignore=shutil.ignore_patterns("*.pdf", "generated"))
+            subprocess.run([sys.executable, os.path.join(REPO, "scripts", "report_macros.py"), "--results", res,
+                            "--figures", figs, "--out", os.path.join(rep, "generated")], stdout=subprocess.PIPE,
+                           check=True)
+            vals = open(os.path.join(rep, "generated", "values.tex")).read()
+            metas = dict((n, json.load(open(os.path.join(figs, n + ".meta.json")))) for n in F.FIGURES)
+            v, probs, unfilled, waiting, notmet = run(os.path.join(rep, "DSA5208_Project3_Report.tex"), no_pdf=True,
+                                                      quiet=True)
+            ok, detail = expect(vals, metas, probs, waiting, notmet)
+            results.append((label, v, [detail], ok))
+
+    def val(vals, k):
+        m = re.search(r"\\setval\{%s\}\{(.*)\}" % re.escape(k), vals)
+        return m.group(1) if m else None
+
+    def only_atlas(res):
+        F.fabricate(res, "atlas")
+
+    def exp_atlas(vals, metas, probs, waiting, notmet):
+        ok = ("E3" in notmet and "E4" in notmet and "96 cores" in notmet["E3"] and not probs and
+              val(vals, "cl.strong") == "Atlas" and val(vals, "cl.serial") == "Atlas" and
+              all(metas[n]["cluster"] == "atlas" and metas[n]["status"] == "filled" for n in metas) and
+              any("gpu" in w for w in waiting.get("E7", ())) and "not met" in (val(vals, "scale.note") or ""))
+        return ok, "E3: %s; E7 waits for the Vanda GPU job; every figure from Atlas" % notmet.get("E3", "FILLED?")
+    scenario("only Atlas (Vanda never arrives)", only_atlas, exp_atlas)
+
+    def mixed(res):
+        F.fabricate(res, "vanda", jobs=["vanda-serial", "vanda-calibrate"])
+        F.fabricate(res, "atlas")
+
+    def exp_mixed(vals, metas, probs, waiting, notmet):
+        ok = (val(vals, "cl.serial") == "Vanda" and val(vals, "cl.strong") == "Atlas" and
+              metas["fig_serial"]["cluster"] == "vanda" and metas["fig_strong"]["cluster"] == "atlas" and
+              "E3" in notmet)
+        return ok, "E2 from %s, E3/E4 from %s (captions say so)" % (val(vals, "cl.serial"), val(vals, "cl.strong"))
+    scenario("Vanda serial sweep + Atlas scaling", mixed, exp_mixed)
+
+    def mixed_build(res):
+        F.fabricate(res, "atlas")
+        import p3common as PC
+        other = "e1" * 32
+        PC.append_csv(os.path.join(res, "validated_binaries.csv"), PC.VALIDATED_COLUMNS, {
+            "utc": "TESTDOUBLE2", "cluster": "atlas", "host": "TEST-DOUBLE", "binary_sha256": other, "binary": "x",
+            "build": "x", "validate_sha256": "-", "cases": "-", "bug_binaries_refused": "-", "verdict": "QUALIFIED"})
+        for p in glob.glob(os.path.join(res, "atlas", "*.csv")):
+            t = open(p).read()
+            if "3d-n406-r48x1-N1-d3-clas-bloc-i100" in t:
+                lines = t.splitlines(True)
+                lines = [l.replace(F.FAKE_SHA, other) if "3d-n406-r48x1-N1-d3-clas-bloc-i100" in l else l
+                         for l in lines]
+                open(p, "w").write("".join(lines))
+
+    def exp_mixed_build(vals, metas, probs, waiting, notmet):
+        m = metas["fig_strong"]
+        ok = m["status"] == "unfilled" and any("mixes binaries" in w for w in m["waiting_for"])
+        return ok, (m.get("waiting_for") or ["filled?"])[0][:110]
+    scenario("one strong-scaling run from another binary", mixed_build, exp_mixed_build)
+
     real = run(DEFAULT_TEX, no_pdf=True, quiet=True)
     results.append(("the real report today (no cluster rows)", real[0], real[1],
                     real[0] != "PASS" and any(any(x.startswith("cluster data") for x in real[3].get(r, ()))

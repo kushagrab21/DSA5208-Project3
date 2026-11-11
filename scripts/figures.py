@@ -166,7 +166,9 @@ def _scaling(D, group, ideal):
         for (cg, halo), (color, lab) in VARIANT.items():
             pts = sorted((c["ranks"] * c["threads"], D.med(cid), c["n"]) for cid, c in
                          D.cells(group, dim=d, cg=cg, halo=halo))
-            used += [cid for cid, c in D.cells(group, dim=d, cg=cg, halo=halo)]
+            series = [cid for cid, c in D.cells(group, dim=d, cg=cg, halo=halo)]
+            D.check_same_build(series, "%s %dD %s/%s" % (group, d, cg, halo))
+            used += series
             xs, ys = [p[0] for p in pts], [p[1] for p in pts]
             ticks += xs
             ax.plot(xs, ys, color=color, marker="o", ms=4.5, lw=1.8, mec=SURFACE, mew=1, label=lab)
@@ -207,6 +209,7 @@ def fig_efficiency(D):
             ls, mk, dlab = DIMSTYLE[d]
             for (cg, halo), (color, vlab) in VARIANT.items():
                 cs = D.cells(group, dim=d, cg=cg, halo=halo)
+                D.check_same_build([cid for cid, c in cs], "%s %dD %s/%s" % (group, d, cg, halo))
                 used += [cid for cid, c in cs]
                 pts = sorted((c["ranks"] * c["threads"], D.med(cid)) for cid, c in cs)
                 t1 = pts[0][1]
@@ -235,6 +238,7 @@ def fig_comm(D):
     used, meta, ticks = [], [], []
     for ax, d in zip(axes, (2, 3)):
         cs = sorted(D.cells("strong", dim=d, cg="classic", halo="blocking"), key=lambda t: t[1]["ranks"])
+        D.check_same_build([cid for cid, c in cs], "strong %dD classic/blocking" % d)
         used += [cid for cid, c in cs]
         xs = [c["ranks"] for cid, c in cs]
         ticks += xs
@@ -292,22 +296,28 @@ def fig_layout(D):
 def build(results, out, names=None, stamp_text=None):
     style()
     os.makedirs(out, exist_ok=True)
-    D = RD.cpu_data(results)
     report = []
     for name, (fn, groups, gpu) in FIGURES.items():
         if names and name not in names:
             continue
+        D = RD.choose(results, groups)
         pdf, metap = os.path.join(out, name + ".pdf"), os.path.join(out, name + ".meta.json")
         meta = {"figure": name, "script": "scripts/figures.py", "script_sha256": RD.sha256(os.path.abspath(__file__)),
                 "plan": D.plan["plan"], "cluster": D.cluster, "groups": groups,
                 "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
-        if not D.complete(*groups):
-            meta.update({"status": "unfilled", "waiting_for": D.waiting(*groups)})
+        mixed = None
+        if D.complete(*groups):
+            try:
+                fig, axes, used = fn(D)
+            except RD.MixedBuild as e:
+                mixed = str(e)
+                plt.close("all")
+        if not D.complete(*groups) or mixed:
+            meta.update({"status": "unfilled", "waiting_for": [mixed] if mixed else D.waiting(*groups)})
             if os.path.exists(pdf):
                 os.remove(pdf)
             report.append("%-16s UNFILLED  waiting for %s" % (name, "; ".join(meta["waiting_for"])))
         else:
-            fig, axes, used = fn(D)
             if stamp_text:
                 fig.text(0.5, 0.5, stamp_text, fontsize=26, color="#b3261e", alpha=0.25, ha="center", va="center",
                          rotation=20)
@@ -375,14 +385,18 @@ def fake_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
     return out
 
 
-def fabricate(results, plan_name="vanda"):
-    """Writes TEST-DOUBLE rows for every cell of a plan, shaped like real records, plus a validated list."""
+def fabricate(results, plan_name="vanda", jobs=None):
+    """Writes TEST-DOUBLE rows for every cell of a plan (or of the named jobs), shaped like real records, plus a
+    validated list."""
     import p3common as C
     plan = RD.load_plan(plan_name)
     for jobi, job in enumerate(plan["jobs"]):
+        if jobs is not None and job["id"] not in jobs:
+            continue
         path = os.path.join(results, plan["cluster"], "TESTDOUBLE.%d.csv" % jobi)
         for cid in job["cells"]:
-            for row in fake_rows(plan, cid, "TESTDOUBLE.%d" % jobi, "2026-11-13T0%d:00:00Z" % (jobi % 10), FAKE_SHA):
+            for row in fake_rows(plan, cid, "TESTDOUBLE.%s.%d" % (plan_name, jobi), "2026-11-13T0%d:00:00Z" %
+                                 (jobi % 10), FAKE_SHA):
                 C.append_csv(path, C.RECORD_COLUMNS, row)
     envd = os.path.join(results, plan["cluster"], "env")
     os.makedirs(envd, exist_ok=True)
