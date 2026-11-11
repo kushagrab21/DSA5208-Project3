@@ -359,6 +359,7 @@ def run(tex_path, no_pdf=False, quiet=False):
     if not no_pdf:
         pdf = os.path.splitext(tex_path)[0] + ".pdf"
         srcs = [tex_path] + glob.glob(os.path.join(gen, "*")) + \
+            [os.path.join(REPO, f) for f in status.get("appendix_files", [])] + \
             [os.path.join(status.get("figures_dir", ""), f + ".pdf") for f in used_figs
              if status["figures"].get(f, {}).get("filled")]
         fresh = os.path.exists(pdf) and all(os.path.getmtime(pdf) >= os.path.getmtime(s) for s in srcs

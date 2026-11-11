@@ -64,5 +64,7 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 4. requirements_check.py must print PASS; the user reads the first full render (that is the pass example).
 
 ## Next step
-Parent: first login checklist (README "Cluster runs"), then vanda-validate job. Child (next turn, if assigned):
-report figure scripts on cluster rows via run_record.figure_rows; requirements_check.py (currently a stub).
+Parent: first-login checklist (README "Cluster runs"), then the vanda-validate job, then the timed jobs.
+Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
+whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
+place; GitHub link optional), first full render acceptance, the Canvas upload.
