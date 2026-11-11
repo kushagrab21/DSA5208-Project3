@@ -29,6 +29,17 @@ case "$(command -v mpicxx)" in
     return 1 2>/dev/null || exit 1;;
 esac
 
+# Atlas compute nodes (cnode-*) carry an older Amazon EFA libfabric (/opt/amazon/efa/lib64) that was found before the
+# toolchain's libfabric: atlas-validate 1040044.venus01 (12 Nov) failed with "libfabric.so.1: version `FABRIC_1.7' not
+# found (required by .../OpenMPI/5.0.8-GCC-14.3.0/lib/libmpi.so.40)". Keep the EFA directory out of the search path and
+# put the toolchain's libfabric first; print what the dynamic loader will use, for the job log.
+if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
+  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
+  for d in "$EBROOTLIBFABRIC/lib64" "$EBROOTLIBFABRIC/lib"; do [[ -d "$d" ]] && LD_LIBRARY_PATH="$d:$LD_LIBRARY_PATH"; done
+  export LD_LIBRARY_PATH
+fi
+echo "p3 env (atlas): libfabric search: $(printf '%s' "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -n -E 'fabric|efa' | head -3 | tr '\n' ' '); ld.so.conf efa: $(grep -l efa /etc/ld.so.conf.d/* 2>/dev/null | tr '\n' ' ')" >&2
+
 # Compute nodes have no system python3 (atlas-validate 1040043.venus01, 12 Nov: "python3: command not found");
 # the checks run inside jobs, so a Python module built on the same GCCcore as foss is loaded above.
 if ! command -v python3 >/dev/null 2>&1; then

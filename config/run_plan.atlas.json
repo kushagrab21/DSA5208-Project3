@@ -2217,6 +2217,10 @@
   {
    "job": "atlas-validate",
    "reason": "1040043.venus01 exited 127 after 11 s: python3 not on compute nodes; env.sh now loads Python/3.13.5-GCCcore-14.3.0 (12 Nov)"
+  },
+  {
+   "job": "atlas-validate",
+   "reason": "1040044.venus01 exit 2: binary could not load (old /opt/amazon/efa libfabric found before the toolchain's; FABRIC_1.7 missing); env.sh now strips the EFA dir and prepends EBROOTLIBFABRIC (12 Nov)"
   }
  ],
  "fallback": true,
