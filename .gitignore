@@ -1,0 +1,10 @@
+# build outputs
+bin/
+_build/
+__pycache__/
+.venv/
+# generated data: kept on disk, packaging decided at report time (no log files or terminal output in the submission)
+results/
+cluster/generated/
+figures/dev/
+.DS_Store
