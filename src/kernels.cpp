@@ -118,7 +118,7 @@ Box full_box(const Grid& G) {
 // ---------------------------------------------------------------------------------------------------------------
 // Operator
 // ---------------------------------------------------------------------------------------------------------------
-double stencil_box(const Grid& G, const double* x, double* y, const Box& B) {
+double stencil_box(const Grid& G, const double* P3_RESTRICT x, double* P3_RESTRICT y, const Box& B) {
     double d = 0.0;
     if (B.empty()) return d;
     const long S0 = G.S0, S1 = G.S1;
@@ -161,7 +161,7 @@ void vzero(double* x, size_t n) {
 #define P3_ROWS_UNPACK                                                                     \
     const long R0 = R.R0, R1 = R.R1, T0 = R.T0, T1 = R.T1, base = R.base, RL = R.RL;
 
-void vcopy(const Rows& R, const double* src, double* dst) {
+void vcopy(const Rows& R, const double* P3_RESTRICT src, double* P3_RESTRICT dst) {
     P3_ROWS_UNPACK
     P3_FOR3()
     for (long a = 0; a < R0; ++a)
@@ -187,7 +187,8 @@ double vdot(const Rows& R, const double* x, const double* y) {
     return d;
 }
 
-double cg_update_xr(const Rows& R, double* x, double* r, const double* p, const double* q_, double alpha) {
+double cg_update_xr(const Rows& R, double* P3_RESTRICT x, double* P3_RESTRICT r, const double* P3_RESTRICT p,
+                    const double* P3_RESTRICT q_, double alpha) {
     P3_ROWS_UNPACK
     double d = 0.0;
     P3_FOR3(reduction(+ : d))
@@ -204,7 +205,7 @@ double cg_update_xr(const Rows& R, double* x, double* r, const double* p, const 
     return d;
 }
 
-void cg_update_p(const Rows& R, double* p, const double* r, double beta) {
+void cg_update_p(const Rows& R, double* P3_RESTRICT p, const double* P3_RESTRICT r, double beta) {
     P3_ROWS_UNPACK
     P3_FOR3()
     for (long a = 0; a < R0; ++a)
@@ -216,7 +217,8 @@ void cg_update_p(const Rows& R, double* p, const double* r, double beta) {
             }
 }
 
-void pcg_update(const Rows& R, double* x, double* r, double* w, double* p, double* s, double* z, const double* nv,
+void pcg_update(const Rows& R, double* P3_RESTRICT x, double* P3_RESTRICT r, double* P3_RESTRICT w,
+                double* P3_RESTRICT p, double* P3_RESTRICT s, double* P3_RESTRICT z, const double* P3_RESTRICT nv,
                 double alpha, double beta, double& gamma, double& delta) {
     P3_ROWS_UNPACK
     double g = 0.0, dl = 0.0;
@@ -244,7 +246,7 @@ void pcg_update(const Rows& R, double* x, double* r, double* w, double* p, doubl
     delta = dl;
 }
 
-double residual(const Rows& R, const double* bv, const double* y, double* r) {
+double residual(const Rows& R, const double* P3_RESTRICT bv, const double* P3_RESTRICT y, double* P3_RESTRICT r) {
     P3_ROWS_UNPACK
     double d = 0.0;
     P3_FOR3(reduction(+ : d))

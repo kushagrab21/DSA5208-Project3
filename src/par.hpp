@@ -31,6 +31,9 @@
 #  define P3_SIMD(clauses)
 #endif
 
+// The vector kernels never receive overlapping arrays; telling the compiler so lets it vectorise the fused loops.
+#define P3_RESTRICT __restrict__
+
 #ifndef PLANT_HALO_BUG
 #  define PLANT_HALO_BUG 0
 #endif
