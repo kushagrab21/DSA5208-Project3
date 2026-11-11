@@ -42,6 +42,27 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 - Observed on the M5 only: pipelined CG costs 1.9x classic per iteration (traffic model says 1.33x); 8 ranks give
   1.4x (memory bandwidth). Cluster data decide both.
 
+## Turn 2 (11 Nov 2026): report and its checks, built without cluster data
+- report/DSA5208_Project3_Report.tex -> PDF via scripts/make_report.sh (Tectonic). 40 pages: body ~11, code appendix
+  ~29 (src/, CMakeLists.txt, scripts/build.sh, cluster/vanda/env.sh, checks/validate.py, README.md).
+- Every number is \val{} (report/generated/values.tex) or a generated table; cluster-dependent ones render as red
+  "waiting for cluster data" marks; figure slots render as boxes until scripts/figures.py fills them.
+- scripts/figures.py (cluster rows only; meta.json per figure; --selftest PASS on fabricated rows in /tmp).
+- scripts/report_macros.py, scripts/reportdata.py; checks/requirements_check.py full (--selftest QUALIFIED on
+  refusals: hand-typed number, AI section removed, linear core axis, source CSV edited; real report = incomplete).
+- validate.py now also writes results/validation/<cluster>/<stamp>.json (structured numbers) + INFO accuracy floor.
+- run_plan.py job-start writes results/<cluster>/env/<PBS_JOBID>.json (CPU model, memory, modules) for the
+  environment table.
+- scripts/testdouble_render.sh: full report from fabricated rows in /tmp/p3_testdouble (proof of drop-in).
+- Requirements now: E1, E11, E12, E15, E16, E17 filled; E13 printed (TERMS: 29 used, 29 defined, none late);
+  E18 user; waiting for cluster data: E2-E10, E14; interpretation boxes (to write after data): E2-E8.
+
+## What happens when cluster rows arrive (no hand editing except the orange boxes)
+1. results/vanda/*.csv (+ env/*.json, validated_binaries.csv, validation/vanda/*.json) land in results/.
+2. scripts/make_report.sh -> figures fill, values fill, validation tables switch to the Vanda qualification JSON.
+3. Write the interpretation boxes (\interpslot) in the .tex: serial, mpi, mpix, discussion.
+4. requirements_check.py must print PASS; the user reads the first full render (that is the pass example).
+
 ## Next step
 Parent: first login checklist (README "Cluster runs"), then vanda-validate job. Child (next turn, if assigned):
 report figure scripts on cluster rows via run_record.figure_rows; requirements_check.py (currently a stub).

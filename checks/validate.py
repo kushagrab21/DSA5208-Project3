@@ -15,6 +15,7 @@ Standard library only, Python >= 3.6.
 import argparse
 import array
 import datetime
+import json
 import math
 import os
 import subprocess
@@ -105,26 +106,32 @@ def layout(np, threads, decomp, halo, cg="classic"):
 # ------------------------------------------------------------------------------------------------------------------
 # Cases
 # ------------------------------------------------------------------------------------------------------------------
-def case_order(R, dim, ns, out):
+ORDER_SOLVE_TOL = 1e-12
+
+
+def case_order(R, dim, ns, out, log):
     errs, ok = [], True
     for n in ns:
-        row, _ = R.run(dim, n, tol=1e-12, maxit=20000)
+        row, _ = R.run(dim, n, tol=ORDER_SOLVE_TOL, maxit=20000)
         e = float(row["err_max"])
         errs.append(e)
         conv = row["converged"] == "1"
         ok = ok and conv
+        log.append({"kind": "solve", "dim": dim, "n": n, "iters": int(row["iters"]), "converged": conv,
+                    "err_max": e, "err_l2": float(row["err_l2"]), "true_rel_res": float(row["true_rel_res"])})
         out("    n=%-4d h=1/%-4d iters=%-5s converged=%s  max|x - u_exact| = %.4e" %
             (n, n + 1, row["iters"], "yes" if conv else "NO", e))
     for i in range(len(ns) - 1):
         p = math.log(errs[i] / errs[i + 1]) / math.log((ns[i + 1] + 1) / (ns[i] + 1))
         inside = ORDER_BAND[0] <= p <= ORDER_BAND[1]
         ok = ok and inside
+        log.append({"kind": "order", "dim": dim, "n_from": ns[i], "n_to": ns[i + 1], "order": p, "ok": inside})
         out("    observed order h=1/%d -> 1/%d: %.3f  (%s [%.1f, %.1f])" %
             (ns[i] + 1, ns[i + 1] + 1, p, "in" if inside else "OUTSIDE", ORDER_BAND[0], ORDER_BAND[1]))
     return ok
 
 
-def case_agree(R, dim, n, layouts, out):
+def case_agree(R, dim, n, layouts, out, log):
     _, ref = R.run(dim, n, np=1, iters=AGREE_ITERS)
     out("    reference: 1 rank, 1 thread, n=%d, %d iterations" % (n, AGREE_ITERS))
     ok, worst = True, 0.0
@@ -134,12 +141,14 @@ def case_agree(R, dim, n, layouts, out):
         worst = max(worst, d)
         good = d <= AGREE_TOL
         ok = ok and good
+        log.append({"kind": "agree", "dim": dim, "n": n, "ranks": np, "threads": th, "decomp": dc, "halo": halo,
+                    "diff": d, "ok": good})
         out("    %s  ||x_P - x_1||/||x_1|| = %.3e  %s" % (layout(np, th, dc, halo), d, "ok" if good else "TOO LARGE"))
     out("    largest difference %.3e (tolerance %.0e)" % (worst, AGREE_TOL))
     return ok
 
 
-def case_pipelined(R, specs, out):
+def case_pipelined(R, specs, out, log):
     ok = True
     for (dim, n) in specs:
         rs, xs = R.run(dim, n, np=1, tol=PIPE_TOL, maxit=20000)
@@ -158,6 +167,9 @@ def case_pipelined(R, specs, out):
             # Convergence is judged on the true residual too: the recursive one can drift (pipelined CG).
             good = conv and rho_p <= 10 * PIPE_TOL and d <= bound
             ok = ok and good
+            log.append({"kind": "pipelined", "dim": dim, "n": n, "ranks": np, "halo": halo, "cond": kappa,
+                        "iters_classic": int(rs["iters"]), "iters_pipelined": int(rp["iters"]), "rho_s": rho_s,
+                        "rho_p": rho_p, "converged": conv, "diff": d, "bound": bound, "ok": good})
             out("    %dD n=%d pipelined, %d rank%s %-8s iters=%-4s true residual %.2e  diff %.2e <= bound %.2e  %s" %
                 (dim, n, np, "s" if np > 1 else " ", halo, rp["iters"], rho_p, d, bound,
                  "ok" if good else ("NOT CONVERGED" if not conv else "FAILS")))
@@ -166,37 +178,65 @@ def case_pipelined(R, specs, out):
 
 CASES = [
     ("V1", "order-2d", "2D serial solver converges and its error against the exact solution falls as h^2",
-     ORDER_WHY, lambda R, out: case_order(R, 2, [31, 63, 127], out)),
+     ORDER_WHY, lambda R, out, log: case_order(R, 2, [31, 63, 127], out, log)),
     ("V2", "order-3d", "3D serial solver converges and its error against the exact solution falls as h^2",
-     ORDER_WHY, lambda R, out: case_order(R, 3, [15, 31, 63], out)),
+     ORDER_WHY, lambda R, out, log: case_order(R, 3, [15, 31, 63], out, log)),
     ("V3", "agree-2d", "2D parallel runs (1D/2D splits, uneven blocks, both halo variants, threads) equal the "
      "serial run to rounding", AGREE_WHY,
-     lambda R, out: case_agree(R, 2, 50, [(2, 1, 1, "blocking"), (3, 1, 1, "overlap"), (4, 1, 2, "blocking"),
-                                          (6, 1, 2, "overlap"), (2, 2, 2, "overlap")], out)),
+     lambda R, out, log: case_agree(R, 2, 50, [(2, 1, 1, "blocking"), (3, 1, 1, "overlap"),
+                                               (4, 1, 2, "blocking"), (6, 1, 2, "overlap"), (2, 2, 2, "overlap")],
+                                    out, log)),
     ("V4", "agree-3d", "3D parallel runs (1D/2D/3D splits, uneven blocks, both halo variants, threads) equal the "
      "serial run to rounding", AGREE_WHY,
-     lambda R, out: case_agree(R, 3, 21, [(4, 1, 1, "blocking"), (4, 1, 2, "overlap"), (6, 1, 3, "overlap"),
-                                          (8, 1, 3, "blocking"), (8, 1, 3, "overlap"), (2, 2, 3, "blocking")], out)),
+     lambda R, out, log: case_agree(R, 3, 21, [(4, 1, 1, "blocking"), (4, 1, 2, "overlap"),
+                                               (6, 1, 3, "overlap"), (8, 1, 3, "blocking"), (8, 1, 3, "overlap"),
+                                               (2, 2, 3, "blocking")], out, log)),
     ("V5", "pipelined", "pipelined CG (1 and 4 ranks) reaches the same converged answer as classic CG, 2D and 3D",
-     PIPE_WHY, lambda R, out: case_pipelined(R, [(2, 63), (3, 31)], out)),
+     PIPE_WHY, lambda R, out, log: case_pipelined(R, [(2, 63), (3, 31)], out, log)),
 ]
 
+# Not a pass/fail case: how far each CG variant can push the TRUE residual when asked for more than it can deliver.
+FLOOR_TOL, FLOOR_MAXIT, FLOOR_SPEC = 1e-14, 3000, (2, 63, 4)
 
-def run_cases(binary, launcher, record_path, out):
-    """Runs every case on one binary. Returns (passed, failed case ids, number of solver runs)."""
+
+def info_accuracy_floor(R, out):
+    dim, n, np = FLOOR_SPEC
+    res = {"dim": dim, "n": n, "ranks": np, "tol": FLOOR_TOL, "maxit": FLOOR_MAXIT}
+    out("  INFO accuracy floor (not a pass/fail case): %dD n=%d, %d ranks, asked for tol %.0e, at most %d iterations"
+        % (dim, n, np, FLOOR_TOL, FLOOR_MAXIT))
+    for cg, halo in (("classic", "overlap"), ("pipelined", "overlap")):
+        row, _ = R.run(dim, n, np=np, decomp=dim, halo=halo, cg=cg, tol=FLOOR_TOL, maxit=FLOOR_MAXIT)
+        res[cg] = {"iters": int(row["iters"]), "converged": row["converged"] == "1",
+                   "rel_res": float(row["rel_res"]), "true_rel_res": float(row["true_rel_res"])}
+        out("    %-9s iters=%-5s reached=%s  recursive residual %.2e  true residual %.2e" %
+            (cg, row["iters"], "yes" if row["converged"] == "1" else "no", float(row["rel_res"]),
+             float(row["true_rel_res"])))
+    return res
+
+
+def run_cases(binary, launcher, record_path, out, details, info=None):
+    """Runs every case on one binary. Returns (passed, failed case ids, number of solver runs).
+    details: dict filled with case id -> {"ok": bool, "items": [...]}; info: dict filled with the INFO measurement."""
     failed = []
     with tempfile.TemporaryDirectory(prefix="p3val_") as wd:
         R = Runner(binary, launcher, wd, record_path)
         for cid, name, purpose, why, fn in CASES:
             out("  %s %s: %s" % (cid, name, purpose))
+            log = []
             try:
-                ok = fn(R, out)
+                ok = fn(R, out, log)
             except Exception as e:  # a crash or a missing output refuses the binary
                 out("    ERROR: %s" % str(e).splitlines()[0])
                 ok = False
             out("    -> %s" % ("PASS" if ok else "FAIL"))
+            details[cid] = {"name": name, "ok": ok, "items": log}
             if not ok:
                 failed.append(cid)
+        if info is not None and not failed:
+            try:
+                info.update(info_accuracy_floor(R, out))
+            except Exception as e:
+                out("    INFO run failed: %s" % str(e).splitlines()[0])
         return (not failed), failed, R.count
 
 
@@ -240,7 +280,16 @@ def main():
     out("CORRECT BUILD  %s" % binary)
     out("  sha256 %s" % sha)
     out("  build  %s" % ver.get("build"))
-    passed, failed, nruns = run_cases(binary, launcher, tmp_records, out)
+    summary = {"stamp": stamp, "validate_sha256": C.sha256_file(os.path.abspath(__file__)),
+               "launcher": " ".join(launcher),
+               "tolerances": {"order_band": list(ORDER_BAND), "order_solve_tol": ORDER_SOLVE_TOL,
+                              "agree_iters": AGREE_ITERS, "agree_tol": AGREE_TOL, "pipe_tol": PIPE_TOL},
+               "cases": [{"id": c[0], "name": c[1], "purpose": c[2], "why": c[3]} for c in CASES],
+               "correct": {}, "bugs": [], "info": {}}
+    cdet = {}
+    passed, failed, nruns = run_cases(binary, launcher, tmp_records, out, cdet, summary["info"])
+    summary["correct"] = {"binary": binary, "sha256": sha, "build": ver.get("build", ""), "passed": passed,
+                          "failed": failed, "runs": nruns, "details": cdet}
     out("  VERDICT correct build: %s  (%d/%d cases, %d solver runs)" %
         ("PASS" if passed else "REFUSED (failed: %s)" % ", ".join(failed), len(CASES) - len(failed), len(CASES),
          nruns))
@@ -259,7 +308,10 @@ def main():
             out("  this is not a planted-bug build; it cannot qualify the check")
             refused_all = False
             continue
-        bpass, bfailed, bruns = run_cases(bb, launcher, tmp_records, out)
+        bdet = {}
+        bpass, bfailed, bruns = run_cases(bb, launcher, tmp_records, out, bdet)
+        summary["bugs"].append({"binary": bb, "sha256": bsha, "build": bver.get("build", ""), "refused": not bpass,
+                                "refused_by": bfailed, "runs": bruns, "details": bdet})
         if bpass:
             refused_all = False
             out("  VERDICT planted bug: PASSED  <- the check did NOT refuse it")
@@ -296,6 +348,10 @@ def main():
             ("PASS" if passed else "REFUSED"))
     with open(os.path.join(vdir, "%s.txt" % stamp), "w") as f:
         f.write("\n".join(lines) + "\n")
+    summary.update({"cluster": cluster, "host": host, "mode": "qualify" if args.qualify else "development",
+                    "qualified": bool(args.qualify and passed and refused_all)})
+    with open(os.path.join(vdir, "%s.json" % stamp), "w") as f:
+        json.dump(summary, f, indent=1)
     print("output kept in %s" % os.path.relpath(os.path.join(vdir, "%s.txt" % stamp), C.REPO))
     if args.qualify:
         return 0 if (passed and refused_all) else 1

@@ -8,3 +8,9 @@ results/
 cluster/generated/
 figures/dev/
 .DS_Store
+# generated report artefacts (rebuilt by scripts/make_report.sh from results/ and the scripts)
+report/generated/
+report/*.pdf
+report/*.log
+figures/*.pdf
+figures/*.meta.json

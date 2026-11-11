@@ -140,6 +140,34 @@ Each plan writes out its size arithmetic under `"arithmetic"`.
 The first launch of each job prints the process bindings (`--report-bindings`). Check them in the first job's log;
 `p3_launch` in `env.sh` is written for Open MPI / HPC-X.
 
+## The report
+
+```bash
+scripts/make_report.sh        # figures -> generated numbers/tables -> PDF (Tectonic) -> requirements check
+```
+
+- `scripts/figures.py` draws each figure from Atlas/Vanda run records only (through `checks/run_record.py`). It refuses
+  if a local row is among them. It draws a figure only when every planned run behind it is recorded, and writes
+  `figures/<name>.meta.json` with the axis scales, source CSVs, their SHA-256 and the binaries.
+- `scripts/report_macros.py` writes `report/generated/`: `values.tex` (every number in the text), `tab_*.tex`,
+  `slots.tex` and `status.json`. A number or table whose runs are missing renders as a red "waiting for cluster data"
+  mark, so the PDF can be built at any time.
+- `checks/requirements_check.py` maps E1–E18 to report sections and prints which rows are still waiting, and for
+  what. It refuses release when:
+  - a hand-typed number appears in the body;
+  - a filled figure has a linear time, size or core axis, or a changed source;
+  - a log file is in the package;
+  - an author, or the AI-use section, is missing;
+  - the PDF is stale.
+
+  Its `--selftest` shows the refusals on broken copies. The pass example will be the first full render the user
+  accepts.
+- `scripts/testdouble_render.sh` renders the whole report from **fabricated** cluster rows in `/tmp` (stamped TEST
+  DOUBLE). It shows that real rows fill every slot without hand editing; nothing it makes enters `results/`,
+  `figures/` or `report/`.
+- The orange "to write once the cluster runs are in" boxes are the interpretation paragraphs. They are written by
+  hand once the numbers exist; everything else fills automatically.
+
 ## Local development
 
 ```bash

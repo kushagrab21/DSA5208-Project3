@@ -423,8 +423,49 @@ def jobs_event(plan, jid, event):
         "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "nodes": j["nodes"], "ncpus_per_node": j["ncpus_per_node"], "gpus_per_node": j.get("gpus_per_node", 0),
         "host": socket.gethostname()})
+    if event == "start":
+        write_job_env(plan, jid)
     print("RUN PLAN: job %s %s recorded" % (jid, event))
     return 0
+
+
+def write_job_env(plan, jid):
+    """The machine a job ran on, for the report's environment table: results/<cluster>/env/<PBS_JOBID>.json."""
+    import platform
+    import socket
+    env = {"pbs_jobid": os.environ.get("PBS_JOBID", "none"), "plan": plan["plan"], "job": jid,
+           "host": socket.gethostname(), "os": platform.platform(), "cpus_visible": os.cpu_count(),
+           "modules": os.environ.get("LOADEDMODULES", ""), "cpu_model": "", "sockets": None, "mem_total_gb": None}
+    try:
+        with open("/proc/cpuinfo") as f:
+            phys = set()
+            for line in f:
+                if line.startswith("model name") and not env["cpu_model"]:
+                    env["cpu_model"] = line.split(":", 1)[1].strip()
+                if line.startswith("physical id"):
+                    phys.add(line.split(":", 1)[1].strip())
+            env["sockets"] = len(phys) or None
+    except OSError:
+        pass
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemTotal"):
+                    env["mem_total_gb"] = round(int(line.split()[1]) / 1048576.0, 1)
+    except OSError:
+        pass
+    for tool, cmd in (("mpirun", ["mpirun", "--version"]), ("cxx", [os.environ.get("CXX_MPI", "mpicxx"), "--version"])):
+        try:
+            out = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True,
+                                 timeout=60).stdout
+            env[tool] = out.strip().splitlines()[0] if out.strip() else ""
+        except Exception:
+            env[tool] = ""
+    d = os.path.join(C.RESULTS, plan["cluster"], "env")
+    if not os.path.isdir(d):
+        os.makedirs(d)
+    with open(os.path.join(d, "%s.json" % env["pbs_jobid"].replace("/", "_")), "w") as f:
+        json.dump(env, f, indent=1)
 
 
 def cmd_run_local(plan, jid):
