@@ -142,6 +142,11 @@ Branch graph-extension (worktree /Users/kushagra/Desktop/final_assignment/build-
   (refused without the section), G1-G3 identifiers. PDF 74 pages (graph code in the appendix).
 - Fixed on the way (also on main): requirements_check main() crashed after its verdict (unpacked 4 of 5 results);
   .gitignore "bin/" ignored cluster/ops/fake/bin (fake tests could not run from a fresh checkout) -> "/bin/".
+- Ops: poll counts <id>.graph.csv rows; opslib estimates use the per-job safety (x3 graph); submit checks
+  bin/p3graph. Fake tests: test_fake_cluster.sh 50 steps (11 graph steps: refusal before graph qualification,
+  graph-prep for real on fixtures, G1;G2 fetched, graph job 70/70 rows), test_fake_atlas.sh 19; all selftests pass;
+  Poisson p3cg requalified on the Mac after the CG template move (V1-V5 pass, bugs refused by V3-V5).
+- Merge rehearsed in a /tmp clone against a simulated parent main (frozen plans, reruns, unplanned): auto-merges.
 - Local dev (Mac): email-Eu-core accuracy 0.758 (majority 0.193, random 0.1, 102 it/solve); com-amazon 1.000
   (majority 0.192; 113 it/solve; 0.14 s/solve at 4 ranks); amazon keep 1/8 -> acc 0.07, 93% unreached.
 
