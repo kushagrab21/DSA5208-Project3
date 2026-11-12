@@ -440,7 +440,7 @@ def cmd_merge_fetched(a):
     # ledger: append the cluster's start/end rows that are not here yet
     new_ev = 0
     rj = os.path.join(src, "jobs.csv")
-    if os.path.exists(rj):
+    if os.path.isfile(rj):
         have = set((r["pbs_jobid"], r["event"], r["utc"]) for r in ledger(cl))
         for r in C.read_csv(rj):
             if (r["pbs_jobid"], r["event"], r["utc"]) not in have:
@@ -449,7 +449,7 @@ def cmd_merge_fetched(a):
     # validated binaries: append this cluster's qualified entries
     new_val = 0
     rv = os.path.join(st, "validated_binaries.csv")
-    if os.path.exists(rv):
+    if os.path.isfile(rv):
         have = set((e["utc"], e["binary_sha256"], e["cluster"]) for e in
                    (C.read_csv(C.VALIDATED) if os.path.exists(C.VALIDATED) else []))
         for e in C.read_csv(rv):

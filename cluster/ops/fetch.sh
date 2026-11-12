@@ -11,7 +11,8 @@ rsync_or_explain -a "$alias:$REMOTE_DIR/results/$cl/" "$staging/cluster/" 2>/dev
   echo "  (no results/$cl on the cluster yet)"
 rsync_or_explain -a "$alias:$REMOTE_DIR/results/validation/$cl/" "$RESULTS/validation/$cl/" 2>/dev/null ||
   echo "  (no validation output on the cluster yet)"
-rsync_or_explain -a "$alias:$REMOTE_DIR/results/validated_binaries.csv" "$staging/validated_binaries.csv" \
+# copy into the folder, not onto a file name: some rsync builds create a directory named after a missing source
+rsync_or_explain -a "$alias:$REMOTE_DIR/results/validated_binaries.csv" "$staging/" \
   2>/dev/null || echo "  (no qualified binaries on the cluster yet)"
 rsync_or_explain -a "$alias:$REMOTE_DIR/cluster/logs/" "$LOGS/$cl/" 2>/dev/null || true
 "$PY" "$OPS/opslib.py" merge-fetched --cluster "$cl" --staging "$staging"

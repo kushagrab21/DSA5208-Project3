@@ -22,28 +22,34 @@
 : "${P3_PYTHON_FALLBACK:=Python/3.13.5-GCCcore-14.3.0}"
 
 p3_log() { echo "p3 env (vanda/$P3_FLAVOR): $*" >&2; }
-p3_fail() { p3_log "ERROR $*"; return 1 2>/dev/null || exit 1; }
+# Refusals are top-level `return`s (a `return` inside a function would only leave the function and let the job go on).
 
 if [[ -f "${P3_EBENV:-/app1/ebenv}" ]]; then
   # shellcheck disable=SC1090
   source "${P3_EBENV:-/app1/ebenv}"
 fi
-command -v module >/dev/null 2>&1 || p3_fail "no module command on this node"
+if ! command -v module >/dev/null 2>&1; then p3_log "ERROR no module command on this node"; return 1 2>/dev/null || exit 1; fi
 if [[ "$P3_FLAVOR" == "offload" ]]; then mods="$P3_MODULES_GPU"; else mods="$P3_MODULES_CPU"; fi
-for m in $mods; do module load "$m" || p3_fail "module load $m failed"; done
+for m in $mods; do
+  if ! module load "$m"; then p3_log "ERROR module load $m failed"; return 1 2>/dev/null || exit 1; fi
+done
 if [[ "$P3_FLAVOR" == "offload" ]] && ! command -v python3 >/dev/null 2>&1; then
   module load "$P3_PYTHON_FALLBACK" || true
 fi
 p3_log "loaded $(module -t list 2>&1 | grep -v ':$' | tr '\n' ' ')"
 
-command -v mpicxx >/dev/null 2>&1 || p3_fail "no mpicxx after loading: $mods"
+if ! command -v mpicxx >/dev/null 2>&1; then p3_log "ERROR no mpicxx after loading: $mods"; return 1 2>/dev/null || exit 1; fi
 p3_log "mpicxx=$(command -v mpicxx) ($(mpicxx --version 2>/dev/null | grep -v '^$' | head -1))"
-command -v python3 >/dev/null 2>&1 || p3_fail "no python3 on this node (the checks run inside jobs); set P3_PYTHON_FALLBACK"
+if ! command -v python3 >/dev/null 2>&1; then
+  p3_log "ERROR no python3 on this node (the checks run inside jobs); set P3_PYTHON_FALLBACK"
+  return 1 2>/dev/null || exit 1
+fi
 p3_log "python3=$(command -v python3) ($(python3 --version 2>&1))"
 
 # libfabric defence (CPU flavour: Open MPI 5 from foss uses libfabric; HPC-X uses UCX).
 if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
-  preload="${LD_PRELOAD:-} $( [[ -r /etc/ld.so.preload ]] && tr '\n' ' ' < /etc/ld.so.preload )"
+  # (never let this assignment fail: under the job's `set -e` a failing command substitution here ends the job)
+  preload="${LD_PRELOAD:-} $(cat /etc/ld.so.preload 2>/dev/null | tr '\n' ' ' || true)"
   LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
   export LD_LIBRARY_PATH="$EBROOTLIBFABRIC/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   if printf '%s' "$preload" | grep -q 'libfabric' && ! printf '%s' "$preload" | grep -q "$EBROOTLIBFABRIC"; then
