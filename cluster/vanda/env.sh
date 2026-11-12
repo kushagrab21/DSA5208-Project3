@@ -68,8 +68,19 @@ export P3_CLUSTER=vanda
 export CXX_MPI="${CXX_MPI:-mpicxx}"
 export P3_OMP_FLAGS="${P3_OMP_FLAGS:--fopenmp}"                    # GCC (foss); used only by the direct build
 export P3_OFFLOAD_FLAGS="${P3_OFFLOAD_FLAGS:--mp=gpu -Minfo=mp}"    # nvc++; -Minfo=mp lists offloaded loops
+# Vanda compute nodes call themselves GN-A40-075 while $PBS_NODEFILE lists gn-a40-075.stdct.loc, so the MPI launcher
+# treats even its own node as remote and starts its daemon over ssh, where no module is loaded: "prted: command not
+# found" (vanda-validate 1546488 and diagnostics 1546504/1546514, 12 Nov). Name the daemon by absolute path and forward
+# the environment. Diagnostic 1546517 showed this works for 1 rank and for 4 ranks across 2 nodes.
+if [[ -n "${EBROOTPRRTE:-}" && -x "$EBROOTPRRTE/bin/prted" ]]; then           # foss: Open MPI 5 + PRRTE
+  P3_MPI_EXTRA="--prtemca prte_launch_agent $EBROOTPRRTE/bin/prted -x PATH -x LD_LIBRARY_PATH"
+else                                                                          # HPC-X / Open MPI 4: orted next to mpirun
+  P3_MPI_EXTRA="--prefix $(dirname "$(dirname "$(command -v mpirun)")") -x PATH -x LD_LIBRARY_PATH"
+fi
+export P3_MPI_EXTRA
+echo "p3 env (vanda): mpirun extra: $P3_MPI_EXTRA" >&2
 # checks/validate.py launcher: no pinning (it runs 1-8 ranks with 1-2 threads on the cores it was given).
-export P3_MPIRUN="${P3_MPIRUN:-mpirun --bind-to none -x OMP_NUM_THREADS}"
+export P3_MPIRUN="${P3_MPIRUN:-mpirun $P3_MPI_EXTRA --bind-to none -x OMP_NUM_THREADS}"
 
 # p3_launch RANKS RANKS_PER_NODE THREADS cmd...   Open MPI syntax (foss Open MPI 5 and HPC-X): RANKS_PER_NODE ranks on
 # each node, THREADS cores per rank, threads pinned to those cores. The first launch of each job prints the bindings.
@@ -77,7 +88,7 @@ p3_launch() {
   local np="$1" rpn="$2" th="$3"
   shift 3
   OMP_NUM_THREADS="$th" OMP_PLACES=cores OMP_PROC_BIND=close \
-    mpirun -np "$np" --map-by "ppr:${rpn}:node:PE=${th}" --bind-to core \
+    mpirun $P3_MPI_EXTRA -np "$np" --map-by "ppr:${rpn}:node:PE=${th}" --bind-to core \
     ${P3_REPORT_BINDINGS:+--report-bindings} -x OMP_NUM_THREADS -x OMP_PLACES -x OMP_PROC_BIND -x P3_CLUSTER "$@"
 }
 
