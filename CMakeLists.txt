@@ -10,7 +10,7 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3" CACHE STRING "" FORCE)
 
 option(P3_OPENMP  "OpenMP threads inside each MPI rank" ON)
-option(P3_OFFLOAD "OpenMP target offload of the same kernels (UNTESTED until run on Vanda; nvhpc: -mp=gpu)" OFF)
+option(P3_OFFLOAD "OpenMP target offload of the same kernels (nvhpc: -mp=gpu; validated on a Vanda GPU node)" OFF)
 option(P3_NATIVE  "-march=native (only when compiling on the node type that runs the code)" OFF)
 set(P3_OFFLOAD_FLAGS "-mp=gpu" CACHE STRING "compile+link flags for P3_OFFLOAD (nvhpc default)")
 set(PLANT_HALO_BUG 0 CACHE STRING "0 = correct build; 1 = skip one halo face; 2 = shift one halo face (validation only)")

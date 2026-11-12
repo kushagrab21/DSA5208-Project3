@@ -2,7 +2,8 @@
 //
 //   CPU build (default):   OpenMP threads inside each MPI rank ("parallel for" over the outer loops, "simd" inside).
 //   Offload build:         -DP3_OFFLOAD (CMake option P3_OFFLOAD=ON): the same loops become OpenMP "target" regions
-//                          for one GPU per rank (nvhpc -mp=gpu on Vanda). UNTESTED until it is run on Vanda.
+//                          for one GPU per rank (nvhpc -mp=gpu on Vanda). It passed the validation tests on a Vanda
+//                          GPU node before the GPU runs.
 //   No OpenMP:             the pragmas vanish and the loops run serially.
 //
 // Every kernel loop in this code base uses one of these macros, so the CPU and GPU builds run the same loop bodies.

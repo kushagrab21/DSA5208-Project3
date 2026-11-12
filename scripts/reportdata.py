@@ -107,7 +107,7 @@ class ClusterData:
                 out.append("%s: not in the %s plan" % (g, self.plan["plan"]))
             elif f < n:
                 out.append("%s %s: %d of %d planned runs recorded" % (self.cluster, g, f, n) +
-                           (" (a run counts if it or its shared-node insurance run is recorded)"
+                           (" (a point at the largest core count may come from whole nodes or from shared nodes)"
                             if any(c in self.pairs() for c in self.group_cells(g)) else ""))
         return out
 

@@ -146,7 +146,7 @@ def hand_typed_numbers(tex):
     for name, n in (("val", 1), ("req", 1), ("label", 1), ("ref", 1), ("eqref", 1), ("cite", 1), ("input", 1),
                     ("includegraphics", 1), ("lstinputlisting", 1), ("hspace", 1), ("vspace", 1), ("setlength", 2),
                     ("algotitle", 1), ("figslot", 2), ("interpslot", 1), ("src", 1), ("pending", 1),
-                    ("draftreview", 1),
+                    ("draftreview", 1), ("revised", 1),
                     ("texorpdfstring", 0)):
         b = remove_cmd(b, name, n)
     b = re.sub(r"\\begin\{(?:tabular|tabularx|minipage|thebibliography)\}(?:\{[^}]*\})+", " ", b)
@@ -240,7 +240,7 @@ def terms_report(tex):
     b = strip_comments(body_of(tex))
     b = b.split("\\appendix")[0]
     b = b[b.find("\\end{center}"):] if "\\end{center}" in b else b  # the title is not a use
-    b = re.sub(r"\\(?:val|ref|label|req|figslot|interpslot|input)\{[^}]*\}", " ", b)  # macro keys are not uses
+    b = re.sub(r"\\(?:val|ref|label|req|figslot|interpslot|input|revised)\{[^}]*\}", " ", b)  # macro keys are not uses
     out = []
     for t in TERMS:
         dm = re.search(r"\\term\{%s\}" % re.escape(t), b, re.I)
@@ -330,6 +330,11 @@ def run(tex_path, no_pdf=False, quiet=False):
             for r in rows:
                 if r not in INTERP_EXEMPT:
                     drafts.setdefault(r, []).append(m.group(1))
+    # interpretations revised under the language rules (\revised{name}): listed, not blocking
+    revised_list = []
+    for title, s0, e0, rows in secs:
+        for m in re.finditer(r"\\revised\{([^}]*)\}", body[s0:e0]):
+            revised_list.append((m.group(1), title))
 
     # E11 and E12 are required rows of the real-data part: a report without the graph section (or with it but
     # without both markers) is refused on those rows, however complete the Poisson part is.
@@ -451,6 +456,8 @@ def run(tex_path, no_pdf=False, quiet=False):
     say("  drafted interpretations awaiting the user's review (DRAFT-FOR-USER-REVIEW): %d%s" %
         (len(draft_list), "".join("\n     %s  (section: %s)" % (n, t) for n, t in draft_list)))
     say("  E rows carrying a draft: %s" % (", ".join(r for r, _ in REQS if r in drafts) or "none"))
+    say("  interpretations revised under the language rules (no longer drafts): %d%s" %
+        (len(revised_list), "".join("\n     %s  (section: %s)" % (n, t) for n, t in revised_list)))
     say("REQUIREMENTS: %s" % verdict)
     say("  qualification: refuses broken copies (--selftest); pass example: none yet - it will be the first full "
         "render the user accepts")
@@ -562,7 +569,7 @@ def selftest():
         cl = lambda r: [w for w in waiting.get(r, ()) if w.startswith("cluster data") and  # noqa: E731
                         ("strong" in w or "weak" in w) and "graph" not in w]
         ok = (not probs and "E3" not in notmet and "E4" not in notmet and not cl("E3") and not cl("E4") and
-              "shared nodes" in (val(vals, "meas.where") or "") and val(vals, "meas.top") == "256")
+              "shared with other jobs" in (val(vals, "meas.where") or "") and val(vals, "meas.top") == "256")
         return ok, "E3/E4 at %s cores%s" % (val(vals, "meas.top"), val(vals, "meas.where"))
     scenario("only the 256-core shared-node insurance run", spread_only, exp_spread)
 

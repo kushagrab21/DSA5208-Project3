@@ -195,9 +195,37 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   diamonds for shared-node points (same 1-core baseline); meas.top/meas.where name the top count and placement;
   E3/E4 met from either placement (selftest scenario "only the 256-core shared-node insurance run").
 
+## Turn 9 (13 Nov 2026): the language pass (assumption_drill/report_language_pass, binding)
+- Report body rewritten by hand, paragraph by paragraph (backup of the previous body: not kept in the repo; git has it).
+  Order: placement, paragraph logic, sentence rules. Full pass on Sections 1-5, 8.1-8.7 and 8.10, captions and
+  generator strings; placement + sentence rules only on 6, 7, 8.8-8.9 and 9. Summary untouched (waits for data).
+- New structure: 1 algorithm + synthetic test problem, 2 parallel design (+ cost model, why reductions not the product
+  limit scaling, MPI windows one sentence), 3 validation tests, 4 hardware and measurement (sockets, cores per socket,
+  memory, launcher fills socket 0 first, compilers, fixed iterations, median of repeats), 5 serial, 6 MPI, 7 MPI+OpenMP
+  answering Lecture 9's four questions in order, 8 graphs (opens with why it is there), 9-11. Roadmap after the Summary.
+- Removed from the body: "Made by" lines (\src), title-block generator line, E-codes, run IDs, plan/qualification/
+  insurance/calibration words, Atlas column, the module table (tab_env). Provenance: one sentence in Section 11
+  (generated_at, env.jobs, plan.vanda.cells, val.sha/val.stamp/val.cl.sha) and a Provenance paragraph in README.
+- The seven DRAFT-FOR-USER-REVIEW paragraphs are merged with their generated paragraphs and marked \revised{name}
+  (prints nothing); requirements_check lists them as "revised under the language rules", not as drafts.
+- Generators: tab_plan is a plain experiments overview; env.* values from the job environment records; spread.sent/
+  cap/tabnote/except replace spread.desc; scale.where says "up to N nodes" from the recorded whole-node runs;
+  tables and figure legends say "non-blocking halo exchange", "decomposition", "reductions (MPI_Allreduce)";
+  new tab_graphserial (per-graph ns/nonzero and BFS speed-up moved there from prose).
+- Stale comments fixed: src/par.hpp, CMakeLists.txt P3_OFFLOAD, README offload note (the GPU build passed V1-V5 on
+  GN-A40-032 in job 1547835, both broken builds failed).
+- Checks: 0 hand-typed numbers; prose semicolons 53 -> 2 (both in the Summary); selftests PASS (figures, run_record,
+  run_plan, graph_plan, requirements_check; fixture env records now carry compilers and memory).
+- Value keys removed from the text: atlas.topcores, plan.atlas.cells (no Atlas timings), spread.desc (retired),
+  gs.com-dblp.bfsratio, gs.com-youtube.bfsratio, gs.com-orkut.ns (now in tab_graphserial).
+- Open flags: memory per socket assumes an even split (not recorded); GPU model only from the node name; network not
+  recorded; appendix listings drop non-ASCII characters (arrows, <=) in README/code comments (pre-existing: listings
+  literate does not apply under tectonic); waiting marks still use plan wording and "; " (vanish with full data).
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
-vanda-gpu queued; fetch and make_report when rows arrive; show the user the seven DRAFT-FOR-USER-REVIEW paragraphs.
-Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
+vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.
+Child (when cluster rows exist): scripts/make_report.sh; language pass on 6, 7, 8.8-8.9, 9 and the Summary; write the
+four interpretation boxes from the tables under the same rules; fix
 whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
 place; GitHub link optional), first full render acceptance, the Canvas upload.

@@ -38,11 +38,11 @@ import reportdata as RD  # noqa: E402
 #   labels and distinct markers); node counts: aqua/violet (PASS). Aqua is below 3:1 contrast -> every figure has a
 #   table with the same numbers in the report.
 SURFACE, INK, INK2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
-VARIANT = {("classic", "blocking"): ("#2a78d6", "classic CG, blocking halo"),
-           ("pipelined", "overlap"): ("#eb6834", "pipelined CG, overlapped halo")}
+VARIANT = {("classic", "blocking"): ("#2a78d6", "classic CG, blocking halo exchange"),
+           ("pipelined", "overlap"): ("#eb6834", "pipelined CG, non-blocking halo exchange")}
 DIMSTYLE = {2: ("--", "o", "2D (5-point)"), 3: ("-", "s", "3D (7-point)")}
-COMP = [("t_compute", "#1baf7a", "o", "compute"), ("t_halo", "#6250d6", "s", "halo exchange"),
-        ("t_reduce", "#e34948", "^", "global reductions")]
+COMP = [("t_compute", "#1baf7a", "o", "computation (stencil and vectors)"), ("t_halo", "#6250d6", "s", "halo exchange"),
+        ("t_reduce", "#e34948", "^", "reductions (MPI_Allreduce)")]
 NODES = ["#1baf7a", "#6250d6"]
 
 FIGURES = {}
@@ -307,7 +307,7 @@ def fig_comm(D):
         ax.set_yscale("log")
         ax.set_xlim(min(ticks) / 1.4, max(ticks) * 5)
         ax.set_xlabel("cores (MPI ranks)")
-        ax.set_title("%dD, classic CG, blocking halo" % d, loc="left")
+        ax.set_title("%dD, classic CG, blocking halo exchange" % d, loc="left")
         meta += axes_meta(ax, "%dD" % d, "cores", "time")
     axes[0].set_ylabel("time per iteration, mean over ranks (s)")
     h, l = axes[0].get_legend_handles_labels()
@@ -446,8 +446,8 @@ def fig_graph_strong(D):
 def fig_graph_comm(D):
     fig, axes = new_fig(2)
     used, meta, ticks = [], [], []
-    comp = [("t_compute", "#1baf7a", "o", "local SpMV + vectors"), ("t_halo", "#6250d6", "s", "ghost exchange"),
-            ("t_reduce", "#e34948", "^", "global reductions")]
+    comp = [("t_compute", "#1baf7a", "o", "local products and vector updates"), ("t_halo", "#6250d6", "s", "ghost exchange"),
+            ("t_reduce", "#e34948", "^", "reductions (MPI_Allreduce)")]
     for ax, dset in zip(axes, GP.STRONG_DATASETS):
         cs, extra = split_place(_graph_series(D, "graph-strong", dset, "classic"))
         D.check_same_build([cid for cid, c in cs + extra], "graph-strong %s classic" % dset)
@@ -770,8 +770,13 @@ def fabricate(results, plan_name="vanda", jobs=None):
     envd = os.path.join(results, plan["cluster"], "env")
     os.makedirs(envd, exist_ok=True)
     with open(os.path.join(envd, "TESTDOUBLE.0.json"), "w") as f:
-        json.dump({"pbs_jobid": "TESTDOUBLE.0", "cpu_model": "TEST DOUBLE CPU", "mem_total_gb": 0, "sockets": 2,
-                   "modules": "TEST DOUBLE"}, f)
+        json.dump({"pbs_jobid": "TESTDOUBLE.0", "host": "TD-CPU-001", "cpu_model": "TEST DOUBLE CPU",
+                   "mem_total_gb": 100.0, "sockets": 2, "cpus_visible": plan["cores_per_node"],
+                   "cxx": "g++ (GCC) 0.0.0", "mpirun": "mpirun (Open MPI) 0.0.0", "modules": "TEST DOUBLE"}, f)
+    with open(os.path.join(envd, "TESTDOUBLE.1.json"), "w") as f:  # a GPU node (the report names its compilers)
+        json.dump({"pbs_jobid": "TESTDOUBLE.1", "host": "TD-GPU-001", "cpu_model": "TEST DOUBLE CPU",
+                   "mem_total_gb": 100.0, "sockets": 2, "cpus_visible": plan["cores_per_node"],
+                   "cxx": "nvc++ 0.0-0 64-bit target", "mpirun": "mpirun (Open MPI) 0.0.0", "modules": "TEST DOUBLE"}, f)
     with open(os.path.join(results, plan["cluster"], "calibration.json"), "w") as f:
         json.dump({"utc": "TESTDOUBLE", "from_jobs": ["TESTDOUBLE"], "bw_core_gbs": 10.0, "bw_node_gbs": 200.0,
                    "note": "TEST DOUBLE"}, f)
