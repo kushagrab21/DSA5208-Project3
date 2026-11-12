@@ -356,8 +356,8 @@ the validation tests (V5) and differ only when a residual far below those tolera
 \section{Hardware and measurement}\label{sec:env}\label{sec:timing}
 \req{E10}
 All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets, each an
-\val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory, which
-gives about \val{env.mempersock}\,GB attached to each socket if it is split evenly between them. A core reads the
+\val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory in
+total, divided between the two sockets. A core reads the
 memory of its own socket directly and that of the other socket through the link between the two, so the memory
 bandwidth available to a run grows with the number of sockets it uses, not with its number of cores. The launcher
 places the ranks of a node on consecutive cores and binds each rank to its cores, so the ranks fill the first socket
