@@ -323,9 +323,9 @@ def fig_graph_serial(D):
             ax.plot([p[k] for p in pts], [p[2] for p in pts], color=color, ls=ls, marker=mk, ms=5, lw=1.8,
                     mec=SURFACE, mew=1, label=lab)
         if order == "natural":
-            for p in pts:
-                a1.annotate(short(p[3]), (p[0], p[2]), xytext=(-4, 7), textcoords="offset points", fontsize=6.5,
-                            color=INK2, ha="right")
+            for i, p in enumerate(pts):  # alternate above/below: neighbouring datasets can have similar sizes
+                a1.annotate(short(p[3]), (p[0], p[2]), xytext=(-4, 7 if i % 2 == 0 else -10),
+                            textcoords="offset points", fontsize=6.5, color=INK2, ha="right")
     for ax, xl in ((a1, "nonzeros of L + aI (2E + V)"), (a2, "vertices V (matrix dimension)")):
         ax.set_xscale("log")
         ax.set_yscale("log")

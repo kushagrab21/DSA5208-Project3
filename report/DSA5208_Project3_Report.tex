@@ -538,6 +538,222 @@ loop), and whether the answer changed between one node and several; explain the 
 bandwidth, and what the two-GPU run says about the host copies of halos.}
 
 % ======================================================================================================
+\section{Real data: community labelling on SNAP graphs}\label{sec:graph}
+\req{E11}\req{E12}\req{E14}
+The second problem uses the same conjugate gradient code on real data: \val{gr.ndata} graphs from the Stanford
+Network Analysis Project (SNAP) collection of networks with ground-truth communities, \val{gr.datalist}. Each comes
+with known groups of vertices, its \term{communities}. The question we ask of the data is a semi-supervised one: if a
+few vertices of each community are labelled, how many of the others does diffusion over the graph label correctly,
+and how does that depend on how sparse the graph is? The answer can be scored, because the communities are known.
+
+\subsection{The data and the communities}
+\emph{email-Eu-core} records e-mail between members of a European research institution, and a member's community is
+their department. In the five \emph{com-} graphs an edge joins two co-purchased products (Amazon), two co-authors
+(DBLP) or two friends (Youtube, LiveJournal, Orkut), and a community is a product category, a publication venue or a
+user group. For each of them SNAP lists the communities of highest quality in a separate file
+(\code{.top5000.cmty}), which is the one we use. Table~\ref{tab:graphdata} lists the graphs.
+
+The files are downloaded on a cluster login node by \code{scripts/fetch\_snap.sh}, which checks the compression and
+records each file's address and SHA-256, and converted inside a job by \code{bin/p3convert}
+(\code{scripts/convert\_snap.sh}). The data never enter the repository. The converter treats every graph as undirected
+and simple: email-Eu-core is directed, so an edge in either direction becomes one undirected edge, and self-loops and
+repeated edges are dropped. It numbers the vertices $0,\dots,V-1$ in ascending SNAP id and maps the communities to
+the same numbers. Its vertex and edge counts can be compared with SNAP's in the table (for email-Eu-core SNAP counts
+directed edges).
+
+\begin{table}[H]\centering\small
+\input{generated/tab_graphdata.tex}
+\caption{The graphs as converted (vertices $V$, undirected edges $E$, average degree $2E/V$, largest degree
+$d_{\max}$), SNAP's published counts, the number of evaluated vertices and the share of the largest of the
+\val{gr.K} communities among them. Counts from the run records on \val{cl.gr.serial}.
+\src{scripts/report\_macros.py}}\label{tab:graphdata}
+\end{table}
+
+We use $K=\val{gr.K}$ communities per graph: the largest ones that are \emph{disjoint enough}, taken greedily by size.
+A community is taken if at most a fraction $\theta=\val{gr.theta}$ of its members are already in a taken one, and at
+most that fraction of each taken community's members are in it. The largest communities leave enough members both
+to seed and to evaluate. Requiring them to be nearly disjoint matters because the top communities overlap heavily
+and some are near-duplicates of each other: with two copies of the same group, a correct label could not be told
+apart from a wrong one. A vertex is \term{exclusive} if it belongs to exactly one of the $K$ communities; only
+exclusive vertices are seeds or are evaluated.
+
+\subsection{The method}
+Let $A$ be the adjacency matrix, $D$ the diagonal matrix of degrees and $L=D-A$ the graph Laplacian. For each
+community $c$ we pick $s$ seed vertices $S_c$ and solve
+\begin{equation}
+(L+aI)\,x_c=b_c,\qquad (b_c)_v=\begin{cases}1 & v\in S_c\\ 0 & \text{otherwise,}\end{cases}\label{eq:graph}
+\end{equation}
+then label every evaluated vertex $v$ with $\arg\max_c (x_c)_v$. Row $v$ of \eqref{eq:graph} reads
+$(x_c)_v=\big((b_c)_v+\sum_{u\sim v}(x_c)_u\big)/(d_v+a)$: away from the seeds each value is the sum of its
+neighbours' values divided by $d_v+a$, so $x_c$ is a diffusion from the seeds that is damped by a factor of about
+$d_v/(d_v+a)$ at every step. A small shift $a$ against the degrees lets the labels travel far, and a large one keeps
+them near the seeds. Since $L$ is symmetric positive semidefinite and $a>0$, the matrix is symmetric positive definite
+with eigenvalues in $[a,\lambda_{\max}+a]$, where $\lambda_{\max}\le 2d_{\max}$ (Gershgorin). Its condition number is
+at most $(2d_{\max}+a)/a$, so CG needs more iterations, roughly as $a^{-1/2}$, as $a$ shrinks. The seeds of each
+community are its $s$ exclusive members with the smallest hash of their SNAP id. They are the same for every vertex
+order and rank count, and the seeds for a smaller $s$ are the first of those for a larger one. The seed list of
+every run is recorded, and its SHA-256 is in every run record.
+
+A vertex whose $x_c$ is zero for every $c$ is \term{unreached} and counted as wrong. This happens when no seed is in
+its connected component, and also because of a property of CG: after $k$ iterations $x_c$ lies in
+$\mathrm{span}\{b_c,Ab_c,\dots,A^{k-1}b_c\}$, which is zero beyond graph distance $k-1$ from the seeds. A vertex is
+labelled only if CG ran for at least as many iterations as it is far from the nearest seed, so a large $a$, which
+needs few iterations, also limits the reach. The accuracy is the share of evaluated vertices labelled with their own
+community. We compare it with two baselines: \emph{majority}, which always answers the largest community among the
+evaluated vertices, and \emph{random}, whose expected accuracy is $1/K$. The defaults are $a=\val{gr.a}$ and
+$s=\val{gr.s}$, and every system is solved to a relative residual of \val{gr.tol}.
+
+\subsection{Parallel design for graphs}
+Only the operator changes: CG and pipelined CG are the same code as for the Poisson problem. Both solvers are templates
+over the operator, and the stencil and the graph each supply an \code{apply} that computes $y=Ax$ and returns the
+local part of $x\cdot y$. The matrix is stored in compressed sparse rows, partitioned in one dimension: each rank owns
+a contiguous range of vertex numbers. The ranges are chosen in one of two ways: \emph{rows} gives each rank equally
+many vertices, and \emph{nnz} gives each rank equally many nonzeros of $L+aI$ (degree plus one per row). The degrees
+are heavy-tailed ($d_{\max}$ in Table~\ref{tab:graphdata}), so equal rows can give one rank far more work. The
+converter also writes a second numbering, a breadth-first (Cuthill--McKee) order. This order gives neighbours nearby
+numbers, so a contiguous range cuts fewer edges.
+
+The neighbours of a rank's vertices that live on other ranks are its \term{ghosts}. Their values must arrive before
+every product. The lists are built once: each rank sends the ids it needs to their owners, which then know what to
+send. Every product then exchanges the values in one of three ways:
+\begin{itemize}
+\item \code{MPI\_Alltoallv} over all ranks, with zero counts for ranks that share no edge;
+\item \code{MPI\_Neighbor\_alltoallv} on a distributed graph communicator whose neighbours are only the ranks that do
+share edges;
+\item its non-blocking form \code{MPI\_Ineighbor\_alltoallv}, overlapped with the rows that have no ghost neighbour.
+\end{itemize}
+The received values land directly in the ghost part of the vector, behind the owned part, so the vector kernels of
+the Poisson code run unchanged on the owned part. Within a rank, the rows are split among threads by equal numbers of
+nonzeros. Every run records the edge cut, the ghosts and neighbours per rank and the load imbalance (largest over
+mean nonzeros per rank), and the time spent exchanging ghosts, as the halo time was recorded for the Poisson problem.
+
+Weak scaling stays on the synthetic problem. Real graphs come in fixed sizes. Growing the work with the core count
+would need a family of graphs of the same structure, which only a synthetic generator can provide, and the dataset
+ladder below changes the structure (the degree distribution) together with the size. The Poisson grid can be grown
+with the cores exactly.
+
+\subsection{Validation of the graph solver}\label{sec:graphval}
+The graph solver has its own two cases and its own planted bug, under the same rule as for the Poisson solver: a
+program file is used for timing only after it passes the cases and the check refuses a deliberately wrong build.
+\begin{itemize}
+\item \textbf{G1} runs email-Eu-core on two to five ranks, with threads, both partitions, all three exchanges and both
+vertex orders (\val{gr.val.layouts} layouts). The product $(L+aI)v$ equals the one-rank product to
+\val{gr.val.spmv} (tolerance \val{gr.val.spmvtol}). After \val{gr.val.iters} iterations of classic or pipelined CG
+the iterates agree to \val{gr.val.x} (tolerance \val{gr.val.xtol}). Converged answers differ by \val{gr.val.conv},
+within the condition-number bound \val{gr.val.bound} used in V5. The fixed-iteration comparison stops early because,
+on this graph, rounding differences grow by about three orders of magnitude every five iterations once CG has found
+the large eigenvalues of the hub vertices. The growth is the same between one and two threads on one rank, so a
+longer comparison would measure rounding, not correctness.
+\item \textbf{G2} builds a hand-made graph: two cliques of five vertices, a bridge, a tail, a self-loop, a repeated
+edge and a vertex whose only edge is a self-loop. The converter must report what was built (\val{gr.val.tinyV}
+vertices and \val{gr.val.tinyE} edges), and on one to three ranks $x$ must match a dense solve of the same system to
+\val{gr.val.dense} (tolerance \val{gr.val.densetol}).
+\item \textbf{G3} is the planted bug. In the build with \code{PLANT\_GHOST\_BUG} switched on, the ghosts from each rank's first
+neighbour are received into a scratch area and never reach the operator. G1 and G2 must refuse it, and they did
+(refused by \val{gr.val.bugby}): its products are off by \val{gr.val.bugspmv} and its labelling accuracy drops to
+\val{gr.val.bugacc} from \val{gr.val.acc}.
+\end{itemize}
+These results were obtained on \val{gr.val.where}. The cluster job repeats the qualification before any graph run.
+
+\subsection{Accuracy against the baselines}
+\begin{table}[H]\centering\small
+\input{generated/tab_graphacc.tex}
+\caption{Labelling with the defaults on \val{cl.gr.sweep}: accuracy over the evaluated vertices, the share left
+unreached, the two baselines, CG iterations per system and time per system. \src{scripts/report\_macros.py}}
+\label{tab:graphacc}
+\end{table}
+With the defaults the accuracy ranges from \val{gr.acc.lo} to \val{gr.acc.hi} (Table~\ref{tab:graphacc}).
+
+\interpslot{graph-accuracy}{Compare each graph's accuracy with its majority and random baselines, and say on which
+graphs few seeds suffice and on which the labels are hard to recover; relate the hard cases to how the communities
+sit in the graph (whether a community is a well-connected region or is spread among others).}
+
+\subsection{The shift, the seeds and sparsity}
+\figslot{fig_graph_sweep}{0.98\linewidth}{Accuracy (top) and CG iterations per system (bottom) against the shift $a$,
+the seeds per community $s$ and the average degree, on \val{cl.gr.sweep}. Each sweep varies one parameter from the
+defaults. The average degree falls when each edge is kept only with probability \val{gr.keeplist}.
+\src{scripts/figures.py}}
+Figure~\ref{fig:fig_graph_sweep} varies one parameter at a time: $a\in\{\val{gr.avals}\}$, $s\in\{\val{gr.svals}\}$
+and the sparsity. The sparsity is changed by keeping each edge with probability $p\in\{\val{gr.keepvals}\}$, decided
+from the two SNAP ids, so every rank count and vertex order sees the same sparser graph. The communities and seeds stay
+the same, so a sparser graph changes only the edges. Between the dataset ladder (from email-Eu-core to com-Orkut) and
+this controlled thinning, the effect of sparsity can be told apart from the effect of the graph. The fitted exponent
+of iterations against $a$ is \val{gr.aslope}, against $-1/2$ predicted by $\sqrt\kappa$. With an eighth of the edges,
+com-Amazon's accuracy is \val{gr.keep.com-amazon.acc} with \val{gr.keep.com-amazon.unr} of its evaluated vertices
+unreached, and com-Orkut's (average degree \val{gr.keep.com-orkut.deg}) is \val{gr.keep.com-orkut.acc}. CG needs
+\val{gr.keep.com-amazon.itratio} and \val{gr.keep.com-orkut.itratio} times fewer iterations per system on these thinned
+graphs than on the full ones.
+
+\interpslot{graph-sparsity}{Explain the sparsity result in terms of the graph: thinning a sparse graph disconnects
+communities into pieces without seeds (unreached vertices), while a dense graph loses little; explain why the
+iterations fall (smaller largest eigenvalue). Explain the shift: the accuracy falls at large $a$ when the reach of the
+labels falls, and when is a small $a$ worth its extra iterations?}
+
+\subsection{Serial cost and the dataset ladder}
+\figslot{fig_graph_serial}{0.98\linewidth}{Time per CG iteration on one core of \val{cl.gr.serial} against the
+nonzeros (left) and the vertices (right), for the natural and the breadth-first vertex order.
+\val{gr.siters} iterations on one system per point. \src{scripts/figures.py}}
+The datasets vary the vertices and the edges together (Figure~\ref{fig:fig_graph_serial}). The time per iteration
+grows with the nonzeros with a fitted exponent of \val{gr.ser.slope} in the natural order and \val{gr.ser.slopebfs}
+in the breadth-first order. On the largest graph, one iteration costs \val{gr.ser.ns.natural}\,ns per nonzero in the
+natural order and \val{gr.ser.ns.bfs}\,ns in the breadth-first order. Renumbering alone speeds up the serial iteration
+by up to \val{gr.ser.bfsgain}, because the values of a row's neighbours are then read from nearby memory.
+
+\subsection{Strong scaling and communication}
+\figslot{fig_graph_strong}{0.98\linewidth}{Strong scaling on \val{cl.gr.strong}: time per system against cores, for
+\val{gr.strongdata}. Each point times \val{gr.rhs} of the \val{gr.K} systems. The dotted line is perfect scaling from
+one core. \src{scripts/figures.py}}
+The two largest graphs, \val{gr.strongdata}, were run on \val{gr.strong.counts} cores (one rank per core), with the nnz
+partition, the neighbourhood exchange and the natural order. At \val{gr.st.top} cores, classic CG reaches a speedup of
+\val{gr.st.com-lj.classic.S} on com-LiveJournal and \val{gr.st.com-orkut.classic.S} on com-Orkut (efficiencies
+\val{gr.st.com-lj.classic.E} and \val{gr.st.com-orkut.classic.E}). On one full node the efficiencies are
+\val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}. Runs whose single repetition would last
+more than \val{gr.longrep} minutes were repeated once instead of three times; at that length the timing noise is far
+below one per cent.
+
+\begin{table}[H]\centering\small
+\input{generated/tab_graphstrong.tex}
+\caption{Graph strong scaling on \val{cl.gr.strong}: time per system $T$ on one core and on the largest core count,
+speedup $S$ and efficiency $E$. \src{scripts/report\_macros.py}}\label{tab:graphstrong}
+\end{table}
+
+\figslot{fig_graph_comm}{0.98\linewidth}{Where the time of a graph CG iteration goes on \val{cl.gr.strong}: local
+products and vector updates, ghost exchange and global reductions, per iteration, classic CG.
+\src{scripts/figures.py}}
+At the largest core count the ghost exchange takes \val{gr.comm.com-lj.halo} of the time on com-LiveJournal and
+\val{gr.comm.com-orkut.halo} on com-Orkut, and the global sums \val{gr.comm.com-lj.red} and
+\val{gr.comm.com-orkut.red}. A rank there exchanges with up to \val{gr.comm.com-orkut.nbrs} others on com-Orkut and
+holds up to \val{gr.comm.com-orkut.ghosts} ghosts. Unlike the grid, whose halo is a thin surface, a graph with hubs
+connects almost every rank to almost every other.
+
+\subsection{Partitions and exchanges}
+\begin{table}[H]\centering\small
+\input{generated/tab_graphpart.tex}
+\caption{The three partitions at the largest core count of the variant runs on \val{cl.gr.variants}: share of edges
+cut, ghosts and neighbours per rank (largest), load imbalance, and time per system with the neighbourhood exchange
+and classic CG. \src{scripts/report\_macros.py}}\label{tab:graphpart}
+\end{table}
+
+\figslot{fig_graph_variants}{0.98\linewidth}{Time per system for every partition, ghost exchange and CG variant at
+\val{gr.var.cores} cores on \val{cl.gr.variants}. \src{scripts/figures.py}}
+On com-Orkut at \val{gr.var.com-orkut.top} cores the fastest combination is \val{gr.var.com-orkut.best}, and the
+slowest takes \val{gr.var.com-orkut.spread} times as long; on com-LiveJournal it is \val{gr.var.com-lj.best}
+(spread \val{gr.var.com-lj.spread}). The natural order cuts \val{gr.cut.com-orkut.natural.nnz} of com-Orkut's edges
+and the breadth-first order \val{gr.cut.com-orkut.bfs.nnz}; equal rows leave an imbalance of
+\val{gr.imb.com-orkut.natural.rows} against \val{gr.imb.com-orkut.natural.nnz} for equal nonzeros.
+
+\interpslot{graph-parallel}{Say what limits graph scaling compared with the grid (ghost volume and the number of
+neighbours against the halo surface), which partition and exchange we would use, and whether pipelined CG helps when
+the products themselves communicate this much.}
+
+\subsection{Conclusions about the data}
+\interpslot{graph-conclusions}{State what the runs show about these networks: how far a few labelled members reach
+in each kind of network (departments, product categories, venues, user groups); how the accuracy depends on the
+density of the graph and on the shift; which graphs' communities are recoverable by diffusion and which are not, and
+what that says about how those communities are formed. Keep to Table~\ref{tab:graphacc} and
+Figure~\ref{fig:fig_graph_sweep}.}
+
+% ======================================================================================================
 \section{Discussion}\label{sec:discussion}
 \req{E8}
 The parts of the solver are parallelised with different techniques because they have different dependences. The

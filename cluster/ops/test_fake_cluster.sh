@@ -86,6 +86,40 @@ step "sync the plan with the rerun reason" cluster/ops/sync.sh vanda
 step "rerun vanda-4node (accepted)" env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-4node
 step "poll" cluster/ops/poll.sh vanda
 step "fetch: the rerun fills the 4-node cells" cluster/ops/fetch.sh vanda
+# ---- the graph extension: its own qualification job, then a timed graph job
+graph_fixtures() {  # SNAP-shaped raw files in the fake home: the two real local datasets, and com-amazon's files
+  # standing in for the four large graphs (the fake never downloads)
+  local raw="$P3_FAKE_ROOT/vanda/home/p3data/raw"; mkdir -p "$raw"
+  printf 'utc\tname\tfile\turl\tbytes\tsha256\n' > "$raw/SOURCES.tsv"
+  put() { cp "$REPO/data/raw/$1" "$raw/$2"; printf '%s\t%s\t%s\t%s\t%s\t%s\n' FAKE "$3" "$2" "fixture:$1" \
+            "$(wc -c < "$raw/$2" | tr -d ' ')" "$(shasum -a 256 "$raw/$2" | cut -d' ' -f1)" >> "$raw/SOURCES.tsv"; }
+  put email-Eu-core.txt.gz email-Eu-core.txt.gz email-Eu-core
+  put email-Eu-core-department-labels.txt.gz email-Eu-core-department-labels.txt.gz email-Eu-core
+  for d in com-amazon com-dblp com-youtube com-lj com-orkut; do
+    put com-amazon.ungraph.txt.gz $d.ungraph.txt.gz $d; put com-amazon.top5000.cmty.txt.gz $d.top5000.cmty.txt.gz $d
+  done
+  echo "  fixtures in $raw: $(ls "$raw" | grep -c gz) files"
+}
+if [[ -f data/raw/com-amazon.ungraph.txt.gz && -f data/raw/email-Eu-core.txt.gz ]]; then
+  step "graph fixtures in the fake home (p3data/raw; com-amazon stands in for the four large graphs)" graph_fixtures
+  step "submit refuses a graph timed job: no p3graph qualified on the cluster (the p3cg qualification does not count)" \
+    cluster/ops/submit.sh vanda vanda-graph-sweep
+  step "submit vanda-graph-prep (the fake runs it for real: build graph, convert six datasets, validate_graph.py --qualify, seed lists)" \
+    cluster/ops/submit.sh vanda vanda-graph-prep
+  step "the graph-prep job log: conversion, qualification, gate-free seeds" \
+    bash -c "grep -h -E 'p3convert email|p3convert com-orkut|VERDICT|QUALIFICATION|VALIDATED BINARY' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3g-prep.o*"
+  step "poll" cluster/ops/poll.sh vanda
+  step "fetch: the G1;G2 qualification and the seed lists come back" cluster/ops/fetch.sh vanda
+  step "submit vanda-graph-sweep (accepted; TEST-DOUBLE graph rows)" env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-graph-sweep
+  step "poll" cluster/ops/poll.sh vanda
+  step "fetch" cluster/ops/fetch.sh vanda
+  step "status: graph-sweep filled, graph rows from the qualified p3graph only" \
+    bash -c "python3 checks/run_plan.py status --plan vanda | grep -E 'graph-|GRADED|qualified'"
+  step "the generated graph script: timing gate with the graph cases, records to *.graph.csv" \
+    bash -c "grep -E 'timing_gate|GREC=|P3_DATA=' $P3_GENERATED/vanda/vanda-graph-sweep.pbs"
+else
+  echo; echo "----- graph steps skipped: data/raw has no email-Eu-core and com-amazon files (scripts/fetch_snap.sh NAME \$PWD/data)"
+fi
 after="$(snap)"
 echo
 echo "----- real results/, figures/, report/ and config/ unchanged by the test: $([[ "$before" == "$after" ]] && echo yes || echo NO)"
