@@ -7781,6 +7781,10 @@
   {
    "cell": "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1",
    "reason": "amendment gpu-split-2026-11-12: vanda-gpu 1546583 was queued with its pre-split script (all four GPU cells); if it runs, its rows for this 1-GPU cell duplicate vanda-gpu1's"
+  },
+  {
+   "job": "vanda-gpu1",
+   "reason": "1547695 hung on GN-A40-027 after linking (bin/p3cg_offload --version never returned; 22 min walltime, 8 s CPU), qdel'd; the same binary starts in 0-5 s on GN-A40-040 (diag 1547817); build.sh now times --version out at 120 s (12 Nov)"
   }
  ],
  "limits_source": "results/vanda/env/discover-20261112T055509Z.txt",
