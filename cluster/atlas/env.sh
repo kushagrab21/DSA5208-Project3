@@ -69,21 +69,16 @@ export P3_MPIRUN="${P3_MPIRUN:-mpirun --bind-to none -x OMP_NUM_THREADS}"
 # 1546588, 12 Nov): a rank whose threads exceed one socket's cores is mapped unbound, and OpenMP pins its threads
 # (OMP_PLACES=cores, OMP_PROC_BIND=close). Cores per socket come from lscpu on the compute node itself.
 p3_map_args() {
-  # Placement (12 Nov, turn 7 finding): with ppr:R:node Open MPI filled socket 0 first, so 36 ranks used one socket of a 72-core
-  # node and the curve flattened 18->36 then jumped 36->72. Spread ranks over both sockets instead.
-  local rpn="$1" th="$2" np="${3:-$1}" cps sk
+  local rpn="$1" th="$2" cps
   cps="$(lscpu 2>/dev/null | awk -F: '/^Core\(s\) per socket/{gsub(/ /,"",$2); print $2}' || true)"
-  sk="$(lscpu 2>/dev/null | awk -F: '/^Socket\(s\)/{gsub(/ /,"",$2); print $2}' || true)"
   if [[ -n "$cps" && "$th" -gt "$cps" ]]; then echo "--map-by ppr:${rpn}:node --bind-to none"
-  elif [[ "$np" -eq "$rpn" ]]; then echo "--map-by package:PE=${th} --bind-to core"
-  elif [[ "$sk" == 2 && $((rpn % 2)) -eq 0 ]]; then echo "--map-by ppr:$((rpn / 2)):package:PE=${th} --bind-to core"
   else echo "--map-by ppr:${rpn}:node:PE=${th} --bind-to core"; fi
 }
 p3_launch() {
   local np="$1" rpn="$2" th="$3"
   shift 3
   OMP_NUM_THREADS="$th" OMP_PLACES=cores OMP_PROC_BIND=close \
-    mpirun -np "$np" $(p3_map_args "$rpn" "$th" "$np") \
+    mpirun -np "$np" $(p3_map_args "$rpn" "$th") \
     ${P3_REPORT_BINDINGS:+--report-bindings} -x OMP_NUM_THREADS -x OMP_PLACES -x OMP_PROC_BIND -x P3_CLUSTER "$@"
 }
 
