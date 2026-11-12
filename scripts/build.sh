@@ -22,6 +22,7 @@ direct_omp=()
 # A start-up hang on one GPU node (vanda-gpu1 1547695 on GN-A40-027, 12 Nov: linked, then `--version` never returned; 22 min
 # walltime, 8 s CPU) is turned into a fast, visible failure: every --version call below has a 120 s timeout. The same binary
 # started in 0-5 s five ways on GN-A40-040 (diagnostic 1547817).
+p3_timeout() { if command -v timeout >/dev/null 2>&1; then timeout 120 "$@"; else "$@"; fi; }   # macOS has no timeout(1)
 if [[ "$flavor" == "offload" ]]; then
   suffix="_offload"
   cmake_extra=(-DP3_OFFLOAD=ON -DP3_OFFLOAD_FLAGS="${P3_OFFLOAD_FLAGS:--mp=gpu}")
@@ -70,7 +71,7 @@ if [[ "$flavor" == "graph" ]]; then
         ${direct_omp[@]+"${direct_omp[@]}"} "${gsrcs[@]}" -o "bin/$name"
       [[ "$bug" == "0" ]] && "$MPICXX" -O3 -std=c++17 src/graph/convert.cpp -o bin/p3convert
     fi
-    echo "built bin/$name  sha256=$(timeout 120 bin/$name --version | sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p')"
+    echo "built bin/$name  sha256=$(p3_timeout bin/$name --version | sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p')"
   done
   echo "built bin/p3convert"
   exit 0
@@ -91,5 +92,5 @@ for bug in 0 1 2; do
     "$MPICXX" -O3 -std=c++17 -DPLANT_HALO_BUG="$bug" -DP3_GIT_SHA="\"$git_sha\"" ${direct_omp[@]+"${direct_omp[@]}"} \
       "${srcs[@]}" -o "bin/$name"
   fi
-  echo "built bin/$name  sha256=$(timeout 120 bin/$name --version | sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p')"
+  echo "built bin/$name  sha256=$(p3_timeout bin/$name --version | sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p')"
 done
