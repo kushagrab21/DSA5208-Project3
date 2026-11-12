@@ -113,6 +113,38 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 - Tests: test_fake_cluster.sh 39 steps (routing, env guards, GPU job with its own qualification) all as expected;
   test_fake_atlas.sh 19; all selftests pass.
 
+## Turn 6 (12 Nov 2026): the data-science extension (SNAP community labelling), in worktree ../build-graph
+Branch graph-extension (worktree /Users/kushagra/Desktop/final_assignment/build-graph); build/ untouched.
+- Solver: src/cg_impl.hpp = classic/pipelined CG as templates over the operator (moved from cg.cpp; Poisson dumps
+  bitwise identical before/after on 4 layouts). bin/p3graph (src/graph/): DistGraph (rank 0 reads rowptr + SNAP ids,
+  bcast; each rank MPI-IO reads its columns; rows|nnz partition; keep filter on SNAP ids; ghost lists once;
+  dist-graph communicator), CsrOperator (L + aI; alltoallv | neighbor | overlap = Ineighbor + interior rows;
+  per-thread nnz-balanced row ranges), labelling (K largest disjoint-enough communities, theta 0.1; seeds by
+  mix64(SNAP id ^ mix64(seed)), nested in s; truth/eval = exclusive non-seeds; majority/random baselines; unreached =
+  all x_c <= 0 counted wrong). PLANT_GHOST_BUG=1: first source neighbour's ghosts go to a scratch area.
+- bin/p3convert (src/graph/convert.cpp): SNAP text -> P3CSR001 (natural + BFS/Cuthill-McKee order) + .cmty in both
+  orders + meta.json. Reproduces SNAP counts (email-Eu-core V=1005, E=16064 undirected; com-amazon 334863/925872).
+- scripts/fetch_snap.sh (login node; gzip -t; SOURCES.tsv url/bytes/sha256; refuses a changed file),
+  scripts/convert_snap.sh (refuses inputs whose sha256 differs from SOURCES.tsv; CONVERSIONS.tsv), data/ gitignored.
+- checks/validate_graph.py: G1 email-Eu-core (SpMV <= 1e-14, 10 iterations <= 1e-10, converged within cond bound;
+  25 iterations was NOT sharp: rounding grows ~1000x per 5 iterations on this graph), G2 tiny dense + converter
+  counts, G3 = planted bug refused. Qualified on the Mac (p3graph ce6ea36c...; bug refused by G1+G2). timing_gate
+  --require-cases G1,G2; run_record graph schema p3graph-1 in *.graph.csv (Poisson loader never sees them).
+- Plans: scripts/make_graph_plan.py adds groups graph-serial/strong/variants/sweep + jobs as amendment
+  graph-2026-11-12 (existing content verified unchanged; idempotent; legal on a frozen plan; make_plan.py keeps it).
+  Vanda 190 graph cells, 7 jobs, ~657 core-h est. (~1970 with x3); Atlas 182 cells, 5 jobs, ~751 (~2253), fallback.
+  run_plan: graph cost model (graph_model, ASSUMED), matching, coverage (E11/E12 groups, >=256 on Vanda, variants
+  combos, sweep ranges), PBS bodies (P3_DATA, GREC, prep: build graph + convert + qualify + seeds; failed graph cell
+  logged, job continues); job names p3g-<role>. submit.sh/opslib check bin/p3graph against a G1;G2 qualification.
+- Report: section "Real data: community labelling on SNAP graphs" (data, method, parallel design, validation G1-G3,
+  accuracy vs baselines, a/s/sparsity, serial ladder, strong + comm, partitions/exchanges, conclusions = interp box);
+  5 graph figures, 4 tables, ~70 values, all pending until cluster rows. requirements_check: E11/E12 required rows
+  (refused without the section), G1-G3 identifiers. PDF 74 pages (graph code in the appendix).
+- Fixed on the way (also on main): requirements_check main() crashed after its verdict (unpacked 4 of 5 results);
+  .gitignore "bin/" ignored cluster/ops/fake/bin (fake tests could not run from a fresh checkout) -> "/bin/".
+- Local dev (Mac): email-Eu-core accuracy 0.758 (majority 0.193, random 0.1, 102 it/solve); com-amazon 1.000
+  (majority 0.192; 113 it/solve; 0.14 s/solve at 4 ranks); amazon keep 1/8 -> acc 0.07, 93% unreached.
+
 ## Next (parent): cluster/RUNBOOK.md "Vanda" first sequence. Atlas: atlas-calibrate 1040047 still queued.
 
 ## Tonight (parent): cluster/RUNBOOK.md "Atlas" - discover atlas8 again -> apply_discovery (read, --apply) -> check ->
@@ -124,7 +156,8 @@ submit vanda-validate + atlas-validate -> poll/fetch -> submit vanda-calibrate -
 submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, vanda-1node-variants-layouts.
 
 ## Next step
-Parent: the first real session above (needs the HPC account approval, the key installed, the VPN).
+Parent (turn 6): merge graph-extension (RUNBOOK "The graph extension"), fetch the six datasets on the login nodes,
+submit <cluster>-graph-prep, then the graph jobs. Earlier: the first real session above.
 Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
 whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
 place; GitHub link optional), first full render acceptance, the Canvas upload.

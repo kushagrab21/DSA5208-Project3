@@ -469,6 +469,21 @@ def cmd_selftest():
     print("  atlas plan (fallback, real queue limits):    expected PASS     got %s" % ("PASS" if not c0 else c0[:2]))
     print("  atlas + a 192-core and an 8-core job:        expected REFUSED  got %s" %
           ("REFUSED: " + "; ".join(x for x in c1 if "its queue takes" in x)[:200] if c1 else "PASS"))
+    # the graph part: no >=256-core graph-strong cells, and no BFS-order variant cells
+    g1 = copy.deepcopy(plan)
+    g1["groups"]["graph-strong"]["cells"] = [c for c in g1["groups"]["graph-strong"]["cells"]
+                                             if g1["cells"][c]["ranks"] * g1["cells"][c]["threads"] < 256]
+    r1 = coverage(g1)
+    g2 = copy.deepcopy(plan)
+    g2["groups"]["graph-variants"]["cells"] = [c for c in g2["groups"]["graph-variants"]["cells"]
+                                               if g2["cells"][c].get("order") != "bfs"]
+    r2 = coverage(g2)
+    gok = any("graph-strong" in x and "256" in x for x in r1) and any("graph-variants" in x for x in r2)
+    ok = ok and gok
+    print("  vanda without the >=256-core graph-strong cells: expected REFUSED  got %s" %
+          (("REFUSED: " + "; ".join(x for x in r1 if "graph-strong" in x))[:160] if r1 else "PASS"))
+    print("  vanda without the BFS-order graph variants:      expected REFUSED  got %s" %
+          (("REFUSED: " + "; ".join(x for x in r2 if "graph-variants" in x))[:160] if r2 else "PASS"))
     print("SELFTEST run_plan check: %s" % ("QUALIFIED" if ok else "FAILED"))
     return 0 if ok else 1
 

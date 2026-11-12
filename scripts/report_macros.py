@@ -990,7 +990,7 @@ def literate(out):
              "ᵢ": "$_i$", "ⱼ": "$_j$", "≠": "$\\neq$", "≈": "$\\approx$", "√": "$\\surd$", "∂": "$\\partial$",
              "’": "'", "‘": "'", "“": "\"", "”": "\"", "^": "\\^{}", "∈": "$\\in$", "Ω": "$\\Omega$", "°": "$^\\circ$",
              "⁻": "$^-$", "¹": "$^1$", "⁰": "$^0$", "₂": "$_2$", "λ": "$\\lambda$", "∞": "$\\infty$",
-             "ᵈ": "$^d$", "\u202f": " "}
+             "ᵈ": "$^d$", "\u202f": " ", "θ": "$\\theta$"}
     unknown = sorted(c for c in chars if c not in known)
     parts = ["{%s}{{%s}}1" % (c, known[c]) for c in sorted(chars) if c in known]
     parts += ["{%s}{{?}}1" % c for c in unknown]

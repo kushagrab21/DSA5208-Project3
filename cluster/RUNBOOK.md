@@ -182,6 +182,63 @@ cluster/ops/submit.sh vanda vanda-1node-variants-layouts
 commit, sync and resubmit, as was done on Atlas. `cluster/ops/test_fake_cluster.sh` rehearses this sequence,
 including the GPU job, on a fake Vanda with the same routes.
 
+## The graph extension (SNAP community labelling)
+
+The graph runs use their own program, `bin/p3graph`, built and qualified by the `<cluster>-graph-prep` job:
+- `scripts/build.sh graph` builds `bin/p3graph`, `bin/p3graph_bug1` and `bin/p3convert`, and touches no `p3cg` binary,
+  so the Poisson runs keep their qualified program file;
+- it converts the six datasets in `~/p3data`;
+- `checks/validate_graph.py --qualify` must pass G1 and G2 and refuse the planted ghost bug (G3);
+- it writes the seed lists to `results/<cluster>/graph-seeds/`.
+
+A graph timing job opens only with `timing_gate.py --require-cases G1,G2`, and `submit.sh` checks the hash of
+`bin/p3graph` on the cluster against a G1;G2 qualification there. The graph groups, cells and jobs were added to the
+plans by `scripts/make_graph_plan.py` as amendment `graph-2026-11-12`, with its reason; no existing cell or job changed.
+
+**Data.** The data lives outside the repository, in `~/p3data` on each cluster (`P3_DATA` overrides it). Files are
+downloaded on a LOGIN node, because compute nodes may have no internet. Expect about 0.6 GB of downloads and
+about 3 GB once converted (com-Orkut is about 1 GB per vertex order). Check the space first.
+
+**Merging the branch** (`graph-extension`, from the worktree `../build-graph`) into `main`:
+```bash
+cd ~/Desktop/final_assignment/build && git status --short          # must print nothing
+git merge -X diff-algorithm=histogram graph-extension             # plans: graph items are pure additions
+# if config/run_plan.*.json conflicts: take main's file and re-add the graph part (idempotent, refuses to edit):
+#   git checkout --ours config/run_plan.vanda.json config/run_plan.atlas.json config/run_plan.local.json
+#   python3 scripts/make_graph_plan.py && git add config/ && git commit
+python3 scripts/make_graph_plan.py --check                        # "graph part as generated" for all three
+python3 checks/run_plan.py check --plan vanda && python3 checks/run_plan.py check --plan atlas
+```
+
+**Vanda sequence** (Atlas: the same with `atlas8` and the `atlas-graph-*` jobs):
+```bash
+ssh vanda 'df -h ~; quota -s 2>/dev/null; mkdir -p ~/p3data'
+cluster/ops/sync.sh vanda                                          # the merged commit (scripts/fetch_snap.sh included)
+ssh vanda 'cd ~/p3 && for d in email-Eu-core com-amazon com-dblp com-youtube com-lj com-orkut; do
+             scripts/fetch_snap.sh $d ~/p3data || exit 1; done; cat ~/p3data/raw/SOURCES.tsv'
+cluster/ops/submit.sh vanda vanda-graph-prep                       # build graph + convert six + G1/G2/G3 + seed lists
+cluster/ops/poll.sh vanda; cluster/ops/fetch.sh vanda              # validated_binaries.csv gains a G1;G2 row
+#   read cluster/logs/vanda/p3g-prep.o*: "p3convert com-orkut: ... V=3072441 E=117185083", "QUALIFICATION: ...
+#   QUALIFIED"; the converter's counts must equal SNAP's (email-Eu-core: E=16064 undirected, from 25571 directed)
+cluster/ops/submit.sh vanda vanda-graph-4node                      # 288 cores: strong top + variants + layouts
+cluster/ops/submit.sh vanda vanda-graph-strong                     # 2..72 cores
+cluster/ops/submit.sh vanda vanda-graph-serial                     # dataset ladder + the 1-core strong baselines
+cluster/ops/submit.sh vanda vanda-graph-variants                   # 72 cores
+cluster/ops/submit.sh vanda vanda-graph-2node                      # 144 cores
+cluster/ops/submit.sh vanda vanda-graph-sweep                      # accuracy vs a, s, sparsity (E11, E12)
+cluster/ops/poll.sh vanda; cluster/ops/fetch.sh vanda
+python3 checks/run_plan.py status --plan vanda | grep graph-
+scripts/make_report.sh
+```
+- The plan must be frozen before timed jobs, as before: the amendment is part of the frozen plan, and a plan
+  changed by the merge must be synced, or `submit.sh` refuses.
+- The graph core-hour estimates are ASSUMED: about 660 estimated for Vanda, about 2 000 with the ×3 walltime
+  safety, against the budget of 10 000. Compare the first graph job's walltime used with its estimate before
+  submitting the rest; `poll.sh` prints both.
+- A graph cell that fails, for example from lack of memory, prints `p3: graph cell ... FAILED` in the job log, and the
+  job goes on to the next cell. The run plan status then shows the cell unfilled; give it an unplanned job with a
+  reason, as for any missing cell.
+
 ## Failures
 
 **Job killed at the walltime.** poll shows `FAILED (exit 271)` (or `-29`), `walltime exceeded`, `missing records k/n`.
