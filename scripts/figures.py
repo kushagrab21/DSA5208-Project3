@@ -47,6 +47,19 @@ NODES = ["#1baf7a", "#6250d6"]
 
 FIGURES = {}
 
+# Cells with a "placement" (the shared-node insurance run, e.g. 8 x 32 cores, unbound) are drawn as hollow diamonds in
+# the series colour, off the line through the whole-node runs; their speedups use the same 1-core baseline.
+SPREAD_MARK = dict(marker="D", ms=6, mfc="none", mew=1.4, ls="none")
+
+
+def spread_label(c):
+    return "%d$\\times$%d cores, shared nodes, unbound" % (c["nodes"], c["ranks"] // c["nodes"])
+
+
+def split_place(cs):
+    """(whole-node cells, shared-placement cells) of a series [(cid, cell)]."""
+    return [t for t in cs if not t[1].get("placement")], [t for t in cs if t[1].get("placement")]
+
 
 def figure(name, groups, gpu=False):
     def deco(fn):
@@ -77,7 +90,11 @@ def count_axis(ax, ticks, axis="x"):
     """Log2 axis with the actual counts as tick labels (cores, ranks)."""
     getattr(ax, "set_%sscale" % axis)("log", base=2)
     a = ax.xaxis if axis == "x" else ax.yaxis
-    a.set_major_locator(FixedLocator(sorted(set(ticks))))
+    ts = sorted(set(ticks))
+    # two counts within 20% (256 on shared nodes next to 288 on whole nodes) would print on top of each other: keep the
+    # larger tick; the marker of the other stays, and the caption names it
+    ts = [t for i, t in enumerate(ts) if not (i + 1 < len(ts) and ts[i + 1] < 1.2 * t)]
+    a.set_major_locator(FixedLocator(ts))
     a.set_major_formatter(FuncFormatter(lambda v, _: "%d" % round(v)))
     a.set_minor_locator(NullLocator())
     ax.tick_params(axis=axis, labelsize=7)
@@ -186,14 +203,17 @@ def _scaling(D, group, ideal):
     used, meta, ticks = [], [], []
     for ax, d in zip(axes, (2, 3)):
         for (cg, halo), (color, lab) in VARIANT.items():
-            pts = sorted((c["ranks"] * c["threads"], D.med(cid), c["n"]) for cid, c in
-                         D.cells(group, dim=d, cg=cg, halo=halo))
-            series = [cid for cid, c in D.cells(group, dim=d, cg=cg, halo=halo)]
+            main, extra = split_place(D.cells(group, dim=d, cg=cg, halo=halo))
+            pts = sorted((c["ranks"] * c["threads"], D.med(cid), c["n"]) for cid, c in main)
+            series = [cid for cid, c in main + extra]
             D.check_same_build(series, "%s %dD %s/%s" % (group, d, cg, halo))
             used += series
             xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-            ticks += xs
+            ticks += xs + [c["ranks"] for cid, c in extra]
             ax.plot(xs, ys, color=color, marker="o", ms=4.5, lw=1.8, mec=SURFACE, mew=1, label=lab)
+            for k, (cid, c) in enumerate(extra):
+                ax.plot([c["ranks"]], [D.med(cid)], color=color, **SPREAD_MARK,
+                        label=spread_label(c) if (cg, halo) == ("classic", "blocking") and k == 0 else None)
             end_label(ax, xs[-1], ys[-1], cg, dy=-6 if cg == "classic" else 6)
             if (cg, halo) == ("classic", "blocking"):
                 ax.plot(xs, [ideal(ys[0], x) for x in xs], color=MUTED, lw=1, ls=":", label="ideal (classic)")
@@ -230,11 +250,16 @@ def fig_efficiency(D):
         for d in (2, 3):
             ls, mk, dlab = DIMSTYLE[d]
             for (cg, halo), (color, vlab) in VARIANT.items():
-                cs = D.cells(group, dim=d, cg=cg, halo=halo)
-                D.check_same_build([cid for cid, c in cs], "%s %dD %s/%s" % (group, d, cg, halo))
-                used += [cid for cid, c in cs]
+                cs, extra = split_place(D.cells(group, dim=d, cg=cg, halo=halo))
+                D.check_same_build([cid for cid, c in cs + extra], "%s %dD %s/%s" % (group, d, cg, halo))
+                used += [cid for cid, c in cs + extra]
                 pts = sorted((c["ranks"] * c["threads"], D.med(cid)) for cid, c in cs)
                 t1 = pts[0][1]
+                for cid, c in extra:  # same 1-core baseline
+                    P = c["ranks"]
+                    ax.plot([P], [t1 / (P * D.med(cid)) if group == "strong" else t1 / D.med(cid)], color=color,
+                            **SPREAD_MARK)
+                    ticks.append(P)
                 xs = [p[0] for p in pts]
                 ys = [t1 / (p[0] * p[1]) if group == "strong" else t1 / p[1] for p in pts]
                 ticks += xs
@@ -259,9 +284,14 @@ def fig_comm(D):
     fig, axes = new_fig(2)
     used, meta, ticks = [], [], []
     for ax, d in zip(axes, (2, 3)):
-        cs = sorted(D.cells("strong", dim=d, cg="classic", halo="blocking"), key=lambda t: t[1]["ranks"])
-        D.check_same_build([cid for cid, c in cs], "strong %dD classic/blocking" % d)
-        used += [cid for cid, c in cs]
+        cs, extra = split_place(sorted(D.cells("strong", dim=d, cg="classic", halo="blocking"),
+                                       key=lambda t: t[1]["ranks"]))
+        D.check_same_build([cid for cid, c in cs + extra], "strong %dD classic/blocking" % d)
+        used += [cid for cid, c in cs + extra]
+        for cid, c in extra:
+            for col, color, mk, lab in COMP:
+                ax.plot([c["ranks"]], [D.med(cid, col) / float(D.row0(cid)["iters"])], color=color, **SPREAD_MARK)
+            ticks.append(c["ranks"])
         xs = [c["ranks"] for cid, c in cs]
         ticks += xs
         for k, (col, color, mk, lab) in enumerate(COMP):
@@ -380,12 +410,16 @@ def fig_graph_strong(D):
     for ax, dset in zip(axes, GP.STRONG_DATASETS):
         last = {}
         for cg in CGSTYLE:
-            cs = _graph_series(D, "graph-strong", dset, cg)
+            cs = split_place(_graph_series(D, "graph-strong", dset, cg))[0]
             last[cg] = D.med(cs[-1][0], "t_solve") if cs else 0
         for cg, (color, mk, lab) in CGSTYLE.items():
-            cs = _graph_series(D, "graph-strong", dset, cg)
-            D.check_same_build([cid for cid, c in cs], "graph-strong %s %s" % (dset, cg))
-            used += [cid for cid, c in cs]
+            cs, extra = split_place(_graph_series(D, "graph-strong", dset, cg))
+            D.check_same_build([cid for cid, c in cs + extra], "graph-strong %s %s" % (dset, cg))
+            used += [cid for cid, c in cs + extra]
+            for k, (cid, c) in enumerate(extra):
+                ax.plot([c["ranks"]], [D.med(cid, "t_solve")], color=color, **SPREAD_MARK,
+                        label=spread_label(c) if cg == "classic" and k == 0 else None)
+                ticks.append(c["ranks"])
             xs = [c["ranks"] for cid, c in cs]
             ys = [D.med(cid, "t_solve") for cid, c in cs]
             ticks += xs
@@ -415,9 +449,13 @@ def fig_graph_comm(D):
     comp = [("t_compute", "#1baf7a", "o", "local SpMV + vectors"), ("t_halo", "#6250d6", "s", "ghost exchange"),
             ("t_reduce", "#e34948", "^", "global reductions")]
     for ax, dset in zip(axes, GP.STRONG_DATASETS):
-        cs = _graph_series(D, "graph-strong", dset, "classic")
-        D.check_same_build([cid for cid, c in cs], "graph-strong %s classic" % dset)
-        used += [cid for cid, c in cs]
+        cs, extra = split_place(_graph_series(D, "graph-strong", dset, "classic"))
+        D.check_same_build([cid for cid, c in cs + extra], "graph-strong %s classic" % dset)
+        used += [cid for cid, c in cs + extra]
+        for cid, c in extra:
+            for col, color, mk, lab in comp:
+                ax.plot([c["ranks"]], [D.med(cid, col) / float(D.row0(cid)["iters"])], color=color, **SPREAD_MARK)
+            ticks.append(c["ranks"])
         ticks += [c["ranks"] for cid, c in cs]
         for k, (col, color, mk, lab) in enumerate(comp):
             pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs
@@ -560,8 +598,10 @@ def build(results, out, names=None, stamp_text=None):
                 "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
         mixed, partial = None, False
         if D.complete(*groups):
+            # complete may mean a run or its insurance partner is recorded: draw from the recorded cells
+            unrec = any(c not in D.cell_rows for g in groups for c in D.group_cells(g))
             try:
-                fig, axes, used = fn(D)
+                fig, axes, used = fn(D.filled_view() if unrec else D)
             except RD.MixedBuild as e:
                 mixed = str(e)
                 plt.close("all")
@@ -637,7 +677,8 @@ def fake_graph_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
         row = dict((k, "0") for k in C.GRAPH_COLUMNS)
         row.update({
             "schema": C.GRAPH_SCHEMA, "utc": utc, "cluster": plan["cluster"], "host": host, "pbs_jobid": jobid,
-            "cell": cid, "tag": "test", "nodes": c["nodes"], "ranks": P, "threads": c["threads"],
+            "cell": cid, "tag": "test" + ("@" + c["placement"] if c.get("placement") else ""), "nodes": c["nodes"],
+            "ranks": P, "threads": c["threads"],
             "dataset": c["dataset"], "order": c["order"], "keep": "%g" % c["keep"], "vertices": V, "edges": E,
             "nonzeros": 2 * E + V, "avg_degree": "%.6e" % (2.0 * E / V), "max_degree": d["dmax"], "part": c["part"],
             "exchange": c["exchange"], "cg": c["cg"], "a": "%g" % c["a"], "K": c["K"], "s": c["s"],
@@ -687,7 +728,8 @@ def fake_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
         row = dict((k, "0") for k in C.RECORD_COLUMNS)
         row.update({
             "schema": C.RECORD_SCHEMA, "utc": utc, "cluster": plan["cluster"], "host": host, "pbs_jobid": jobid,
-            "cell": cid, "tag": "test", "nodes": c["nodes"], "ranks": P, "threads": c["threads"],
+            "cell": cid, "tag": "test" + ("@" + c["placement"] if c.get("placement") else ""), "nodes": c["nodes"],
+            "ranks": P, "threads": c["threads"],
             "gpus": c.get("gpus", 0), "dim": c["dim"], "n": c["n"], "unknowns": N,
             "nonzeros": N + 2 * c["dim"] * (c["n"] - 1) * c["n"] ** (c["dim"] - 1),
             "decomp": "%dD" % c["decomp"], "pdims": "x", "local_max": -(-N // P), "local_min": N // P,

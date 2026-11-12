@@ -71,9 +71,9 @@ boundary values are exchanged between processes before or during the computation
 global sums per iteration or overlaps a single one with the work. A small set of \val{val.ncases} validation cases
 shows that the error falls as $h^2$ and that every parallel configuration reproduces the serial result to rounding,
 and it refuses two deliberately broken versions of the boundary exchange. On \val{cl.name}, with the problem fixed
-and the cores increased to \val{topcores}, classic CG keeps a \term{parallel efficiency} (how close the run
+and the cores increased to \val{meas.top}\val{meas.where}, classic CG keeps a \term{parallel efficiency} (how close the run
 comes to being $P$ times as fast on $P$ cores) of \val{st.3.classic.Etop} in 3D and \val{st.2.classic.Etop} in 2D; with the work per core fixed,
-it keeps \val{wk.3.classic.Etop} (3D) and \val{wk.2.classic.Etop} (2D) of the one-core speed.\val{scale.note} At \val{topcores}
+it keeps \val{wk.3.classic.Etop} (3D) and \val{wk.2.classic.Etop} (2D) of the one-core speed.\val{scale.note} At \val{meas.top}
 cores, exchanging boundary values takes \val{cm.3.halo} and global sums \val{cm.3.red} of the 3D run time. One GPU
 runs the 3D problem \val{gpu.3.vsnode} times as fast as the best layout on one \val{lay.cpn}-core node of
 \val{cl.layout}.
@@ -442,15 +442,15 @@ The strong-scaling grids have \val{strong.N2} unknowns in 2D ($n=\val{strong.n2}
 ($n=\val{strong.n3}$): the same work, so 2D and 3D differ only in the stencil and in how much halo each rank has.
 They fit in one node's memory (at most \val{strong.mem3}\,GB for pipelined CG), and \val{iters} iterations of
 classic CG take \val{st.2.classic.T1}\,s (2D) and \val{st.3.classic.T1}\,s (3D) on one core. Ranks are \val{rankcounts}.
-With classic CG, the efficiency at \val{topcores} cores is \val{st.2.classic.Etop} in 2D and
+With classic CG, the efficiency at \val{meas.top} cores\val{meas.where} is \val{st.2.classic.Etop} in 2D and
 \val{st.3.classic.Etop} in 3D (speedups \val{st.2.classic.Stop} and \val{st.3.classic.Stop}); on one full node it
 is \val{st.2.classic.Enode} and \val{st.3.classic.Enode}. With pipelined CG and overlapped halos the efficiency at
-\val{topcores} cores is \val{st.2.pipelined.Etop} (2D) and \val{st.3.pipelined.Etop} (3D).
+\val{meas.top} cores is \val{st.2.pipelined.Etop} (2D) and \val{st.3.pipelined.Etop} (3D).\val{meas.both}
 
 \figslot{fig_strong}{0.98\linewidth}{Strong scaling on \val{cl.strong}: time for \val{iters} iterations on the fixed grids, against
-cores. The dotted line is perfect scaling from the classic one-core time. At \val{topcores} cores the classic speedup is
-\val{st.2.classic.Stop} (2D) and \val{st.3.classic.Stop} (3D), against \val{topcores} for perfect scaling.
-\src{scripts/figures.py}}
+cores. The dotted line is perfect scaling from the classic one-core time. At \val{meas.top} cores\val{meas.where} the classic speedup is
+\val{st.2.classic.Stop} (2D) and \val{st.3.classic.Stop} (3D), against \val{meas.top} for perfect scaling.
+Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\small
 \input{generated/tab_strong2.tex}\\[4pt]
@@ -461,15 +461,15 @@ efficiency $E$. \src{scripts/report\_macros.py}}\label{tab:strong}
 
 \subsection{Weak scaling}
 Weak scaling keeps about \val{weak.per2} unknowns per rank in 2D (base $n=\val{weak.n2}$) and \val{weak.per3} in 3D
-(base $n=\val{weak.n3}$), growing $n$ as $P^{1/d}$; at \val{topcores} ranks the grids are $n=\val{weak.top.n2}$ (2D)
-and $n=\val{weak.top.n3}$ (3D). The number of iterations is fixed, so this measures the cost of one iteration; to a
+(base $n=\val{weak.n3}$), growing $n$ as $P^{1/d}$; at \val{meas.top} ranks the grids are $n=\val{wk.top.n2}$ (2D)
+and $n=\val{wk.top.n3}$ (3D). The number of iterations is fixed, so this measures the cost of one iteration; to a
 fixed tolerance the iteration count would grow with $n$ as well (Section~\ref{sec:serial}). With classic CG the
-efficiency at \val{topcores} cores is \val{wk.2.classic.Etop} (2D) and \val{wk.3.classic.Etop} (3D), and on one full
+efficiency at \val{meas.top} cores\val{meas.where} is \val{wk.2.classic.Etop} (2D) and \val{wk.3.classic.Etop} (3D), and on one full
 node \val{wk.2.classic.Enode} and \val{wk.3.classic.Enode}.
 
 \figslot{fig_weak}{0.98\linewidth}{Weak scaling on \val{cl.strong}: time for \val{iters} iterations with the work per core held fixed.
-A flat line is perfect; the efficiency at \val{topcores} cores is \val{wk.2.classic.Etop} (2D) and
-\val{wk.3.classic.Etop} (3D) for classic CG. \src{scripts/figures.py}}
+A flat line is perfect; the efficiency at \val{meas.top} cores is \val{wk.2.classic.Etop} (2D) and
+\val{wk.3.classic.Etop} (3D) for classic CG. Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\small
 \input{generated/tab_weak2.tex}\\[4pt]
@@ -480,22 +480,22 @@ A flat line is perfect; the efficiency at \val{topcores} cores is \val{wk.2.clas
 
 \figslot{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments, all four
 series, on \val{cl.strong}; the dotted line is perfect efficiency. Points up to \val{cpn} cores are inside one
-node\val{scale.beyond}. \src{scripts/figures.py}}
+node\val{scale.beyond}. Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 
 \subsection{The cost of communication}
 Figure~\ref{fig:fig_comm} splits the classic strong-scaling runs into computation, halo exchange and global sums per
-iteration. At \val{topcores} cores the halo exchange takes \val{cm.3.halo} of the 3D run time and \val{cm.2.halo} of
+iteration. At \val{meas.top} cores\val{meas.where} the halo exchange takes \val{cm.3.halo} of the 3D run time and \val{cm.2.halo} of
 the 2D one, and the global sums take \val{cm.3.red} and \val{cm.2.red}. Table~\ref{tab:comm} gives the same split at
-one node and at \val{topcores} cores, with the number of messages and halo values per exchange.
+one node and at \val{meas.top} cores, with the number of messages and halo values per exchange.
 
 \figslot{fig_comm}{0.98\linewidth}{Time per iteration in computation, halo exchange and global sums, mean over
 ranks, classic CG with blocking halos, on \val{cl.strong}; at one rank there is no halo exchange or global sum to time. At
-\val{topcores} cores the halo exchange takes \val{cm.3.halo} (3D) and \val{cm.2.halo} (2D) of the run time.
-\src{scripts/figures.py}}
+\val{meas.top} cores the halo exchange takes \val{cm.3.halo} (3D) and \val{cm.2.halo} (2D) of the run time.
+Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 
 \begin{table}[H]\centering\footnotesize
 \input{generated/tab_comm.tex}
-\caption{Time per iteration (ms) by part on \val{cl.strong}, classic CG with blocking halos, at one node and at \val{topcores} cores;
+\caption{Time per iteration (ms) by part on \val{cl.strong}, classic CG with blocking halos, at one node and at \val{meas.top} cores ($\dagger$: \val{spread.desc});
 messages and halo values per exchange for the rank with the most. \src{scripts/report\_macros.py}}\label{tab:comm}
 \end{table}
 
@@ -810,7 +810,7 @@ show the same thing as a larger edge cut.}
 \subsection{Strong scaling and communication}
 \figslot{fig_graph_strong}{0.98\linewidth}{Strong scaling on \val{cl.gr.strong}: time per system against cores, for
 \val{gr.strongdata}. Each point times \val{gr.rhs} of the \val{gr.K} systems. The dotted line is perfect scaling from
-one core. \src{scripts/figures.py}}
+one core. Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 The two largest graphs, \val{gr.strongdata}, were run on \val{gr.strong.counts} cores (one rank per core), with the nnz
 partition, the neighbourhood exchange and the natural order. At \val{gr.st.top} cores, classic CG reaches a speedup of
 \val{gr.st.com-lj.classic.S} on com-LiveJournal and \val{gr.st.com-orkut.classic.S} on com-Orkut (efficiencies
@@ -827,7 +827,7 @@ speedup $S$ and efficiency $E$. \src{scripts/report\_macros.py}}\label{tab:graph
 
 \figslot{fig_graph_comm}{0.98\linewidth}{Where the time of a graph CG iteration goes on \val{cl.gr.strong}: local
 products and vector updates, ghost exchange and global reductions, per iteration, classic CG.
-\src{scripts/figures.py}}
+Hollow diamonds: \val{spread.desc}, the insurance run, against the same one-core time. \src{scripts/figures.py}}
 At the largest core count the ghost exchange takes \val{gr.comm.com-lj.halo} of the time on com-LiveJournal and
 \val{gr.comm.com-orkut.halo} on com-Orkut, and the global sums \val{gr.comm.com-lj.red} and
 \val{gr.comm.com-orkut.red}. A rank there exchanges with up to \val{gr.comm.com-orkut.nbrs} others on com-Orkut and
@@ -919,7 +919,7 @@ halo additionally crosses between device and host.
 Which part needs the most communication depends on the scale. By volume it is the halo exchange: at \val{topcores}
 ranks a 3D block sends \val{geo.3d.cube.halo} values per exchange, while a global sum sends one or two numbers. By
 number of waits it is the global sums: two per iteration in classic CG, each involving every rank. In the measured
-3D runs at \val{topcores} cores on \val{cl.strong} the halo took \val{cm.3.halo} and the global sums \val{cm.3.red} of the time.
+3D runs at \val{meas.top} cores on \val{cl.strong} the halo took \val{cm.3.halo} and the global sums \val{cm.3.red} of the time.
 
 \interpslot{discussion}{State the conclusions: which split, halo exchange, CG variant and rank-thread layout we would
 use at which scale, and what limited scaling in our runs; keep to what the tables show.}

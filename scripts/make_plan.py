@@ -44,6 +44,8 @@ def cell_id(c):
         s += "-g%d" % c["gpus"]
     if c.get("queue"):
         s += "-q%s" % c["queue"]  # same parameters, different queue (node type): a different cell
+    if c.get("placement"):
+        s += "-p%s" % c["placement"].replace("-", "")  # same parameters, other placement (shared nodes): another cell
     return s
 
 

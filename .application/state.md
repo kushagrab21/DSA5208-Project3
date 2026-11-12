@@ -181,9 +181,23 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   graphs across nodes (0.72-0.81 of classic) where classic graph CG slows down on 2 nodes (x1.49-1.54); graph hybrid
   2x36 x1.86 on Orkut; rows partition x1.55-2.03 slower; BFS order cuts MORE edges on LJ/Orkut.
 
+## Turn 8 (12 Nov 2026, ~22:30 IST): 256-core insurance job on shared nodes
+- Amendment spread256-2026-11-12 (scripts/amend_vanda_spread256.py, idempotent, --check): job vanda-256spread,
+  select=8:ncpus=32:mpiprocs=32:ompthreads=1:mem=93gb, place=scatter, binary cpu+graph, bind none; 12 cells
+  (placement shared-8x32, insurance_for the 288-rank cell): Poisson strong + weak 2D/3D classic+blocking and
+  pipelined+overlap, graph strong com-lj/com-orkut classic+pipelined; added to the strong/weak/graph-strong groups.
+  Estimate from measured 144-rank siblings (x1.0 / x1.2 / x2.0 + setup): 1595 s, walltime 00:55:00, 113 core-h
+  (227 worst). The whole-node 288 jobs stay queued.
+- env.sh: P3_BIND=none -> --map-by ppr:N:node --bind-to none and OMP_PROC_BIND=false (only that job; others unchanged).
+- Rows record placement through the cell id (-pshared8x32) and the tag (<group>@shared-8x32): binaries unchanged.
+- run_plan: mixed-binary jobs (one gate per program), est_seconds, per-placement matching; opslib checks both
+  programs. Report: a run or its insurance partner completes a group; values/figures from recorded cells; hollow
+  diamonds for shared-node points (same 1-core baseline); meas.top/meas.where name the top count and placement;
+  E3/E4 met from either placement (selftest scenario "only the 256-core shared-node insurance run").
+
 ## Next step
-Parent (turn 7): commit is on main; sync vanda; submit vanda-gpu1 (cluster/ops/submit.sh vanda vanda-gpu1); show the
-user the seven DRAFT-FOR-USER-REVIEW paragraphs; when 4node/graph-4node/gpu1 arrive, fetch and make_report.
+Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
+vanda-gpu queued; fetch and make_report when rows arrive; show the user the seven DRAFT-FOR-USER-REVIEW paragraphs.
 Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
 whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
 place; GitHub link optional), first full render acceptance, the Canvas upload.

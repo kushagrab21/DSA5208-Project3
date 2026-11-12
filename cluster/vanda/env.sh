@@ -89,8 +89,12 @@ export P3_MPIRUN="${P3_MPIRUN:-mpirun $P3_MPI_EXTRA --bind-to none -x OMP_NUM_TH
 # Open MPI will not bind one rank across two sockets ("Your job failed to map ... CPUs/rank: 72", vanda-1node-variants-layouts
 # 1546588, 12 Nov): a rank whose threads exceed one socket's cores is mapped unbound, and OpenMP pins its threads
 # (OMP_PLACES=cores, OMP_PROC_BIND=close). Cores per socket come from lscpu on the compute node itself.
+# P3_BIND=none (set only by a job on shared nodes, e.g. vanda-256spread): such a job sees all cores of a node (cpuset
+# 0-71, test 1547726), so binding to cores could collide with other users' jobs; ranks are mapped per node, unbound,
+# and OpenMP does not pin either. Every other job keeps the mapping below.
 p3_map_args() {
   local rpn="$1" th="$2" cps
+  if [[ "${P3_BIND:-}" == "none" ]]; then echo "--map-by ppr:${rpn}:node --bind-to none"; return; fi
   cps="$(lscpu 2>/dev/null | awk -F: '/^Core\(s\) per socket/{gsub(/ /,"",$2); print $2}' || true)"
   if [[ -n "$cps" && "$th" -gt "$cps" ]]; then echo "--map-by ppr:${rpn}:node --bind-to none"
   else echo "--map-by ppr:${rpn}:node:PE=${th} --bind-to core"; fi
@@ -98,7 +102,9 @@ p3_map_args() {
 p3_launch() {
   local np="$1" rpn="$2" th="$3"
   shift 3
-  OMP_NUM_THREADS="$th" OMP_PLACES=cores OMP_PROC_BIND=close \
+  local pb=close
+  if [[ "${P3_BIND:-}" == "none" ]]; then pb=false; fi   # unbound ranks: pinned threads would all land on core 0
+  OMP_NUM_THREADS="$th" OMP_PLACES=cores OMP_PROC_BIND="$pb" \
     mpirun $P3_MPI_EXTRA -np "$np" $(p3_map_args "$rpn" "$th") \
     ${P3_REPORT_BINDINGS:+--report-bindings} -x OMP_NUM_THREADS -x OMP_PLACES -x OMP_PROC_BIND -x P3_CLUSTER "$@"
 }

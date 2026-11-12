@@ -173,10 +173,19 @@ def merge(plan, g, check):
     """Adds g to plan. Returns (changed, problems)."""
     problems, changed = [], False
     have_jobs = dict((j["id"], j) for j in plan["jobs"])
+    def own(kind, item):
+        """The item as this amendment made it: later amendments may add cells to a graph group (recorded in its
+        changed_by), which is not a difference."""
+        if kind != "group":
+            return item
+        x = dict(item)
+        x.pop("changed_by", None)
+        x["cells"] = [c for c in x["cells"] if plan["cells"].get(c, {}).get("amendment", AMENDMENT) == AMENDMENT]
+        return x
     for kind, new, old in (("group", g.groups, plan["groups"]), ("cell", g.cells, plan["cells"])):
         for k, v in new.items():
             if k in old:
-                if old[k] != v:
+                if own(kind, old[k]) != v:
                     problems.append("%s %s exists and differs" % (kind, k))
             else:
                 changed = True

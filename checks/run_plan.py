@@ -109,6 +109,8 @@ def cell_seconds(plan, c):
 def job_estimate(plan, j):
     M = model_of(plan)
     secs = sum(cell_seconds(plan, plan["cells"][cid]) for cid in j["cells"]) + M["job_overhead_s"]
+    if j.get("est_seconds"):  # an estimate from measured runs, recorded with its derivation in the amendment
+        secs = float(j["est_seconds"])
     if j.get("validate_first"):
         secs += 600.0
     if j.get("convert"):
@@ -149,9 +151,17 @@ def job_select(plan, j):
     return select
 
 
+def job_binaries(j):
+    """The programs a job runs: "cpu", "graph", "offload", or a mix such as "cpu+graph"."""
+    return set(j.get("binary", "cpu").split("+"))
+
+
 def job_safety(plan, j):
-    """Walltime safety factor: the plan's, or the graph model's (larger: iteration counts are uncertain)."""
-    if j.get("binary") == "graph":
+    """Walltime safety factor: the plan's, or the graph model's (larger: iteration counts are uncertain); a job whose
+    estimate comes from measured runs (est_seconds) takes the plan's."""
+    if j.get("est_seconds"):
+        return plan["model"]["safety"]
+    if "graph" in job_binaries(j):
         return max(plan["model"]["safety"], GP.model(plan)["safety"])
     return plan["model"]["safety"]
 
@@ -167,6 +177,9 @@ def walltime(secs, safety):
 def matches(c, r):
     if GP.is_graph(c):
         return GP.matches(c, r)
+    # a cell with a placement (e.g. shared-8x32) is recorded with the tag <group>@<placement>
+    if c.get("placement") and "@" + c["placement"] not in r.get("tag", ""):
+        return False
     try:
         same = (int(r["dim"]) == c["dim"] and int(r["n"]) == c["n"] and int(r["ranks"]) == c["ranks"] and
                 int(r["threads"]) == c["threads"] and int(r["nodes"]) == c["nodes"] and
@@ -384,7 +397,7 @@ def coverage(plan):
             c = cells[cid]
             if c["nodes"] != j["nodes"]:
                 bad.append("cell %s needs %d nodes, job %s has %d" % (cid, c["nodes"], j["id"], j["nodes"]))
-            if c.get("binary", "cpu") != j.get("binary", "cpu"):
+            if c.get("binary", "cpu") not in job_binaries(j):
                 bad.append("cell %s binary %s in job %s (%s)" % (cid, c.get("binary"), j["id"], j.get("binary")))
             if c["ranks"] * c["threads"] > j["nodes"] * j["ncpus_per_node"]:
                 bad.append("cell %s needs %d cores, job %s has %d" % (cid, c["ranks"] * c["threads"], j["id"],
@@ -515,11 +528,17 @@ def cmd_pbs(plan, jid):
         tpl = f.read()
     secs, cores = job_estimate(plan, j)
     pbs = plan.get("pbs", {})
-    graph = j.get("binary") == "graph"
+    jb = job_binaries(j)
+    graph = "graph" in jb
     binary = "bin/p3cg_offload" if j.get("binary") == "offload" else "bin/p3graph" if graph else "bin/p3cg"
+    path_of = {"cpu": "bin/p3cg", "graph": "bin/p3graph", "offload": "bin/p3cg_offload"}
     ncpus = j["ncpus_per_node"]
     select = job_select(plan, j)
     body = []
+    if j.get("bind") == "none":
+        # shared nodes (place=scatter): the job sees every core of a node, so binding ranks to cores could collide with
+        # other users' jobs; p3_launch maps ranks per node and leaves the placement to the OS (cluster/vanda/env.sh)
+        body.append("export P3_BIND=none")
     if graph:
         body += ['export P3_DATA="${P3_DATA:-$HOME/p3data}"   # SNAP data, outside the repository (fetch_snap.sh)',
                  'GREC="${REC%.csv}.graph.csv"']
@@ -542,23 +561,26 @@ def cmd_pbs(plan, jid):
                  "python3 checks/validate.py --qualify --binary bin/p3cg%s --bug-binary bin/p3cg%s_bug1 "
                  "--bug-binary bin/p3cg%s_bug2" % (sfx, sfx, sfx)]
     if j["cells"]:
-        body.append("python3 checks/timing_gate.py --binary %s%s" % (binary, " --require-cases G1,G2" if graph
-                                                                      else ""))
+        for b in sorted(jb):  # one gate per program the job runs
+            body.append("python3 checks/timing_gate.py --binary %s%s" % (path_of[b], " --require-cases G1,G2"
+                                                                          if b == "graph" else ""))
     for i, cid in enumerate(j["cells"]):
         c = plan["cells"][cid]
         group = [g for g, v in plan["groups"].items() if cid in v["cells"]][0]
         rpn = -(-c["ranks"] // c["nodes"])
         rb = "P3_REPORT_BINDINGS=1 " if i == 0 else ""
+        if c.get("placement"):
+            group = "%s@%s" % (group, c["placement"])  # the row records where it ran (tag column)
         if GP.is_graph(c):
             # a graph cell that fails (data-dependent, e.g. memory) is reported and the job goes on to the next
             body.append("%sp3_launch %d %d %d %s --graph \"$P3_DATA/csr/%s\" %s --cell %s --tag %s --record "
                         "\"$GREC\" || echo \"p3: graph cell %s FAILED (exit $?)\" >&2" %
-                        (rb, c["ranks"], rpn, c["threads"], binary, c["dataset"],
+                        (rb, c["ranks"], rpn, c["threads"], path_of["graph"], c["dataset"],
                          " ".join(shlex.quote(x) for x in cell_args(c)), cid, group, cid))
             continue
         body.append("%sp3_launch %d %d %d %s %s --cell %s --tag %s --record \"$REC\"" %
-                    (rb, c["ranks"], rpn, c["threads"], binary, " ".join(shlex.quote(x) for x in cell_args(c)),
-                     cid, group))
+                    (rb, c["ranks"], rpn, c["threads"], path_of[c.get("binary", "cpu")],
+                     " ".join(shlex.quote(x) for x in cell_args(c)), cid, group))
     repl = {
         "{{JOBNAME}}": (("p3g-" + jid.split("-graph-", 1)[1]) if graph and "-graph-" in jid else ("p3-" + jid))[:15],
         "{{PLANJOB}}": jid,

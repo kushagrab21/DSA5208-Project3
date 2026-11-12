@@ -553,6 +553,19 @@ def selftest():
         return ok, "E3: %s; E7 waits for the Vanda GPU job; every figure from Atlas" % notmet.get("E3", "FILLED?")
     scenario("only Atlas (Vanda never arrives)", only_atlas, exp_atlas)
 
+    def spread_only(res):  # the whole-node 4-node jobs never run; the 8 x 32 shared-node insurance job does
+        plan = F.RD.load_plan("vanda")
+        F.fabricate(res, "vanda", jobs=[j["id"] for j in plan["jobs"]
+                                        if j["id"] not in ("vanda-4node", "vanda-graph-4node")])
+
+    def exp_spread(vals, metas, probs, waiting, notmet):
+        cl = lambda r: [w for w in waiting.get(r, ()) if w.startswith("cluster data") and  # noqa: E731
+                        ("strong" in w or "weak" in w) and "graph" not in w]
+        ok = (not probs and "E3" not in notmet and "E4" not in notmet and not cl("E3") and not cl("E4") and
+              "shared nodes" in (val(vals, "meas.where") or "") and val(vals, "meas.top") == "256")
+        return ok, "E3/E4 at %s cores%s" % (val(vals, "meas.top"), val(vals, "meas.where"))
+    scenario("only the 256-core shared-node insurance run", spread_only, exp_spread)
+
     def mixed(res):
         F.fabricate(res, "vanda", jobs=["vanda-serial", "vanda-calibrate"])
         F.fabricate(res, "atlas")

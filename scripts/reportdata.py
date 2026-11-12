@@ -78,9 +78,23 @@ class ClusterData:
     def group_cells(self, group):
         return self.plan["groups"].get(group, {}).get("cells", [])
 
+    def pairs(self):
+        """Insurance pairs: a cell with "insurance_for" (e.g. 256 ranks on shared nodes) stands in for the cell it
+        names (288 ranks on whole nodes); a pair is satisfied when either is recorded."""
+        out = {}
+        for cid, c in self.plan["cells"].items():
+            if c.get("insurance_for"):
+                out[cid] = c["insurance_for"]
+                out[c["insurance_for"]] = cid
+        return out
+
+    def satisfied(self, cid):
+        return cid in self.cell_rows or self.pairs().get(cid) in self.cell_rows
+
     def group_status(self, group):
+        """(satisfied cells, cells): a cell counts if it or its insurance partner is recorded."""
         cells = self.group_cells(group)
-        return sum(1 for c in cells if c in self.cell_rows), len(cells)
+        return sum(1 for c in cells if self.satisfied(c)), len(cells)
 
     def complete(self, *groups):
         return all(self.group_status(g)[0] == self.group_status(g)[1] > 0 for g in groups)
@@ -92,7 +106,9 @@ class ClusterData:
             if n == 0:
                 out.append("%s: not in the %s plan" % (g, self.plan["plan"]))
             elif f < n:
-                out.append("%s %s: %d of %d planned runs recorded" % (self.cluster, g, f, n))
+                out.append("%s %s: %d of %d planned runs recorded" % (self.cluster, g, f, n) +
+                           (" (a run counts if it or its shared-node insurance run is recorded)"
+                            if any(c in self.pairs() for c in self.group_cells(g)) else ""))
         return out
 
     # -- values ---------------------------------------------------------------------------------------------------
@@ -114,9 +130,15 @@ class ClusterData:
         rs = self.cell_rows.get(cid)
         return rs[0] if rs else None
 
-    def max_cores(self, group):
-        cs = [self.plan["cells"][c] for c in self.group_cells(group)]
+    def max_cores(self, group, recorded=False):
+        """Largest core count planned in the group, or (recorded=True) actually recorded, from either placement."""
+        cs = [self.plan["cells"][c] for c in self.group_cells(group) if not recorded or c in self.cell_rows]
         return max([c["ranks"] * c["threads"] for c in cs] or [0])
+
+    def top_cells(self, group, **kw):
+        """For each series (cells matching kw), the recorded cell with the most cores: [(cid, cell)]."""
+        cs = [(cid, c) for cid, c in self.cells(group, **kw) if cid in self.cell_rows]
+        return sorted(cs, key=lambda t: t[1]["ranks"] * t[1]["threads"])[-1:]
 
     def check_same_build(self, cids, label):
         """Every speedup/efficiency uses a 1-core baseline from the same cluster AND build: refuse a mixed series."""

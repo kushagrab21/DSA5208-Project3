@@ -485,14 +485,16 @@ def cluster_values(out, results, figures):
         except RD.MixedBuild as e:
             mixed = str(e)
         if D.complete(group) and not mixed:
+            Dr = D.filled_view()  # complete may mean: a run or its shared-node insurance run is recorded
             for d in (2, 3):
                 rows = []
                 series = {}
                 for v in (("classic", "blocking"), ("pipelined", "overlap")):
-                    cs = sorted(D.cells(group, dim=d, cg=v[0], halo=v[1]), key=lambda t: t[1]["ranks"])
-                    series[v] = [(c["ranks"], D.med(cid)) for cid, c in cs]
+                    cs = sorted(Dr.cells(group, dim=d, cg=v[0], halo=v[1]), key=lambda t: t[1]["ranks"])
+                    series[v] = [(c["ranks"], Dr.med(cid)) for cid, c in cs]
+                shared = set(c["ranks"] for cid, c in Dr.cells(group, dim=d) if c.get("placement"))
                 for i, (p, _) in enumerate(series[("classic", "blocking")]):
-                    row = [grp(p)]
+                    row = [grp(p) + ("$^{\\dagger}$" if p in shared else "")]
                     for v in series:
                         t1, tp = series[v][0][1], series[v][i][1]
                         S = t1 / tp
@@ -552,10 +554,45 @@ def cluster_values(out, results, figures):
                             rows.append(row)
                 table(out, "%s%d" % (group, d), hd, rows, spec, reqs, False, w, partial=bool(rows))
 
-    # ---- E3/E4 are met only at >= 256 cores; a complete Atlas fallback says so instead of passing
+    # ---- the largest core count actually recorded, and where it ran (whole nodes, or the shared-node insurance job)
+    def where(c):
+        if not c.get("placement"):
+            return ""
+        nodes, per = c["nodes"], c["ranks"] // c["nodes"]
+        return " (%d$\\times$%d cores on shared nodes, unbound)" % (nodes, per)
+    top = Dsw.top_cells("strong", dim=3, cg="classic", halo="blocking")
+    if Dsw.complete("strong", "weak") and top:
+        tc = top[0][1]
+        put("meas.top", tc["ranks"] * tc["threads"], ["E3", "E4"])
+        put("meas.where", where(tc), ["E3", "E4"])
+        both = [c for cid, c in Dsw.filled_view().cells("strong", dim=3, cg="classic", halo="blocking")
+                if c["ranks"] >= 256]
+        sp = [c for c in both if c.get("placement")]
+        if sp and not tc.get("placement"):  # whole-node top recorded and the insurance run too: name both
+            spc = [(cid, c) for cid, c in Dsw.cells("strong", dim=3, cg="classic", halo="blocking")
+                   if c.get("placement") and cid in Dsw.cell_rows][0]
+            one = [cid for cid, c in Dsw.cells("strong", dim=3, cg="classic", halo="blocking") if c["ranks"] == 1][0]
+            put("meas.both", " The insurance run on %d cores%s reached a 3D classic efficiency of %s." % (
+                spc[1]["ranks"], where(spc[1]), fx(Dsw.med(one) / (spc[1]["ranks"] * Dsw.med(spc[0])), 2)),
+                ["E3"])
+        else:
+            put("meas.both", "", ["E3"])
+        wt = {}
+        for d in (2, 3):
+            t = Dsw.top_cells("weak", dim=d, cg="classic", halo="blocking")
+            wt[d] = t[0][1]["n"] if t else None
+        put("wk.top.n2", grp(wt[2]) if wt[2] else "--", ["E4"])
+        put("wk.top.n3", grp(wt[3]) if wt[3] else "--", ["E4"])
+    else:
+        w = wait("strong", "weak")
+        for k, r in (("meas.top", ["E3", "E4"]), ("meas.where", ["E3", "E4"]), ("meas.both", ["E3"]),
+                     ("wk.top.n2", ["E4"]), ("wk.top.n3", ["E4"])):
+            pend(k, r, w)
+
+    # ---- E3/E4 are met only at >= 256 cores (from either placement); a complete Atlas fallback says so
     STATUS["requirements"] = {}
     for rid, g in (("E3", "strong"), ("E4", "weak")):
-        mc = Dsw.max_cores(g)
+        mc = Dsw.max_cores(g, recorded=True)
         if not Dsw.complete(g):
             STATUS["requirements"][rid] = {"filled": False, "kind": "waiting",
                                            "waiting_for": "; ".join(Dsw.waiting(g))}
@@ -564,7 +601,7 @@ def cluster_values(out, results, figures):
                 "%s scaling reached only %d cores (%s); at least 256 cores need Vanda" % (g, mc, NM[Dsw.cluster]))}
         else:
             STATUS["requirements"][rid] = {"filled": True, "kind": "met", "waiting_for": ""}
-    mc = min(Dsw.max_cores("strong"), Dsw.max_cores("weak"))
+    mc = min(Dsw.max_cores("strong", recorded=True), Dsw.max_cores("weak", recorded=True))
     if Dsw.complete("strong", "weak"):
         put("scale.note", "" if mc >= 256 else (
             " These runs reach only %d cores, on %s, the most one user may use there; the runs on at least 256 "
@@ -581,6 +618,7 @@ def cluster_values(out, results, figures):
     cpn = D.plan["cores_per_node"]
     if D.complete("strong"):
         rows = []
+        D = D.filled_view()  # the largest recorded count, whole nodes or the shared-node insurance run
         for d in (2, 3):
             cs = sorted(D.cells("strong", dim=d, cg="classic", halo="blocking"), key=lambda t: t[1]["ranks"])
             top = cs[-1][1]["ranks"]
@@ -591,7 +629,7 @@ def cluster_values(out, results, figures):
                 it = float(r["iters"])
                 tc, th, tr = (D.med(cid, k) for k in ("t_compute", "t_halo", "t_reduce"))
                 tt = D.med(cid)
-                rows.append(["%dD" % d, grp(c["ranks"]), fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
+                rows.append(["%dD" % d, grp(c["ranks"]) + ("$^{\\dagger}$" if c.get("placement") else ""), fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
                              fx(1e3 * tr / it, 3), fx(100 * (th + tr) / tt, 1) + "\\,\\%",
                              r["msgs_per_exch"], grp(int(r["doubles_per_exch_max"]))])
                 if c["ranks"] == top:
@@ -968,6 +1006,7 @@ def graph_values(out, results):
     # strong scaling (time per solve)
     rq = ["E3"]
     if Dst.complete("graph-strong"):
+        Dst = Dst.filled_view()  # the top may be the shared-node insurance run (its partner not recorded)
         rows = []
         for d in GP.STRONG_DATASETS:
             for cg in ("classic", "pipelined"):
@@ -975,7 +1014,8 @@ def graph_values(out, results):
                 Dst.check_same_build([cid for cid, c in cs], "graph-strong %s %s" % (d, cg))
                 t1, tp, P = Dst.med(cs[0][0], "t_solve"), Dst.med(cs[-1][0], "t_solve"), cs[-1][1]["ranks"]
                 n72 = [x for x in cs if x[1]["ranks"] == Dst.plan["cores_per_node"]]
-                rows.append([dsn(d), cg, sig(t1, 3), sig(tp, 3), fx(t1 / tp, 1), fx(t1 / tp / P, 2)])
+                rows.append([dsn(d), cg, sig(t1, 3), sig(tp, 3) + (" ($%d^{\\dagger}$)" % P if cs[-1][1].get(
+                    "placement") else ""), fx(t1 / tp, 1), fx(t1 / tp / P, 2)])
                 put("gr.st.%s.%s.S" % (d, cg), fx(t1 / tp, 1), rq)
                 put("gr.st.%s.%s.E" % (d, cg), fx(t1 / tp / P, 2), rq)
                 put("gr.st.%s.%s.T1" % (d, cg), sig(t1, 3), rq)
@@ -1137,6 +1177,9 @@ def partial_values(out, results):
                     need("pcm.%d.%s.%s.%s" % (d, cg, role[P], nm), ["E5"], "; ".join(D.waiting("strong")),
                          lambda: fx(100 * med(D, cs[P], col) / med(D, cs[P]), 1) + "\\,\\%")
     put("node.q", cpn // 4, ["E5"])
+    sp = [c for c in D.plan["cells"].values() if c.get("placement")]
+    put("spread.desc", ("%d$\\times$%d cores on shared nodes, unbound" % (sp[0]["nodes"], sp[0]["ranks"] // sp[0]["nodes"]))
+        if sp else "none in this plan", ["E3", "E4"])
     # serial grids one by one: ns per unknown and per nonzero, per iteration
     Ds = RD.choose(results, ["serial"])
     for cid, c in Ds.cells("serial"):

@@ -55,6 +55,8 @@ def cell_id(c):
     s += "-rhs%d" % c["rhs"]
     if c.get("queue"):
         s += "-q%s" % c["queue"]
+    if c.get("placement"):
+        s += "-p%s" % c["placement"].replace("-", "")
     return s
 
 
@@ -81,6 +83,8 @@ def cell_args(c):
 
 
 def matches(c, r):
+    if c.get("placement") and "@" + c["placement"] not in r.get("tag", ""):
+        return False
     try:
         same = (r["dataset"] == c["dataset"] and r["order"] == c["order"] and r["part"] == c["part"] and
                 r["exchange"] == c["exchange"] and r["cg"] == c["cg"] and int(r["ranks"]) == c["ranks"] and
@@ -208,6 +212,6 @@ def coverage(plan):
                     bad.append("%s %s names amendment %s, which is not recorded with a reason" % (kind, iid, am))
     for j in P["jobs"]:
         gc = [cid for cid in j["cells"] if is_graph(cells.get(cid, {}))]
-        if gc and j.get("binary") != "graph":
+        if gc and "graph" not in set(j.get("binary", "cpu").split("+")):
             bad.append("job %s runs graph cells but is not a graph job" % j["id"])
     return bad, not_met

@@ -46,6 +46,8 @@ step "env (cpu) on a node that preloads the EFA libfabric: the toolchain's goes 
   bash -c "printf 'set -eo pipefail; export LD_PRELOAD=\"/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1\"; source %s && echo \"LD_PRELOAD now: \$LD_PRELOAD\"\n' '$ENVT' | $P3_SSH vanda bash -s"
 step "env (cpu) on a node without python3: refused" \
   bash -c "printf 'set -eo pipefail; command() { [[ \"\$2\" == python3 ]] && return 1; builtin command \"\$@\"; }; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+step "launcher mapping: a normal job binds ranks to cores; a shared-node job (P3_BIND=none) maps per node, unbound" \
+  bash -c "printf 'set -eo pipefail; source %s; echo \"normal: \$(p3_map_args 32 1)\"; export P3_BIND=none; echo \"P3_BIND=none: \$(p3_map_args 32 1)\"\n' '$ENVT' | $P3_SSH vanda bash -s"
 step "env (offload): nvhpc-hpcx-cuda12 loaded" \
   bash -c "printf 'set -eo pipefail; export P3_FLAVOR=offload; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
 touch src/_dirty_test.tmp
@@ -70,6 +72,10 @@ step "submit vanda-gpu: offload build and its OWN qualification on the (fake) GP
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu
 step "the GPU job log: environment and qualification" \
   bash -c "grep -h -E 'p3 env \\(vanda/offload|QUALIFICATION|VALIDATED BINARY|TIMING GATE' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3-vanda-gpu.o*"
+step "submit vanda-256spread (amendment spread256: 8 x 32 cores on shared nodes, place=scatter, unbound; Poisson + graph 256-rank cells)" \
+  env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-256spread
+step "the spread script: select, place, P3_BIND=none, both timing gates, rows tagged with the placement" \
+  bash -c "grep -h -E '^#PBS -l|P3_BIND|timing_gate' $P3_GENERATED/vanda/vanda-256spread.pbs; grep -c '@shared-8x32' $P3_GENERATED/vanda/vanda-256spread.pbs"
 step "submit vanda-gpu1 (amendment gpu-split: half a GPU node, 1 GPU x 36 cores; its own offload build + qualification, then the 1-GPU cells)" \
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu1
 step "the gpu1 script asks for the hpc gpu sample shape, and its log shows the qualification and the gate" \

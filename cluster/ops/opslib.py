@@ -200,20 +200,23 @@ def cmd_submit_check(a):
             say("SUBMIT: REFUSED plan %s is not frozen: freeze it (\"frozen\": true) after the calibration job, commit "
                 "and sync, then submit timed jobs" % plan["plan"])
             return 1
-        graph = job.get("binary") == "graph"
-        # graph jobs run bin/p3graph, qualified by checks/validate_graph.py (cases G1 and G2)
-        val = [e for e in C.validated_entries() if e["cluster"] == cl and
-               (not graph or {"G1", "G2"} <= set(e.get("cases", "").split(";")))]
-        binname, rbin = ("bin/p3graph", a.remote_gbin) if graph else ("bin/p3cg", a.remote_bin)
-        if not val:
-            say("SUBMIT: REFUSED no %s binary has been qualified on %s yet: submit %s-%s, then poll.sh and "
-                "fetch.sh" % ("graph" if graph else "solver", cl, cl, "graph-prep" if graph else "validate"))
-            return 1
-        if rbin not in set(e["binary_sha256"] for e in val):
-            say("SUBMIT: REFUSED %s on %s (sha256 %s) is not a binary qualified there (qualified: %s)" %
-                (binname, cl, (rbin or "missing")[:12], ", ".join(e["binary_sha256"][:12] for e in val)))
-            return 1
-        say("  %s on the cluster is the qualified binary %s" % (binname, rbin[:12]))
+        # every program the job runs must be qualified there: graph jobs run bin/p3graph (validate_graph.py, cases
+        # G1 and G2), the others bin/p3cg (the offload binary is built and qualified inside its own job); a mixed job
+        # (e.g. "cpu+graph") needs both
+        kinds = RP.job_binaries(job)
+        for graph in ([True] if "graph" in kinds else []) + ([False] if kinds - {"graph"} else []):
+            val = [e for e in C.validated_entries() if e["cluster"] == cl and
+                   (not graph or {"G1", "G2"} <= set(e.get("cases", "").split(";")))]
+            binname, rbin = ("bin/p3graph", a.remote_gbin) if graph else ("bin/p3cg", a.remote_bin)
+            if not val:
+                say("SUBMIT: REFUSED no %s binary has been qualified on %s yet: submit %s-%s, then poll.sh and "
+                    "fetch.sh" % ("graph" if graph else "solver", cl, cl, "graph-prep" if graph else "validate"))
+                return 1
+            if rbin not in set(e["binary_sha256"] for e in val):
+                say("SUBMIT: REFUSED %s on %s (sha256 %s) is not a binary qualified there (qualified: %s)" %
+                    (binname, cl, (rbin or "missing")[:12], ", ".join(e["binary_sha256"][:12] for e in val)))
+                return 1
+            say("  %s on the cluster is the qualified binary %s" % (binname, rbin[:12]))
         b, used, pend, lines = budget_lines(plan, worst, a.job)
         if b in (None, ""):
             say("SUBMIT: REFUSED the core-hour budget of %s is unknown: set core_hour_budget (a number, or "
