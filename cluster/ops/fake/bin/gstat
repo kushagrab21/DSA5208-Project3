@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+printf 'FAKE gstat (test double)\nQueue      Nodes  Free  Running  Queued\nparallel   16     9     5        2\ngpu        4      2     1        0\n'
