@@ -37,13 +37,15 @@ if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
   LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
   for d in "$EBROOTLIBFABRIC/lib64" "$EBROOTLIBFABRIC/lib"; do [[ -d "$d" ]] && LD_LIBRARY_PATH="$d:$LD_LIBRARY_PATH"; done
   export LD_LIBRARY_PATH
-  # 1040045.venus01: the old EFA libfabric was still loaded with this path in place, so it is loaded before the search
-  # (/etc/ld.so.preload on the compute nodes). LD_PRELOAD is applied first, so the toolchain's libfabric.so.1 owns the soname.
+  # 1040045.venus01: the old EFA libfabric was still loaded with this path in place. The 1040046 log shows why: the
+  # compute-node environment sets LD_PRELOAD=/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1 (there is no
+  # /etc/ld.so.preload). The loader honours LD_PRELOAD entries in order, so putting the toolchain's libfabric.so.1
+  # first makes it own the soname; the EFA copy is still mapped but its symbols are no longer the ones bound.
   for f in "$EBROOTLIBFABRIC/lib/libfabric.so.1" "$EBROOTLIBFABRIC/lib64/libfabric.so.1"; do
     if [[ -f "$f" ]]; then export LD_PRELOAD="$f${LD_PRELOAD:+:$LD_PRELOAD}"; break; fi
   done
 fi
-echo "p3 env (atlas): LD_PRELOAD=${LD_PRELOAD:-}; /etc/ld.so.preload: $(tr '\n' ' ' < /etc/ld.so.preload 2>/dev/null)" >&2
+echo "p3 env (atlas): LD_PRELOAD=${LD_PRELOAD:-}; /etc/ld.so.preload: $( [[ -r /etc/ld.so.preload ]] && tr '\n' ' ' < /etc/ld.so.preload || echo none)" >&2
 echo "p3 env (atlas): libfabric search: $(printf '%s' "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -n -E 'fabric|efa' | head -3 | tr '\n' ' '); ld.so.conf efa: $(grep -l efa /etc/ld.so.conf.d/* 2>/dev/null | tr '\n' ' ')" >&2
 
 [[ -n "${EBROOTOPENMPI:-}" ]] && echo "p3 env (atlas): libmpi resolves libfabric to: $(ldd "$EBROOTOPENMPI/lib/libmpi.so.40" 2>&1 | grep -E 'fabric' | head -2 | tr -s ' \t' ' ')" >&2

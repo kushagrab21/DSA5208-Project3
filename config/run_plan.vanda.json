@@ -2839,7 +2839,7 @@
   {
    "id": "vanda-gpu",
    "nodes": 1,
-   "ncpus_per_node": 16,
+   "ncpus_per_node": 72,
    "gpus_per_node": 2,
    "binary": "offload",
    "validate_first": true,
@@ -2850,11 +2850,32 @@
     "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1",
     "3d-n406-r2x1-N1-d3-clas-bloc-i100-g2"
    ],
-   "note": "offload build + validation on the GPU node, then the GPU cells; ncpus/gpus per node are placeholders until `hpc gpu` shows the GPU node shape"
+   "note": "one full GPU node (2 GPUs x 36 cores, `hpc gpu` sample): offload build (nvc++ -mp=gpu) + its own validate.py qualification on the GPU node, then the 1- and 2-GPU cells"
   }
  ],
  "unplanned": [],
  "reruns": [],
+ "limits_source": "results/vanda/env/discover-20261112T055509Z.txt",
+ "limits": {
+  "parallel": {
+   "min_cpus": 1,
+   "max_cpus": 720,
+   "max_nodes": 10,
+   "max_running": 6,
+   "node_pool": "cpu_node",
+   "queue": "batch_cpu via route auto (-P project)"
+  },
+  "gpu": {
+   "min_cpus": 1,
+   "max_cpus": 720,
+   "max_nodes": 2,
+   "min_gpus": 1,
+   "max_gpus": 2,
+   "max_running": 4,
+   "node_pool": "gpu_node",
+   "queue": "batch_gpu via route auto (-P project)"
+  }
+ },
  "core_hour_budget": null,
  "budget_source": "unknown until first login (Vanda allocation; Atlas is unlimited per Lecture 8)",
  "pbs": {

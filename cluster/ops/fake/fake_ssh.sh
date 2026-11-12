@@ -10,10 +10,12 @@ home="$root/$alias/home"; mkdir -p "$home"; cd "$home"
 args=(); for a in "$@"; do [[ "$a" == "-l" ]] || args+=("$a"); done   # no login profile on the fake
 here="$(cd "$(dirname "$0")" && pwd)"
 extra=""; eb=""
-if [[ "$alias" == atlas* ]]; then   # like the real login: the 2013 mvapich2 mpicxx is first on PATH; ebenv elsewhere
-  extra="$root/$alias/app1/centos6.3/gnu/mvapich2-1.9/bin:"; eb="$root/$alias/app1/ebenv"
+if [[ "$alias" == atlas* ]]; then   # like the real login: the 2013 mvapich2 mpicxx is first on PATH
+  extra="$root/$alias/app1/centos6.3/gnu/mvapich2-1.9/bin:"
 fi
+[[ -f "$root/$alias/app1/ebenv" ]] && eb="$root/$alias/app1/ebenv"
 exec env -i HOME="$home" USER="fakeuser" LANG="${LANG:-C}" TMPDIR="${TMPDIR:-/tmp}" P3_EBENV="$eb" \
   PATH="$here/bin:$extra/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
   P3_FAKE_ROOT="$root" P3_FAKE_ALIAS="$alias" FAKE_SPEED="${FAKE_SPEED:-1}" FAKE_FAIL_JOBS="${FAKE_FAIL_JOBS:-}" \
-  FAKE_QUEUE_ONLY="${FAKE_QUEUE_ONLY:-}" FAKE_FORGET="${FAKE_FORGET:-}" FAKE_QSUB_REJECT="${FAKE_QSUB_REJECT:-}" "${args[@]}"
+  FAKE_QUEUE_ONLY="${FAKE_QUEUE_ONLY:-}" FAKE_FORGET="${FAKE_FORGET:-}" FAKE_QSUB_REJECT="${FAKE_QSUB_REJECT:-}" \
+  FAKE_NODE_PRELOAD="${FAKE_NODE_PRELOAD:-}" "${args[@]}"

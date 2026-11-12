@@ -130,6 +130,8 @@ def job_select(plan, j):
     pbs = plan.get("pbs", {})
     n = j["ncpus_per_node"]
     select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], n, n)
+    if pbs.get("select_ompthreads"):
+        select += ":ompthreads=1"  # the site's samples carry it; every run sets OMP_NUM_THREADS itself
     if j.get("gpus_per_node"):
         select += ":ngpus=%d" % j["gpus_per_node"] + pbs.get("select_extra_gpu", "")
     else:
@@ -370,12 +372,20 @@ def coverage(plan):
             if (c.get("queue") or "cpu") != (j.get("queue") or "cpu"):
                 bad.append("cell %s is for queue %s but job %s goes to %s" % (cid, c.get("queue") or "cpu",
                                                                              j["id"], j.get("queue") or "cpu"))
-        lim = P.get("limits", {}).get("serial" if j.get("queue") == "serial" else "parallel")
+        lim = P.get("limits", {}).get("serial" if j.get("queue") == "serial" else
+                                       "gpu" if j.get("binary") == "offload" and "gpu" in P.get("limits", {})
+                                       else "parallel")
         if lim:
             tot = j["nodes"] * j["ncpus_per_node"]
             if tot < lim.get("min_cpus", 1) or tot > lim.get("max_cpus", tot):
                 bad.append("job %s asks for %d cores; its queue takes %d-%d (%s)" % (
                     j["id"], tot, lim.get("min_cpus", 1), lim.get("max_cpus", tot), P.get("limits_source", "")))
+            if j["nodes"] > lim.get("max_nodes", j["nodes"]):
+                bad.append("job %s asks for %d nodes; its queue takes %d" % (j["id"], j["nodes"], lim["max_nodes"]))
+            g = j["nodes"] * j.get("gpus_per_node", 0)
+            if g and not lim.get("min_gpus", 0) <= g <= lim.get("max_gpus", g):
+                bad.append("job %s asks for %d GPUs; its queue takes %d-%d" % (j["id"], g, lim.get("min_gpus", 0),
+                                                                             lim.get("max_gpus", g)))
     for cid in cells:
         if seen.get(cid, 0) != 1:
             bad.append("cell %s is in %d jobs (must be exactly 1)" % (cid, seen.get(cid, 0)))

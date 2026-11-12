@@ -17,6 +17,7 @@ import csv
 import datetime
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -87,6 +88,46 @@ def estimate(plan, job):
     return secs, cores, secs * cores / 3600.0, secs * safety * cores / 3600.0, RP.walltime(secs, safety)
 
 
+def gpu_worst(plan, job):
+    """Worst-case GPU-hours of a job: its GPUs x the walltime it requests."""
+    g = job["nodes"] * job.get("gpus_per_node", 0)
+    if not g:
+        return 0.0
+    secs = RP.job_estimate(plan, job)[0] * RP.model_of(plan)["safety"]
+    return g * math.ceil(secs / 300.0) * 300 / 3600.0
+
+
+def gpu_usage(plan):
+    """(GPU-hours used by finished GPU jobs, worst case of GPU jobs in flight), from the ledger."""
+    rows = ledger(plan["cluster"])
+    subs = dict((r["pbs_jobid"], r) for r in rows if r["event"] == "submit")
+    finals = dict((r["pbs_jobid"], r) for r in rows if r["event"] == "final")
+    used = pend = 0.0
+    for pid, s in subs.items():
+        g = int(s.get("nodes") or 0) * int(s.get("gpus_per_node") or 0)
+        if not g:
+            continue
+        if pid in finals:
+            used += g * (hms(finals[pid].get("walltime_used", "")) or 0) / 3600.0
+        else:
+            m = re.search(r"gpuworst=([\d.]+)", s.get("note", ""))
+            pend += float(m.group(1)) if m else 0.0
+    return used, pend
+
+
+def gpu_budget_lines(plan, extra=0.0, extra_job=None):
+    b = plan.get("gpu_hour_budget")
+    used, pend = gpu_usage(plan)
+    lines = ["  GPU-hours: used %.1f; queued/running (worst case) %.1f%s" %
+             (used, pend, "; this job (worst case) %.1f" % extra if extra_job else "")]
+    if b in (None, ""):
+        lines.append("  GPU budget: UNKNOWN (set gpu_hour_budget in config/run_plan.%s.json)" % plan["plan"])
+    else:
+        lines.append("  GPU budget %.1f -> remaining after %s, worst case: %.1f GPU-hours" %
+                     (float(b), "this job" if extra_job else "jobs in flight", float(b) - used - pend - extra))
+    return b, used, pend, lines
+
+
 def budget_lines(plan, extra_worst=0.0, extra_job=None):
     """(budget, used, pending worst, lines)."""
     cl = plan["cluster"]
@@ -111,6 +152,9 @@ def budget_lines(plan, extra_worst=0.0, extra_job=None):
         rem = float(b) - used - pend_worst - extra_worst
         lines.append("  budget %.1f -> remaining after %s, worst case: %.1f core-hours" %
                      (float(b), "this job" if extra_job else "jobs in flight", rem))
+    if plan.get("gpu_hour_budget") not in (None, "") or any(j.get("gpus_per_node") for j in plan["jobs"]):
+        gx = gpu_worst(plan, RP.job_of(plan, extra_job)) if extra_job and RP.job_of(plan, extra_job) else 0.0
+        lines += gpu_budget_lines(plan, gx, extra_job if gx else None)[3]
     return b, used, pend_worst, lines
 
 
@@ -176,6 +220,19 @@ def cmd_submit_check(a):
                 say(line)
             say("SUBMIT: REFUSED the worst case (walltime x cores) would exceed the budget")
             return 1
+        gw = gpu_worst(plan, job)
+        if gw:
+            gb_, gused, gpend, glines = gpu_budget_lines(plan, gw, a.job)
+            if gb_ in (None, ""):
+                say("SUBMIT: REFUSED the GPU-hour budget of %s is unknown: set gpu_hour_budget, commit and sync" % cl)
+                return 1
+            if gused + gpend + gw > float(gb_):
+                for line in glines:
+                    say(line)
+                say("SUBMIT: REFUSED the worst case (walltime x GPUs) would exceed the GPU-hour budget")
+                return 1
+            say("  GPU-hours: worst case %.1f of %.0f budgeted (used %.1f, in flight %.1f)" % (gw, float(gb_), gused,
+                                                                                           gpend))
     say("SUBMIT CHECK: ALLOWED")
     return 0
 
@@ -190,7 +247,8 @@ def cmd_record_submit(a):
                        "nodes": job["nodes"], "ncpus_per_node": job["ncpus_per_node"],
                        "gpus_per_node": job.get("gpus_per_node", 0), "host": a.alias or cl, "commit": a.commit,
                        "cells": ";".join(job["cells"]), "select": select, "walltime": wt,
-                       "est_core_hours": "%.2f" % ch, "note": "worst=%.2f kind=%s" % (worst, kind_of(job))})
+                       "est_core_hours": "%.2f" % ch,
+                       "note": "worst=%.2f gpuworst=%.2f kind=%s" % (worst, gpu_worst(plan, job), kind_of(job))})
     print("SUBMITTED %s as %s (commit %s, %d cells, walltime %s, estimate %.1f core-h, worst case %.1f)" %
           (a.job, a.pbs_id, a.commit[:12], len(job["cells"]), wt, ch, worst))
     for line in budget_lines(plan)[3]:
@@ -344,6 +402,7 @@ def cmd_poll_parse(a):
         if finished:
             append_ledger(cl, {"pbs_jobid": pid, "plan": plan["plan"], "job": sub.get("job", ""), "event": "final",
                                "utc": now(), "nodes": sub.get("nodes", ""), "ncpus_per_node": sub.get("ncpus_per_node", ""),
+                               "gpus_per_node": sub.get("gpus_per_node", ""),
                                "state": state, "exit_status": exitst, "walltime_used": fmt_hms(wused),
                                "core_hours_used": "%.2f" % ch, "note": ("%s; " % source) + "; ".join([records] + flags)})
     if not pending_ids(cl) and not subs:

@@ -1,32 +1,72 @@
 # Vanda environment for p3cg. Sourced by the generated PBS scripts (cluster/generated/vanda/*.pbs) on a compute node.
+# Lecture 8: Vanda login nodes are VMs, so binaries are built inside jobs, on compute nodes.
 #
-# Lecture 8: Vanda login nodes are VMs, so compile on a compute node (the "vanda-validate" job builds the binaries).
-# Lecture 12: CUDA-aware MPI via `module load nvhpc-hpcx-cuda12/26.1` (recommended).
-# Module names other than that one are UNVERIFIED: check `module avail` on the first login and set them here or in
-# the environment before qsub (qsub -v P3_MODULES_CPU=...).
+# Two flavours (P3_FLAVOR, set by the job script):
+#   cpu      EasyBuild foss toolchain (GCC + Open MPI) via /app1/ebenv: the same family and version as on Atlas
+#            (foss/2025b: GCC 14.3.0, Open MPI 5.0.8), so the two clusters' numbers come from the same compiler
+#            and MPI. No CMake module is loaded, so build.sh compiles with one mpicxx line, as it did on Atlas.
+#   offload  nvhpc-hpcx-cuda12/26.1 (Lecture 12): nvc++ -mp=gpu for the OpenMP target build, HPC-X (CUDA-aware) MPI.
+#            Built as bin/p3cg_offload* and qualified by validate.py on the GPU node before any GPU timing.
+# What Atlas taught (12 Nov) and what this file does about it:
+#   - compute nodes may lack python3 (atlas-validate 1040043, exit 127): CPU jobs load the Python of the foss
+#     toolchain; GPU jobs use the system python3 or that Python; the job stops here if there is none;
+#   - the node environment may inject an old libfabric through LD_PRELOAD (atlas-validate 1040044/1040045, "FABRIC_1.7
+#     not found"): if LD_PRELOAD (or /etc/ld.so.preload) names a libfabric that is not the toolchain's, the toolchain's
+#     goes first; what the loader resolves is logged either way;
+#   - every choice is printed to the job log ("p3 env (vanda): ...").
+# No `module purge`: Vanda loads `shared` by default, which may carry the /cm module path the nvhpc modules live in.
 
-# CPU build/run modules. nvhpc-hpcx provides mpicxx (nvc++ + HPC-X Open MPI); nvc++ uses -mp for OpenMP threads.
-: "${P3_MODULES_CPU:=nvhpc-hpcx-cuda12/26.1}"
-# GPU (offload) build/run modules.
-: "${P3_MODULES_GPU:=nvhpc-hpcx-cuda12/26.1}"
 : "${P3_FLAVOR:=cpu}"
+: "${P3_MODULES_CPU:=foss/2025b Python/3.13.5-GCCcore-14.3.0}"
+: "${P3_MODULES_GPU:=nvhpc-hpcx-cuda12/26.1}"
+: "${P3_PYTHON_FALLBACK:=Python/3.13.5-GCCcore-14.3.0}"
 
-if command -v module >/dev/null 2>&1; then
-  module purge >/dev/null 2>&1 || true
-  if [[ "$P3_FLAVOR" == "offload" ]]; then mods="$P3_MODULES_GPU"; else mods="$P3_MODULES_CPU"; fi
-  for m in $mods; do module load "$m"; done
+p3_log() { echo "p3 env (vanda/$P3_FLAVOR): $*" >&2; }
+p3_fail() { p3_log "ERROR $*"; return 1 2>/dev/null || exit 1; }
+
+if [[ -f "${P3_EBENV:-/app1/ebenv}" ]]; then
+  # shellcheck disable=SC1090
+  source "${P3_EBENV:-/app1/ebenv}"
+fi
+command -v module >/dev/null 2>&1 || p3_fail "no module command on this node"
+if [[ "$P3_FLAVOR" == "offload" ]]; then mods="$P3_MODULES_GPU"; else mods="$P3_MODULES_CPU"; fi
+for m in $mods; do module load "$m" || p3_fail "module load $m failed"; done
+if [[ "$P3_FLAVOR" == "offload" ]] && ! command -v python3 >/dev/null 2>&1; then
+  module load "$P3_PYTHON_FALLBACK" || true
+fi
+p3_log "loaded $(module -t list 2>&1 | grep -v ':$' | tr '\n' ' ')"
+
+command -v mpicxx >/dev/null 2>&1 || p3_fail "no mpicxx after loading: $mods"
+p3_log "mpicxx=$(command -v mpicxx) ($(mpicxx --version 2>/dev/null | grep -v '^$' | head -1))"
+command -v python3 >/dev/null 2>&1 || p3_fail "no python3 on this node (the checks run inside jobs); set P3_PYTHON_FALLBACK"
+p3_log "python3=$(command -v python3) ($(python3 --version 2>&1))"
+
+# libfabric defence (CPU flavour: Open MPI 5 from foss uses libfabric; HPC-X uses UCX).
+if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
+  preload="${LD_PRELOAD:-} $( [[ -r /etc/ld.so.preload ]] && tr '\n' ' ' < /etc/ld.so.preload )"
+  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
+  export LD_LIBRARY_PATH="$EBROOTLIBFABRIC/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  if printf '%s' "$preload" | grep -q 'libfabric' && ! printf '%s' "$preload" | grep -q "$EBROOTLIBFABRIC"; then
+    for f in "$EBROOTLIBFABRIC/lib/libfabric.so.1" "$EBROOTLIBFABRIC/lib64/libfabric.so.1"; do
+      if [[ -f "$f" ]]; then export LD_PRELOAD="$f${LD_PRELOAD:+:$LD_PRELOAD}"; break; fi
+    done
+    p3_log "a foreign libfabric is preloaded by the node ($preload): the toolchain's goes first"
+  else
+    p3_log "no foreign libfabric preloaded (LD_PRELOAD='${LD_PRELOAD:-}')"
+  fi
+  [[ -n "${EBROOTOPENMPI:-}" ]] && p3_log "libmpi resolves libfabric to: $(ldd "$EBROOTOPENMPI/lib/libmpi.so.40" 2>&1 \
+    | grep -E 'fabric' | tr -s ' \t' ' ' | tr '\n' ';')"
 fi
 
 export P3_CLUSTER=vanda
 export CXX_MPI="${CXX_MPI:-mpicxx}"
-export P3_OMP_FLAGS="${P3_OMP_FLAGS:--mp}"            # nvc++: -mp (CPU threads); GCC would be -fopenmp
-export P3_OFFLOAD_FLAGS="${P3_OFFLOAD_FLAGS:--mp=gpu -Minfo=mp}" # nvc++ offload; -Minfo=mp lists offloaded loops in the build log
+export P3_OMP_FLAGS="${P3_OMP_FLAGS:--fopenmp}"                    # GCC (foss); used only by the direct build
+export P3_OFFLOAD_FLAGS="${P3_OFFLOAD_FLAGS:--mp=gpu -Minfo=mp}"    # nvc++; -Minfo=mp lists offloaded loops
 # checks/validate.py launcher: no pinning (it runs 1-8 ranks with 1-2 threads on the cores it was given).
 export P3_MPIRUN="${P3_MPIRUN:-mpirun --bind-to none -x OMP_NUM_THREADS}"
 
-# p3_launch RANKS RANKS_PER_NODE THREADS cmd...
-# Open MPI (HPC-X) syntax: RANKS_PER_NODE ranks on each node, THREADS cores per rank, threads pinned to those cores.
-# VERIFY in the first job's log: the first launch of each job prints --report-bindings.
+# p3_launch RANKS RANKS_PER_NODE THREADS cmd...   Open MPI syntax (foss Open MPI 5 and HPC-X): RANKS_PER_NODE ranks on
+# each node, THREADS cores per rank, threads pinned to those cores. The first launch of each job prints the bindings.
 p3_launch() {
   local np="$1" rpn="$2" th="$3"
   shift 3

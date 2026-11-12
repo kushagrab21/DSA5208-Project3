@@ -221,13 +221,20 @@ def build_cluster_plan(name, cpn, max_nodes, has_gpu, notes):
             continue
         P.job("%s-%dnode" % (name, nn), nn, cpn, sorted(cells), note="all %d-node cells" % nn)
     if has_gpu:
-        P.job("%s-gpu" % name, 1, 16, P.p["groups"]["gpu"]["cells"], binary="offload", gpus_per_node=2,
-              validate_first=True, note="offload build + validation on the GPU node, then the GPU cells; "
-              "ncpus/gpus per node are placeholders until `hpc gpu` shows the GPU node shape")
+        P.job("%s-gpu" % name, 1, 72, P.p["groups"]["gpu"]["cells"], binary="offload", gpus_per_node=2,
+              validate_first=True, note="one full GPU node (2 GPUs x 36 cores, `hpc gpu` sample): offload build "
+              "(nvc++ -mp=gpu) + its own validate.py qualification on the GPU node, then the 1- and 2-GPU cells")
+    if name == "vanda":
+        P.p.update({"limits_source": VANDA_DISCOVERY, "limits": {
+            "parallel": {"min_cpus": 1, "max_cpus": 720, "max_nodes": 10, "max_running": 6, "node_pool": "cpu_node",
+                         "queue": "batch_cpu via route auto (-P project)"},
+            "gpu": {"min_cpus": 1, "max_cpus": 720, "max_nodes": 2, "min_gpus": 1, "max_gpus": 2, "max_running": 4,
+                    "node_pool": "gpu_node", "queue": "batch_gpu via route auto (-P project)"}}})
     return P
 
 
 ATLAS_DISCOVERY = "results/atlas/env/discover-20261111T183351Z.txt"
+VANDA_DISCOVERY = "results/vanda/env/discover-20261112T055509Z.txt"
 
 
 def build_atlas_plan():
@@ -326,7 +333,7 @@ def write(P):
             print("REFUSED: %s is frozen; record changes as 'unplanned' or 'reruns' entries with a reason" % path)
             return 1
         # keep hand-entered fields across regeneration
-        for k in ("core_hour_budget", "budget_source", "pbs", "unplanned", "reruns", "model"):
+        for k in ("core_hour_budget", "gpu_hour_budget", "budget_source", "pbs", "unplanned", "reruns", "model"):
             if k in old:
                 P.p[k] = old[k]
     with open(path, "w") as f:

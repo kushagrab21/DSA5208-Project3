@@ -13,6 +13,7 @@ T="${1:-$(mktemp -d /tmp/p3fake.XXXX)}"; rm -rf "$T"; mkdir -p "$T"
 export P3_FAKE_ROOT="$T/fake" P3_RESULTS="$T/results" P3_CONFIG="$T/config" P3_GENERATED="$T/generated" \
        P3_LOGS="$T/logs" P3_CLUSTER_DIR="$T/clusterdir" P3_SSH="$OPS/fake/fake_ssh.sh" P3_RSYNC="$OPS/fake/fake_rsync.sh"
 mkdir -p "$P3_FAKE_ROOT/vanda/home" "$P3_CONFIG" "$P3_RESULTS"
+"$OPS/fake/vanda/setup.sh"   # fake /app1/ebenv: foss/2025b + Python, nvhpc-hpcx-cuda12
 cp config/run_plan.*.json "$P3_CONFIG/"; cp -R cluster "$P3_CLUSTER_DIR"
 snap() { find results figures report config -type f -exec stat -f '%N %m %z' {} + 2>/dev/null | sort | shasum -a 256; }
 before="$(snap)"
@@ -34,8 +35,19 @@ echo "FAKE CLUSTER TEST  scratch=$T  repo HEAD=$(git rev-parse --short=12 HEAD)"
 step "VPN dropped: the cluster cannot be reached" env P3_FAKE_DOWN=vanda cluster/ops/discover.sh vanda
 step "discover (read-only probes)" cluster/ops/discover.sh vanda
 disc="$(ls "$P3_RESULTS"/vanda/env/discover-*.txt | tail -1)"
-step "apply_discovery: proposal and diff, nothing written" python3 scripts/apply_discovery.py "$disc"
-step "apply_discovery --apply (writes the scratch plan and scratch env.sh only)" python3 scripts/apply_discovery.py "$disc" --apply
+BUD=(--budget-cpu 1000 --budget-gpu 50 --budget-source "fake amgr login")
+step "apply_discovery without a budget: routes resolved, the amgr-login budget flagged" python3 scripts/apply_discovery.py "$disc"
+step "apply_discovery with the budget from the command line --apply (scratch plan and env.sh only)" \
+  python3 scripts/apply_discovery.py "$disc" "${BUD[@]}" --apply
+ENVT="$REPO/cluster/vanda/env.sh"
+step "env (cpu): foss + Python loaded, no foreign libfabric preloaded" \
+  bash -c "printf 'source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+step "env (cpu) on a node that preloads the EFA libfabric: the toolchain's goes first, and the log says so" \
+  bash -c "printf 'export LD_PRELOAD=\"/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1\"; source %s && echo \"LD_PRELOAD now: \$LD_PRELOAD\"\n' '$ENVT' | $P3_SSH vanda bash -s"
+step "env (cpu) on a node without python3: refused" \
+  bash -c "printf 'command() { [[ \"\$2\" == python3 ]] && return 1; builtin command \"\$@\"; }; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+step "env (offload): nvhpc-hpcx-cuda12 loaded" \
+  bash -c "printf 'export P3_FLAVOR=offload; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
 touch src/_dirty_test.tmp
 step "sync refuses a dirty working tree" cluster/ops/sync.sh vanda
 rm -f src/_dirty_test.tmp
@@ -52,6 +64,12 @@ step "fetch: rows, status, recalibration" cluster/ops/fetch.sh vanda
 setplan frozen=true
 step "submit refuses: the plan was frozen locally but the cluster has the old plan" cluster/ops/submit.sh vanda vanda-4node
 step "sync the frozen plan" cluster/ops/sync.sh vanda
+step "the generated 4-node script: project, no queue, select with ompthreads and memory" \
+  bash -c "python3 checks/run_plan.py pbs --plan vanda --job vanda-4node >/dev/null; grep -E '^#PBS -(P|q|l)|^# queue' $P3_GENERATED/vanda/vanda-4node.pbs"
+step "submit vanda-gpu: offload build and its OWN qualification on the (fake) GPU node, then the GPU cells" \
+  env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu
+step "the GPU job log: environment and qualification" \
+  bash -c "grep -h -E 'p3 env \\(vanda/offload|QUALIFICATION|VALIDATED BINARY|TIMING GATE' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3-vanda-gpu.o*"
 step "submit vanda-4node (the fake kills it at the walltime halfway)" env FAKE_FAIL_JOBS=vanda-4node FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-4node
 step "submit vanda-serial and leave it queued" env FAKE_QUEUE_ONLY=1 FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-serial
 step "poll: one failed job, one queued" cluster/ops/poll.sh vanda

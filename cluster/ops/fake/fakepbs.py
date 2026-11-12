@@ -23,8 +23,22 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # user may not use (hpc6a), an ACL queue that does list the user, and a routing-only queue.
 Q = lambda **k: k  # noqa: E731
 QUEUES = {
-    "vanda": [Q(name="parallel", ncpus_max=576, nodect_max=8, wall="24:00:00"),
-              Q(name="gpu", ncpus_max=32, nodect_max=2, wall="12:00:00")],
+    # "vanda" mirrors the real Vanda discovery of 12 Nov 2026: jobs with -P and no -q go to the default routing queue
+    # `auto` (batch_cpu, batch_gpu: routing-only, charged to the project); `auto_free` routes to the free queues.
+    "vanda": [Q(name="workq", acl=["mcosta@*"], enabled=False, started=False),
+              Q(name="auto", qtype="Route", dests="batch_cpu,batch_gpu", needs_project=True),
+              Q(name="auto_free", qtype="Route", dests="cpu_serial,cpu_parallel,gpu"),
+              Q(name="batch_cpu", from_route_only=True, ncpus_min=1, ncpus_max=720, ngpus_max=0, nodect_max=10,
+                run_res="[u:PBS_GENERIC=720]", max_run="[u:PBS_GENERIC=6]", pool="cpu_node", wall="240:00:00", prio=100),
+              Q(name="batch_gpu", from_route_only=True, ncpus_max=720, ngpus_min=1, ngpus_max=2, nodect_max=2,
+                max_run="[u:PBS_GENERIC=4]", pool="gpu_node", wall="168:00:00", prio=100),
+              Q(name="cpu_serial", from_route_only=True, ncpus_min=1, ncpus_max=1, ngpus_max=0, pool="cpu_free",
+                wall="168:00:00"),
+              Q(name="cpu_parallel", from_route_only=True, ncpus_min=2, ncpus_max=160, ngpus_max=0,
+                run_res="[u:PBS_GENERIC=160]", max_run="[u:PBS_GENERIC=2]", pool="cpu_free", wall="168:00:00"),
+              Q(name="gpu", from_route_only=True, ncpus_max=36, ngpus_min=1, ngpus_max=2, pool="gpu_free",
+                wall="48:00:00"),
+              Q(name="large_mem", acl=["chrisg25", "cp.patro"], ncpus_max=72, wall="240:00:00")],
     "atlas8": [Q(name="normal", qtype="Route", enabled=False, started=False),
                Q(name="parallel", ncpus_min=12, ncpus_max=96, run_res="[u:PBS_GENERIC=96]", max_run="[u:PBS_GENERIC=4]",
                  pool="par12", wall="720:00:00", prio=100, mem_min="2gb"),
@@ -77,9 +91,23 @@ def qsub(args):
               file=sys.stderr)
         return 38
     qn = (re.search(r"^#PBS -q (\S+)", text, re.M) or [None, None])[1]
-    qd = next((q for q in queues() if q["name"] == qn), None)
     sel = (re.search(r"^#PBS -l select=(\S+)", text, re.M) or [None, "1:ncpus=1"])[1]
     tot = int(sel.split(":")[0]) * int(re.search(r"ncpus=(\d+)", sel).group(1))
+    gpus = int(sel.split(":")[0]) * int((re.search(r"ngpus=(\d+)", sel) or [None, "0"])[1])
+    if qn is None and os.environ.get("P3_FAKE_ALIAS", "") == "vanda":
+        qn = "auto"  # the server's default queue
+    qd = next((q for q in queues() if q["name"] == qn), None)
+    if qd and qd.get("qtype") == "Route":  # route to the first destination whose GPU limits fit
+        if qd.get("needs_project") and not re.search(r"^#PBS -P \S+", text, re.M):
+            print("qsub: Job rejected: queue %s needs a project (-P) (FAKE)" % qn, file=sys.stderr)
+            return 168
+        dests = [next(q for q in queues() if q["name"] == d) for d in qd["dests"].split(",")]
+        fit = [d for d in dests if d.get("ngpus_min", 0) <= gpus <= d.get("ngpus_max", 99)]
+        if not fit:
+            print("qsub: Job violates queue and/or server resource limits (no destination of %s)" % qn, file=sys.stderr)
+            return 188
+        qd = fit[0]
+        qn = qd["name"]
     if qn and qd is None and os.environ.get("P3_FAKE_ALIAS", "").startswith("atlas"):
         print("qsub: Unknown queue", file=sys.stderr)
         return 170
@@ -87,6 +115,9 @@ def qsub(args):
         if not qd.get("enabled", True) or qd.get("qtype", "Execution") != "Execution":
             print("qsub: Queue is not enabled", file=sys.stderr)
             return 173
+        if qd.get("nodect_max") and int(sel.split(":")[0]) > qd["nodect_max"]:
+            print("qsub: Job violates queue and/or server resource limits", file=sys.stderr)
+            return 188
         if qd.get("acl") and not any(a.split("@")[0] == "fakeuser" for a in qd["acl"]):
             print("qsub: Unauthorized Request", file=sys.stderr)
             return 159
@@ -96,7 +127,7 @@ def qsub(args):
     name = (re.search(r"^#PBS -N (\S+)", text, re.M) or [None, "job"])[1]
     select = (re.search(r"^#PBS -l (select=\S+)", text, re.M) or [None, "select=1:ncpus=1"])[1]
     wall = (re.search(r"^#PBS -l walltime=(\S+)", text, re.M) or [None, "01:00:00"])[1]
-    queue = (re.search(r"^#PBS -q (\S+)", text, re.M) or [None, "workq"])[1]
+    queue = qn or "workq"
     chunks = select.split("=", 1)[1]
     n = int(chunks.split(":")[0])
     ncpus = n * int(re.search(r"ncpus=(\d+)", chunks).group(1))
@@ -108,7 +139,8 @@ def qsub(args):
     plan_job = os.path.splitext(os.path.basename(script))[0]
     j = {"id": jid, "name": name, "script": script, "workdir": os.getcwd(), "select": select, "nodect": n,
          "ncpus": ncpus, "walltime": wall, "queue": queue, "state": "Q", "plan_job": plan_job,
-         "env": dict((k, os.environ.get(k, "")) for k in ("FAKE_SPEED", "FAKE_FAIL_JOBS", "FAKE_FORGET"))}
+         "env": dict((k, os.environ.get(k, "")) for k in ("FAKE_SPEED", "FAKE_FAIL_JOBS", "FAKE_FORGET",
+                                                          "FAKE_NODE_PRELOAD"))}
     save(j)
     print(jid)
     sys.stdout.flush()
@@ -123,14 +155,20 @@ def run(jid, alias=None):
     home = os.path.join(os.environ["P3_FAKE_ROOT"], alias, "home")
     old = (os.path.join(os.environ["P3_FAKE_ROOT"], alias, "app1/centos6.3/gnu/mvapich2-1.9/bin") + ":"
            if alias.startswith("atlas") else "")
+    eb = os.path.join(os.environ["P3_FAKE_ROOT"], alias, "app1", "ebenv")
     env = {"HOME": home, "USER": "fakeuser", "LANG": "C", "TMPDIR": os.environ.get("TMPDIR", "/tmp"),
            "PATH": os.path.join(HERE, "bin") + ":" + old + "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-           "P3_EBENV": os.path.join(os.environ["P3_FAKE_ROOT"], alias, "app1", "ebenv") if alias.startswith("atlas")
-           else "",
+           "P3_EBENV": eb if os.path.exists(eb) else "",
            "PBS_JOBID": jid, "PBS_O_WORKDIR": j["workdir"], "PBS_JOBNAME": j["name"],
            "P3_FAKE_ROOT": os.environ["P3_FAKE_ROOT"], "P3_FAKE_ALIAS": alias,
            "P3_FAKE_LAUNCH": os.path.join(HERE, "fake_launch.py"), "P3_FAKE_JOB": j["plan_job"]}
     env.update(dict((k, v) for k, v in j["env"].items() if v))
+    if os.environ.get("FAKE_NODE_PRELOAD"):  # a node that injects its own libfabric, as Atlas's do
+        env["LD_PRELOAD"] = os.environ["FAKE_NODE_PRELOAD"]
+    if alias == "vanda" and "p3cg_offload" in open(j["script"]).read():
+        # this Mac has no nvc++: the fake GPU node builds the offload code as host fallback (clang + libomp)
+        omp = "/opt/homebrew/opt/libomp"
+        env["P3_OFFLOAD_FLAGS"] = "-Xpreprocessor -fopenmp -I%s/include -L%s/lib -lomp" % (omp, omp)
     logd = os.path.join(j["workdir"], "cluster", "logs")
     os.makedirs(logd, exist_ok=True)
     j["state"] = "R"
@@ -178,7 +216,10 @@ def qstat(args):
                 for i in range(40, len(acl), 40):  # PBS wraps long values on tab-indented lines
                     print("\t%s" % acl[i:i + 40])
             print("    from_route_only = %s" % q.get("from_route_only", False))
+            if q.get("dests"):
+                print("    route_destinations = %s" % q["dests"])
             for k, f in (("ncpus_max", "resources_max.ncpus"), ("nodect_max", "resources_max.nodect"),
+                         ("ngpus_max", "resources_max.ngpus"), ("ngpus_min", "resources_min.ngpus"),
                          ("ncpus_min", "resources_min.ncpus"), ("mem_min", "resources_min.mem"),
                          ("mem_max", "resources_max.mem"), ("wall", "resources_max.walltime"),
                          ("pool", "default_chunk.node_pool"), ("run_res", "max_run_res.ncpus"),
@@ -188,6 +229,10 @@ def qstat(args):
             print("    enabled = %s" % q.get("enabled", True))
             print("    started = %s" % q.get("started", True))
             print("    comment = FAKE (test double)\n")
+        return 0
+    if "-B" in args or "-Bf" in args:
+        dq = {"vanda": "auto", "atlas8": "normal"}.get(os.environ.get("P3_FAKE_ALIAS", ""), "workq")
+        print("Server: fake-pbs\n    default_queue = %s\n    resources_default.ncpus = 1" % dq)
         return 0
     ids = [a for a in args if not a.startswith("-")]
     hist = "-x" in args or "-H" in args

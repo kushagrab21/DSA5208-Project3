@@ -22,6 +22,7 @@ done
 python3 --version 2>&1 || true
 sec qstat_Q; try qstat -Q
 sec qstat_Qf; try qstat -Qf
+sec qstat_Bf; { qstat -Bf 2>&1 || echo "(qstat -Bf not available)"; } | grep -E 'Server:|default_queue|resources_default|resources_max|max_run' | head -40
 sec gstat; try gstat | head -80
 sec pbsnodes
 if command -v pbsnodes >/dev/null 2>&1; then
