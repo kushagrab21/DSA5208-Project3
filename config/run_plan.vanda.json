@@ -1,7 +1,7 @@
 {
  "plan": "vanda",
  "cluster": "vanda",
- "frozen": false,
+ "frozen": true,
  "generated_by": "scripts/make_plan.py",
  "cores_per_node": 72,
  "fixed_iters": 100,
