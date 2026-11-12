@@ -34,7 +34,7 @@ esac
 # found (required by .../OpenMPI/5.0.8-GCC-14.3.0/lib/libmpi.so.40)". Keep the EFA directory out of the search path and
 # put the toolchain's libfabric first; print what the dynamic loader will use, for the job log.
 if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
-  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
+  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | { grep -v -E '^/opt/amazon/efa' || true; } | paste -sd: -)"
   for d in "$EBROOTLIBFABRIC/lib64" "$EBROOTLIBFABRIC/lib"; do [[ -d "$d" ]] && LD_LIBRARY_PATH="$d:$LD_LIBRARY_PATH"; done
   export LD_LIBRARY_PATH
   # 1040045.venus01: the old EFA libfabric was still loaded with this path in place. The 1040046 log shows why: the

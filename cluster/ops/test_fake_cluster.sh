@@ -41,13 +41,13 @@ step "apply_discovery with the budget from the command line --apply (scratch pla
   python3 scripts/apply_discovery.py "$disc" "${BUD[@]}" --apply
 ENVT="$REPO/cluster/vanda/env.sh"
 step "env (cpu): foss + Python loaded, no foreign libfabric preloaded" \
-  bash -c "printf 'source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+  bash -c "printf 'set -eo pipefail; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
 step "env (cpu) on a node that preloads the EFA libfabric: the toolchain's goes first, and the log says so" \
-  bash -c "printf 'export LD_PRELOAD=\"/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1\"; source %s && echo \"LD_PRELOAD now: \$LD_PRELOAD\"\n' '$ENVT' | $P3_SSH vanda bash -s"
+  bash -c "printf 'set -eo pipefail; export LD_PRELOAD=\"/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1\"; source %s && echo \"LD_PRELOAD now: \$LD_PRELOAD\"\n' '$ENVT' | $P3_SSH vanda bash -s"
 step "env (cpu) on a node without python3: refused" \
-  bash -c "printf 'command() { [[ \"\$2\" == python3 ]] && return 1; builtin command \"\$@\"; }; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+  bash -c "printf 'set -eo pipefail; command() { [[ \"\$2\" == python3 ]] && return 1; builtin command \"\$@\"; }; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
 step "env (offload): nvhpc-hpcx-cuda12 loaded" \
-  bash -c "printf 'export P3_FLAVOR=offload; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
+  bash -c "printf 'set -eo pipefail; export P3_FLAVOR=offload; source %s && echo env-ok\n' '$ENVT' | $P3_SSH vanda bash -s"
 touch src/_dirty_test.tmp
 step "sync refuses a dirty working tree" cluster/ops/sync.sh vanda
 rm -f src/_dirty_test.tmp

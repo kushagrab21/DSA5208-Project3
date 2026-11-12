@@ -50,7 +50,7 @@ p3_log "python3=$(command -v python3) ($(python3 --version 2>&1))"
 if [[ -n "${EBROOTLIBFABRIC:-}" ]]; then
   # (never let this assignment fail: under the job's `set -e` a failing command substitution here ends the job)
   preload="${LD_PRELOAD:-} $(cat /etc/ld.so.preload 2>/dev/null | tr '\n' ' ' || true)"
-  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | grep -v -E '^/opt/amazon/efa' | paste -sd: -)"
+  LD_LIBRARY_PATH="$(printf '%s' "${LD_LIBRARY_PATH:-}" | tr ':' '\n' | { grep -v -E '^/opt/amazon/efa' || true; } | paste -sd: -)"
   export LD_LIBRARY_PATH="$EBROOTLIBFABRIC/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   if printf '%s' "$preload" | grep -q 'libfabric' && ! printf '%s' "$preload" | grep -q "$EBROOTLIBFABRIC"; then
     for f in "$EBROOTLIBFABRIC/lib/libfabric.so.1" "$EBROOTLIBFABRIC/lib64/libfabric.so.1"; do
