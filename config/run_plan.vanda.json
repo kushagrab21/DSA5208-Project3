@@ -2858,6 +2858,10 @@
   {
    "job": "vanda-validate",
    "reason": "1546488 exit 2: mpirun inside PBS could not start prted (node calls itself GN-A40-075, PBS_NODEFILE lists gn-a40-075.stdct.loc, so the launcher used ssh without modules: 'prted: command not found'); env.sh now names prted by absolute path (diagnostic 1546517 OK across 2 nodes), 12 Nov"
+  },
+  {
+   "job": "vanda-validate",
+   "reason": "1546532 PASSED 5/5 and refused both bugs, but its rows said cluster=local: daemons launched via the agent do not inherit P3_CLUSTER/PBS_JOBID; env.sh now forwards both (the solver's only getenv inputs), 12 Nov"
   }
  ],
  "limits_source": "results/vanda/env/discover-20261112T055509Z.txt",
