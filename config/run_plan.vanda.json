@@ -2876,14 +2876,16 @@
    "queue": "batch_gpu via route auto (-P project)"
   }
  },
- "core_hour_budget": null,
- "budget_source": "unknown until first login (Vanda allocation; Atlas is unlimited per Lecture 8)",
+ "core_hour_budget": 10000.0,
+ "budget_source": "hpc project after amgr login, 12 Nov",
  "pbs": {
   "queue_cpu": "",
   "queue_gpu": "",
-  "project": "",
+  "project": "personal-bhatnagar.kushagra.m",
   "place": "excl",
-  "note": "fill queue/project from `hpc cpu`, `hpc gpu` and `qstat -Qf` on first login"
+  "note": "fill queue/project from `hpc cpu`, `hpc gpu` and `qstat -Qf` on first login",
+  "select_ompthreads": true,
+  "mem_per_cpu_gb": 2.9
  },
  "model": {
   "note": "core-hour estimate model; ASSUMED server values until the first cluster rows recalibrate them",
@@ -2901,5 +2903,6 @@
   "tol_iters_per_n": 4.0,
   "job_overhead_s": 300.0,
   "safety": 2.0
- }
+ },
+ "gpu_hour_budget": 1000.0
 }
