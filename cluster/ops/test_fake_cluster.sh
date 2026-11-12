@@ -72,10 +72,8 @@ step "submit vanda-gpu: offload build and its OWN qualification on the (fake) GP
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu
 step "the GPU job log: environment and qualification" \
   bash -c "grep -h -E 'p3 env \\(vanda/offload|QUALIFICATION|VALIDATED BINARY|TIMING GATE' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3-vanda-gpu.o*"
-step "submit vanda-256spread (amendment spread256: 8 x 32 cores on shared nodes, place=scatter, unbound; Poisson + graph 256-rank cells)" \
+step "submit refuses vanda-256spread (Poisson + graph cells) while bin/p3graph is not qualified: a mixed job needs both" \
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-256spread
-step "the spread script: select, place, P3_BIND=none, both timing gates, rows tagged with the placement" \
-  bash -c "grep -h -E '^#PBS -l|P3_BIND|timing_gate' $P3_GENERATED/vanda/vanda-256spread.pbs; grep -c '@shared-8x32' $P3_GENERATED/vanda/vanda-256spread.pbs"
 step "submit vanda-gpu1 (amendment gpu-split: half a GPU node, 1 GPU x 36 cores; its own offload build + qualification, then the 1-GPU cells)" \
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu1
 step "the gpu1 script asks for the hpc gpu sample shape, and its log shows the qualification and the gate" \
@@ -125,6 +123,13 @@ if [[ -f data/raw/com-amazon.ungraph.txt.gz && -f data/raw/email-Eu-core.txt.gz 
   step "fetch" cluster/ops/fetch.sh vanda
   step "status: graph-sweep filled, graph rows from the qualified p3graph only" \
     bash -c "python3 checks/run_plan.py status --plan vanda | grep -E 'graph-|GRADED|qualified'"
+  step "submit vanda-256spread (amendment spread256: 8 x 32 cores on shared nodes, place=scatter, unbound; both programs qualified now)" \
+    env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-256spread
+  step "the spread script: select, place, P3_BIND=none, both timing gates, rows tagged with the placement" \
+    bash -c "grep -h -E '^#PBS -l|P3_BIND|timing_gate' $P3_GENERATED/vanda/vanda-256spread.pbs; grep -c '@shared-8x32' $P3_GENERATED/vanda/vanda-256spread.pbs"
+  step "poll" cluster/ops/poll.sh vanda
+  step "fetch: the 256-core shared-node cells fill (their 288-core partners may still wait)" \
+    bash -c "cluster/ops/fetch.sh vanda >/dev/null; python3 checks/run_plan.py status --plan vanda | grep -E '^  (strong|weak|graph-strong) |256spread'"
   step "the generated graph script: timing gate with the graph cases, records to *.graph.csv" \
     bash -c "grep -E 'timing_gate|GREC=|P3_DATA=' $P3_GENERATED/vanda/vanda-graph-sweep.pbs"
 else
