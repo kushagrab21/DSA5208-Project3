@@ -146,6 +146,7 @@ def hand_typed_numbers(tex):
     for name, n in (("val", 1), ("req", 1), ("label", 1), ("ref", 1), ("eqref", 1), ("cite", 1), ("input", 1),
                     ("includegraphics", 1), ("lstinputlisting", 1), ("hspace", 1), ("vspace", 1), ("setlength", 2),
                     ("algotitle", 1), ("figslot", 2), ("interpslot", 1), ("src", 1), ("pending", 1),
+                    ("draftreview", 1),
                     ("texorpdfstring", 0)):
         b = remove_cmd(b, name, n)
     b = re.sub(r"\\begin\{(?:tabular|tabularx|minipage|thebibliography)\}(?:\{[^}]*\})+", " ", b)
@@ -310,7 +311,7 @@ def run(tex_path, no_pdf=False, quiet=False):
             continue
         if not info["filled"]:
             wait(info["reqs"], "cluster data: " + info["waiting_for"])
-        else:
+        if info["filled"] or info.get("partial"):  # a partial figure is drawn too: its axes and sources must hold
             mp = info["meta"] if os.path.isabs(info["meta"]) else os.path.join(REPO, info["meta"])
             fig_bad += check_figure(mp, status.get("results", ""), validated)
     # interpretation boxes and figure slots attach to the section they sit in
@@ -320,6 +321,15 @@ def run(tex_path, no_pdf=False, quiet=False):
             wait([r for r in rows if r not in INTERP_EXEMPT], "interpretation to write (%s)" % m.group(1))
     if not used_figs:
         wait(["E14", "E10"], "no figures in the report")
+    # drafted interpretations (DRAFT-FOR-USER-REVIEW): their rows are not filled until the user has reviewed them
+    drafts = {}  # E row -> [draft names]
+    draft_list = []
+    for title, s0, e0, rows in secs:
+        for m in re.finditer(r"\\draftreview\{([^}]*)\}", body[s0:e0]):
+            draft_list.append((m.group(1), title))
+            for r in rows:
+                if r not in INTERP_EXEMPT:
+                    drafts.setdefault(r, []).append(m.group(1))
 
     # E11 and E12 are required rows of the real-data part: a report without the graph section (or with it but
     # without both markers) is refused on those rows, however complete the Poisson part is.
@@ -342,8 +352,9 @@ def run(tex_path, no_pdf=False, quiet=False):
         say("     %s %r in: %s" % (kind, num, ctx))
     if hits:
         problems.append("%d hand-typed numbers" % len(hits))
-    say("  figures included: %d, filled: %d; problems in filled figures: %d" %
-        (len(used_figs), sum(1 for f in used_figs if status["figures"].get(f, {}).get("filled")), len(fig_bad)))
+    say("  figures included: %d, filled: %d, partial (drawn, still waiting): %d; problems in drawn figures: %d" %
+        (len(used_figs), sum(1 for f in used_figs if status["figures"].get(f, {}).get("filled")),
+         sum(1 for f in used_figs if status["figures"].get(f, {}).get("partial")), len(fig_bad)))
     for b in fig_bad:
         say("     %s" % b)
     problems += fig_bad
@@ -408,7 +419,11 @@ def run(tex_path, no_pdf=False, quiet=False):
             state = "UNMAPPED"
             unfilled.append(rid)
         elif rid in waiting:
-            state = "WAITING: " + "; ".join(sorted(waiting[rid]))
+            state = "WAITING: " + "; ".join(sorted(waiting[rid])) + (
+                ("; DRAFT-FOR-USER-REVIEW: " + ", ".join(drafts[rid])) if rid in drafts else "")
+            unfilled.append(rid)
+        elif rid in drafts:
+            state = "DRAFT-FOR-USER-REVIEW: " + ", ".join(drafts[rid])
             unfilled.append(rid)
         elif rid in PRINTED_ONLY:
             state = "PRINTED (see TERMS; not binding)"
@@ -433,6 +448,9 @@ def run(tex_path, no_pdf=False, quiet=False):
     say("  E rows waiting for cluster data: %s" % (", ".join(waiting_rows) or "none"))
     interp_rows = [r for r in unfilled if any(w.startswith("interpretation") for w in waiting.get(r, ()))]
     say("  E rows waiting for an interpretation to be written: %s" % (", ".join(interp_rows) or "none"))
+    say("  drafted interpretations awaiting the user's review (DRAFT-FOR-USER-REVIEW): %d%s" %
+        (len(draft_list), "".join("\n     %s  (section: %s)" % (n, t) for n, t in draft_list)))
+    say("  E rows carrying a draft: %s" % (", ".join(r for r, _ in REQS if r in drafts) or "none"))
     say("REQUIREMENTS: %s" % verdict)
     say("  qualification: refuses broken copies (--selftest); pass example: none yet - it will be the first full "
         "render the user accepts")

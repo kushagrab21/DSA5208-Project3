@@ -160,9 +160,30 @@ key works -> discover vanda/atlas8 -> apply_discovery (read diff, --apply) -> ru
 submit vanda-validate + atlas-validate -> poll/fetch -> submit vanda-calibrate -> poll/fetch -> freeze, commit, sync ->
 submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, vanda-1node-variants-layouts.
 
+## Turn 7 (12 Nov 2026): GPU split, the report from 262 real Vanda cells, drafted interpretations
+- Real Vanda (parent's runs): every 1- and 2-node job and all graph jobs except graph-4node finished; vanda-4node and
+  vanda-graph-4node wait for 4 free nodes; vanda-gpu (2 GPUs, excl) never placed ("ngpus (R: 2 A: 1 T: 70)").
+- Amendment gpu-split-2026-11-12 (scripts/amend_vanda_gpu_split.py, idempotent, --check): vanda-gpu1 =
+  select=1:ncpus=36:mpiprocs=1:ompthreads=36:ngpus=1:mem=105gb, place=pack, own offload build + validate.py, the two
+  1-GPU cells; vanda-gpu keeps its resources and the 2-GPU cells (changed_by recorded); rerun reasons pre-recorded
+  for the 1-GPU cells (queued 1546583 still has the pre-split script). job_select: per-job mpiprocs/ompthreads.
+  Fake test 52 steps (gpu1 qualified + gated); E7 now needs only the 1-GPU cells and the 1-node layouts.
+- Report on real rows: partial figures (drawn from recorded cells, red "still waiting" line, rows stay WAITING),
+  partial tables (recorded rows + waiting row), per-role values (one/q/half/node/2node, so Atlas works too),
+  partial_values(); fixes: Poisson validation reader picked the graph JSON (crash), comm 1-rank points, log-axis
+  labels (narrow ranges had none), graph-serial labels/lines, hybrid rows in fig_graph_variants, label order,
+  make_graph_plan repeats rule now independent of calibration (--check passed again).
+- Drafts (\draftreview, DRAFT-FOR-USER-REVIEW; requirements_check lists them, rows not FILLED): serial, mpi-node,
+  graph-serial, graph-accuracy, graph-sparsity, graph-parallel, graph-conclusions. Waiting slots: mpi-top,
+  graph-parallel-top, mpix, discussion. PDF 81 pages.
+- Findings: bandwidth-bound in the node (E 0.26 at 72, 2 nodes halve the time); 36 ranks sit on one socket (18->36
+  only x1.14; 36->72 x2.01); pipelined slower at <= 144 on the grid (x1.38-1.44, model bytes 1.33) but FASTER for
+  graphs across nodes (0.72-0.81 of classic) where classic graph CG slows down on 2 nodes (x1.49-1.54); graph hybrid
+  2x36 x1.86 on Orkut; rows partition x1.55-2.03 slower; BFS order cuts MORE edges on LJ/Orkut.
+
 ## Next step
-Parent (turn 6): merge graph-extension (RUNBOOK "The graph extension"), fetch the six datasets on the login nodes,
-submit <cluster>-graph-prep, then the graph jobs. Earlier: the first real session above.
+Parent (turn 7): commit is on main; sync vanda; submit vanda-gpu1 (cluster/ops/submit.sh vanda vanda-gpu1); show the
+user the seven DRAFT-FOR-USER-REVIEW paragraphs; when 4node/graph-4node/gpu1 arrive, fetch and make_report.
 Child (when cluster rows exist): scripts/make_report.sh; write the four interpretation boxes from the tables; fix
 whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
 place; GitHub link optional), first full render acceptance, the Canvas upload.

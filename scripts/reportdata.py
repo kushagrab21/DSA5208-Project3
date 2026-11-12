@@ -125,6 +125,18 @@ class ClusterData:
             raise MixedBuild("%s on %s mixes binaries %s: rerun the series with one binary" %
                              (label, self.cluster, ", ".join(s[:12] for s in shas)))
 
+    def filled_view(self):
+        """The same data with every group reduced to its FILLED cells, for drawing what exists while the rest of a
+        group waits (a partial figure says so). The cells' rows are shared, the plan is a copy; never use a view for a
+        value that names a core count it does not contain."""
+        import copy
+        v = copy.copy(self)
+        v.plan = copy.deepcopy(self.plan)
+        for g in v.plan["groups"].values():
+            g["cells"] = [c for c in g["cells"] if c in self.cell_rows]
+        v.full = self
+        return v
+
     def used_rows(self, cids):
         return [r for c in cids for r in self.cell_rows.get(c, [])]
 

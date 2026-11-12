@@ -83,10 +83,32 @@ def count_axis(ax, ticks, axis="x"):
     ax.tick_params(axis=axis, labelsize=7)
 
 
-def plain_log_y(ax):
-    """Log y axis with plain numbers (0.5, 2, 30) instead of 3x10^0 on short ranges."""
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: "%g" % v))
-    ax.yaxis.set_minor_formatter(FuncFormatter(lambda v, _: "%g" % v if str("%g" % v)[0] in "25" else ""))
+def plain_log_y(ax, axis="y"):
+    """Log axis with plain numbers (0.5, 2, 30) instead of 3x10^0, labelled to suit its range: under about one decade
+    the ticks are 1-2-3-5-7 per decade (else a short axis shows no number at all); up to two and a half decades the
+    2s and 5s are labelled too; beyond that only the powers of ten."""
+    from matplotlib.ticker import LogLocator
+    a = ax.yaxis if axis == "y" else ax.xaxis
+    lo, hi = sorted(ax.get_ylim() if axis == "y" else ax.get_xlim())
+    dec = math.log10(hi / lo) if lo > 0 else 9
+    def nice(v, _=None):  # 0.5, 2, 30 ... but 10^6 rather than 1e+06, and 10^-4 rather than 0.0001
+        if v <= 0:
+            return ""
+        e = math.log10(v)
+        if abs(e - round(e)) < 1e-9 and (v >= 1e4 or v < 1e-3):
+            return "$10^{%d}$" % round(e)
+        return "%g" % v
+    fmt = FuncFormatter(nice)
+    if dec < 1.2:
+        a.set_major_locator(LogLocator(base=10, subs=(1.0, 1.5, 2.0, 3.0, 5.0, 7.0)))
+        a.set_major_formatter(fmt)
+        a.set_minor_locator(NullLocator())
+    elif dec < 2.5:
+        a.set_major_formatter(fmt)
+        a.set_minor_formatter(FuncFormatter(lambda v, _: nice(v) if str("%g" % v)[0] in "25" else ""))
+    else:
+        a.set_major_formatter(fmt)
+        a.set_minor_formatter(FuncFormatter(lambda v, _: ""))
 
 
 def end_label(ax, x, y, text, color=INK2, dy=0):
@@ -144,7 +166,7 @@ def fig_serial_tol(D):
                 marker=mk, ms=5, lw=1.8, mec=SURFACE, mew=1, label=lab)
         a2.plot([p[1] for p in pts], [p[3] for p in pts], color=VARIANT[("classic", "blocking")][0], ls=ls,
                 marker=mk, ms=5, lw=1.8, mec=SURFACE, mew=1, label=lab)
-        end_label(a1, pts[-1][0], pts[-1][2], lab, dy=-7 if d == 2 else 7)
+        end_label(a1, pts[-1][0], pts[-1][2], lab, dy=-7 if d == 2 else 12)
         end_label(a2, pts[-1][1], pts[-1][3], lab, dy=-7 if d == 2 else 7)
     for ax in (a1, a2):
         ax.set_xscale("log")
@@ -242,13 +264,15 @@ def fig_comm(D):
         used += [cid for cid, c in cs]
         xs = [c["ranks"] for cid, c in cs]
         ticks += xs
-        for col, color, mk, lab in COMP:
-            # one rank has no halo or reduction partner: those series start at two ranks
-            pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs]
+        for k, (col, color, mk, lab) in enumerate(COMP):
+            # one rank has no halo or reduction partner (its recorded time is timer overhead): those series start at
+            # two ranks
+            pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs
+                   if col == "t_compute" or c["ranks"] > 1]
             pts = [p for p in pts if p[1] > 0]
             ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, marker=mk, ms=4.5, lw=1.6, mec=SURFACE,
                     mew=1, label=lab)
-            end_label(ax, pts[-1][0], pts[-1][1], lab)
+            end_label(ax, pts[-1][0], pts[-1][1], lab, dy=(0, -9, 9)[k])
         count_axis(ax, ticks)
         ax.set_yscale("log")
         ax.set_xlim(min(ticks) / 1.4, max(ticks) * 5)
@@ -304,6 +328,10 @@ DSMARK = dict(zip(GP.ORDER, ["o", "s", "^", "D", "v", "P"]))
 CGSTYLE = {"classic": ("#2a78d6", "o", "classic CG"), "pipelined": ("#eb6834", "^", "pipelined CG")}
 
 
+GLABEL = {"email-Eu-core": (6, -2, "left"), "com-amazon": (-6, 4, "right"), "com-dblp": (6, -9, "left"),
+          "com-youtube": (6, -2, "left"), "com-lj": (-6, 2, "right"), "com-orkut": (-6, 4, "right")}
+
+
 def short(ds):
     return GP.DATASETS[ds]["display"].replace("com-", "")
 
@@ -320,12 +348,15 @@ def fig_graph_serial(D):
             used.append(cid)
         pts.sort()
         for ax, k in ((a1, 0), (a2, 1)):
-            ax.plot([p[k] for p in pts], [p[2] for p in pts], color=color, ls=ls, marker=mk, ms=5, lw=1.8,
+            # six different graphs, not one series: markers only, no line suggesting a path between them
+            ax.plot([p[k] for p in pts], [p[2] for p in pts], color=color, ls="none", marker=mk, ms=5.5,
                     mec=SURFACE, mew=1, label=lab)
         if order == "natural":
-            for i, p in enumerate(pts):  # alternate above/below: neighbouring datasets can have similar sizes
-                a1.annotate(short(p[3]), (p[0], p[2]), xytext=(-4, 7 if i % 2 == 0 else -10),
-                            textcoords="offset points", fontsize=6.5, color=INK2, ha="right")
+            for p in pts:
+                dx, dy, ha = GLABEL.get(p[3], (6, -3, "left"))
+                for ax, k in ((a1, 0), (a2, 1)):
+                    ax.annotate(short(p[3]), (p[k], p[2]), xytext=(dx, dy), textcoords="offset points",
+                                fontsize=6.5, color=INK2, ha=ha)
     for ax, xl in ((a1, "nonzeros of L + aI (2E + V)"), (a2, "vertices V (matrix dimension)")):
         ax.set_xscale("log")
         ax.set_yscale("log")
@@ -333,7 +364,7 @@ def fig_graph_serial(D):
         ax.margins(x=0.2)
         meta += axes_meta(ax, xl.split()[0], "size", "time")
     a1.set_ylabel("time per CG iteration, 1 core (s)")
-    a1.legend(frameon=False, loc="upper left", fontsize=7)
+    a2.legend(frameon=False, loc="lower right", fontsize=7)
     return fig, meta, used
 
 
@@ -347,6 +378,10 @@ def fig_graph_strong(D):
     fig, axes = new_fig(2)
     used, meta, ticks = [], [], []
     for ax, dset in zip(axes, GP.STRONG_DATASETS):
+        last = {}
+        for cg in CGSTYLE:
+            cs = _graph_series(D, "graph-strong", dset, cg)
+            last[cg] = D.med(cs[-1][0], "t_solve") if cs else 0
         for cg, (color, mk, lab) in CGSTYLE.items():
             cs = _graph_series(D, "graph-strong", dset, cg)
             D.check_same_build([cid for cid, c in cs], "graph-strong %s %s" % (dset, cg))
@@ -355,7 +390,8 @@ def fig_graph_strong(D):
             ys = [D.med(cid, "t_solve") for cid, c in cs]
             ticks += xs
             ax.plot(xs, ys, color=color, marker=mk, ms=4.5, lw=1.8, mec=SURFACE, mew=1, label=lab)
-            end_label(ax, xs[-1], ys[-1], cg, dy=-6 if cg == "classic" else 6)
+            # the series that ends higher gets its label above (pipelined ends lower than classic across nodes)
+            end_label(ax, xs[-1], ys[-1], cg, dy=7 if ys[-1] >= max(last.values()) else -7)
             if cg == "classic":
                 ax.plot(xs, [ys[0] / x for x in xs], color=MUTED, lw=1, ls=":", label="ideal (classic)")
         count_axis(ax, ticks)
@@ -383,12 +419,13 @@ def fig_graph_comm(D):
         D.check_same_build([cid for cid, c in cs], "graph-strong %s classic" % dset)
         used += [cid for cid, c in cs]
         ticks += [c["ranks"] for cid, c in cs]
-        for col, color, mk, lab in comp:
-            pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs]
+        for k, (col, color, mk, lab) in enumerate(comp):
+            pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs
+                   if col == "t_compute" or c["ranks"] > 1]  # 1 rank: no ghosts, no partner in a reduction
             pts = [p for p in pts if p[1] > 0]
             ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, marker=mk, ms=4.5, lw=1.6, mec=SURFACE,
                     mew=1, label=lab)
-            end_label(ax, pts[-1][0], pts[-1][1], lab)
+            end_label(ax, pts[-1][0], pts[-1][1], lab, dy=(-7, 7, 0)[k])
         count_axis(ax, ticks)
         ax.set_yscale("log")
         ax.set_xlim(min(ticks) / 1.4, max(ticks) * 6)
@@ -405,6 +442,7 @@ def fig_graph_comm(D):
 
 VARIANT_ROWS = [(o, p, e) for (o, p) in (("natural", "rows"), ("natural", "nnz"), ("bfs", "nnz"))
                 for e in ("alltoallv", "neighbor", "overlap")]
+LAYOUT_ROWS = [(8, 9), (2, 36), (8, 12), (2, 48)]  # ranks x threads per node (Vanda: first two; Atlas: last two)
 
 
 @figure("fig_graph_variants", ["graph-variants"])
@@ -425,8 +463,23 @@ def fig_graph_variants(D):
                         ys.append(yi + (-0.15 if cg == "classic" else 0.15))
                 ax.plot(xs, ys, ls="none", marker=mk, ms=5, color=NODES[ci % 2], mec=SURFACE, mew=0.8,
                         label="%s, %d cores" % (lab, n))
-        ax.set_yticks(range(len(VARIANT_ROWS)))
-        ax.set_yticklabels(["%s/%s, %s" % (o, p, e) for (o, p, e) in VARIANT_ROWS], fontsize=6.5)
+        labels = ["%s/%s, %s" % (o, p, e) for (o, p, e) in VARIANT_ROWS]
+        # MPI + OpenMP: the default method (natural/nnz, neighbor, classic) with fewer ranks and more threads
+        for (rpn, th) in LAYOUT_ROWS:
+            for ci, n in enumerate(counts):
+                cs = [(cid, c) for cid, c in D.cells("graph-variants", dataset=dset, threads=th)
+                      if c["ranks"] * th == n and c["ranks"] // c["nodes"] == rpn]
+                if not cs:
+                    continue
+                if "%d ranks x %d threads, nnz, neighbor" % (rpn, th) not in labels:
+                    labels.append("%d ranks x %d threads, nnz, neighbor" % (rpn, th))
+                yi = labels.index("%d ranks x %d threads, nnz, neighbor" % (rpn, th))
+                for cid, c in cs:
+                    used.append(cid)
+                    ax.plot([D.med(cid, "t_solve")], [yi - 0.15], ls="none", marker="o", ms=5, color=NODES[ci % 2],
+                            mec=SURFACE, mew=0.8)
+        ax.set_yticks(range(len(labels)))
+        ax.set_yticklabels(labels, fontsize=6.5)
         ax.invert_yaxis()
         ax.set_xscale("log")
         ax.set_xlabel("time per solve (s)")
@@ -505,14 +558,26 @@ def build(results, out, names=None, stamp_text=None):
         meta = {"figure": name, "script": "scripts/figures.py", "script_sha256": RD.sha256(os.path.abspath(__file__)),
                 "plan": D.plan["plan"], "cluster": D.cluster, "groups": groups,
                 "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
-        mixed = None
+        mixed, partial = None, False
         if D.complete(*groups):
             try:
                 fig, axes, used = fn(D)
             except RD.MixedBuild as e:
                 mixed = str(e)
                 plt.close("all")
-        if not D.complete(*groups) or mixed:
+        elif all(D.group_status(g)[0] > 0 for g in groups):
+            # PARTIAL: draw the recorded cells only (every series from its own 1-core cell); the figure stays
+            # waiting for its E rows and the report prints what it waits for under it
+            try:
+                fig, axes, used = fn(D.filled_view())
+                partial = True
+            except RD.MixedBuild as e:
+                mixed = str(e)
+                plt.close("all")
+            except Exception as e:  # a series without its baseline, etc.: not drawable yet
+                report.append("%-16s (partial drawing failed: %s)" % (name, str(e).splitlines()[0][:80]))
+                plt.close("all")
+        if not (D.complete(*groups) or partial) or mixed:
             meta.update({"status": "unfilled", "waiting_for": [mixed] if mixed else D.waiting(*groups)})
             if os.path.exists(pdf):
                 os.remove(pdf)
@@ -526,14 +591,20 @@ def build(results, out, names=None, stamp_text=None):
             for ax in fig.axes:
                 if ax.get_yscale() == "log":
                     plain_log_y(ax)
+                if ax.get_xscale() == "log" and not isinstance(ax.xaxis.get_major_locator(), FixedLocator):
+                    plain_log_y(ax, "x")  # count axes keep their own ticks (count_axis)
             fig.savefig(pdf, facecolor=SURFACE)
             plt.close(fig)
             rows = D.used_rows(used)
-            meta.update({"status": "filled", "axes": axes, "rows": len(rows), "sources": D.sources(used),
-                         "binaries": sorted(set(r["binary_sha256"] for r in rows)),
+            meta.update({"status": "partial" if partial else "filled", "axes": axes, "rows": len(rows),
+                         "sources": D.sources(used), "binaries": sorted(set(r["binary_sha256"] for r in rows)),
                          "clusters": sorted(set(r["cluster"] for r in rows)), "image_sha256": RD.sha256(pdf)})
-            report.append("%-16s filled    %d rows, axes %s" % (
-                name, len(rows), ", ".join("%s:%s=%s" % (a["panel"], a["quantity"], a["scale"]) for a in axes)))
+            if partial:
+                meta["waiting_for"] = D.waiting(*groups)
+            report.append("%-16s %-9s %d rows, axes %s%s" % (
+                name, "PARTIAL" if partial else "filled", len(rows),
+                ", ".join("%s:%s=%s" % (a["panel"], a["quantity"], a["scale"]) for a in axes),
+                ("; waiting for " + "; ".join(meta["waiting_for"])) if partial else ""))
         with open(metap, "w") as f:
             json.dump(meta, f, indent=1)
     return report
@@ -657,8 +728,11 @@ def fabricate(results, plan_name="vanda", jobs=None):
     envd = os.path.join(results, plan["cluster"], "env")
     os.makedirs(envd, exist_ok=True)
     with open(os.path.join(envd, "TESTDOUBLE.0.json"), "w") as f:
-        json.dump({"pbs_jobid": "TESTDOUBLE.0", "cpu_model": "TEST DOUBLE CPU", "mem_total_gb": 0,
+        json.dump({"pbs_jobid": "TESTDOUBLE.0", "cpu_model": "TEST DOUBLE CPU", "mem_total_gb": 0, "sockets": 2,
                    "modules": "TEST DOUBLE"}, f)
+    with open(os.path.join(results, plan["cluster"], "calibration.json"), "w") as f:
+        json.dump({"utc": "TESTDOUBLE", "from_jobs": ["TESTDOUBLE"], "bw_core_gbs": 10.0, "bw_node_gbs": 200.0,
+                   "note": "TEST DOUBLE"}, f)
     C.append_csv(os.path.join(results, "validated_binaries.csv"), C.VALIDATED_COLUMNS, {
         "utc": "TESTDOUBLE", "cluster": plan["cluster"], "host": "TEST-DOUBLE", "binary_sha256": FAKE_SHA,
         "binary": "TEST DOUBLE", "build": "TEST DOUBLE", "validate_sha256": "-", "cases": "-",

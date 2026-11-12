@@ -21,7 +21,6 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "checks"))
 import graph_plan as GP  # noqa: E402
-import run_plan as RP  # noqa: E402
 
 AMENDMENT = "graph-2026-11-12"
 REASON = ("Data-science extension decided on 12 Nov 2026 (parent and user, circuit d7): semi-supervised community "
@@ -52,7 +51,8 @@ class G:
     def cell(self, gid, c):
         c = dict(c, amendment=AMENDMENT)
         if c.get("repeats", 1) > 1:
-            one = GP.cell_seconds(self.plan, dict(c, repeats=1), RP.model_of(self.plan))
+            # the plan's own model, never the calibrated one: the rule must give the same plan every time it runs
+            one = GP.cell_seconds(self.plan, dict(c, repeats=1), self.plan["model"])
             if one > LONG_REPEAT_S:
                 c["repeats"] = 1
         cid = GP.cell_id(c)
