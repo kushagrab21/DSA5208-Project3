@@ -7751,6 +7751,10 @@
   {
    "job": "vanda-validate",
    "reason": "1546532 PASSED 5/5 and refused both bugs, but its rows said cluster=local: daemons launched via the agent do not inherit P3_CLUSTER/PBS_JOBID; env.sh now forwards both (the solver's only getenv inputs), 12 Nov"
+  },
+  {
+   "job": "vanda-1node-variants-layouts",
+   "reason": "1546588 exit 254 in 5 s: Open MPI refused to bind 1 rank x 72 threads across two 36-core sockets; p3_launch now maps such ranks unbound and lets OpenMP pin threads (12 Nov)"
   }
  ],
  "limits_source": "results/vanda/env/discover-20261112T055509Z.txt",

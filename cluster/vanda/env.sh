@@ -86,11 +86,20 @@ export P3_MPIRUN="${P3_MPIRUN:-mpirun $P3_MPI_EXTRA --bind-to none -x OMP_NUM_TH
 
 # p3_launch RANKS RANKS_PER_NODE THREADS cmd...   Open MPI syntax (foss Open MPI 5 and HPC-X): RANKS_PER_NODE ranks on
 # each node, THREADS cores per rank, threads pinned to those cores. The first launch of each job prints the bindings.
+# Open MPI will not bind one rank across two sockets ("Your job failed to map ... CPUs/rank: 72", vanda-1node-variants-layouts
+# 1546588, 12 Nov): a rank whose threads exceed one socket's cores is mapped unbound, and OpenMP pins its threads
+# (OMP_PLACES=cores, OMP_PROC_BIND=close). Cores per socket come from lscpu on the compute node itself.
+p3_map_args() {
+  local rpn="$1" th="$2" cps
+  cps="$(lscpu 2>/dev/null | awk -F: '/^Core\(s\) per socket/{gsub(/ /,"",$2); print $2}' || true)"
+  if [[ -n "$cps" && "$th" -gt "$cps" ]]; then echo "--map-by ppr:${rpn}:node --bind-to none"
+  else echo "--map-by ppr:${rpn}:node:PE=${th} --bind-to core"; fi
+}
 p3_launch() {
   local np="$1" rpn="$2" th="$3"
   shift 3
   OMP_NUM_THREADS="$th" OMP_PLACES=cores OMP_PROC_BIND=close \
-    mpirun $P3_MPI_EXTRA -np "$np" --map-by "ppr:${rpn}:node:PE=${th}" --bind-to core \
+    mpirun $P3_MPI_EXTRA -np "$np" $(p3_map_args "$rpn" "$th") \
     ${P3_REPORT_BINDINGS:+--report-bindings} -x OMP_NUM_THREADS -x OMP_PLACES -x OMP_PROC_BIND -x P3_CLUSTER "$@"
 }
 
