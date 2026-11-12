@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# FAKE pbsnodes (tests only)
+if [[ "${P3_FAKE_ALIAS:-}" == atlas* ]]; then
+  for n in cnode-01 cnode-02 cnode-03; do
+    printf '%s\n     state = free\n     resources_available.mem = 367306mb\n     resources_available.ncpus = 96\n     resources_available.node_pool = par12\n\n' $n
+  done
+  printf 'horse-01\n     state = free\n     resources_available.mem = 191000mb\n     resources_available.ncpus = 40\n     resources_available.node_pool = horse\n\n'
+  printf 'colo-x-01\n     state = free\n     resources_available.mem = 791883340kb\n     resources_available.ncpus = 192\n\n'
+  printf 'colo-x-02\n     state = free\n     resources_available.mem = 791883340kb\n     resources_available.ncpus = 192\n\n'
+  printf 'colo-x-03\n     state = free\n     resources_available.mem = 791883340kb\n     resources_available.ncpus = 192\n\n'
+  printf 'colo-x-04\n     state = free\n     resources_available.mem = 791883340kb\n     resources_available.ncpus = 192\n\n'
+  exit 0
+fi
+if [[ "${P3_FAKE_ALIAS:-}" == vanda ]]; then   # FAKE Vanda pools: cpu_node 72 cores / 501 GB, gpu_node + 2 GPUs
+  for n in cn-001 cn-002 cn-003 cn-004 cn-005; do
+    printf '%s\n     state = <various>\n     resources_available.mem = 525753344kb\n     resources_available.ncpus = 72\n     resources_available.ngpus = 0\n     resources_available.node_pool = cpu_node\n' $n
+  done
+  for n in gn-a40-001 gn-a40-002; do
+    printf '%s\n     state = <various>\n     resources_available.mem = 525753344kb\n     resources_available.ncpus = 72\n     resources_available.ngpus = 2\n     resources_available.node_pool = gpu_node\n' $n
+  done
+  printf 'rn-003\n     state = state-unknown,offline\n     resources_available.mem = 221540352kb\n     resources_available.ncpus = 64\n     resources_available.node_pool = gpu_amd_free\n'
+  exit 0
+fi
+for n in fakecpu001 fakecpu002 fakegpu001; do
+  echo "$n"; echo "     state = free"
+  if [[ $n == *gpu* ]]; then echo "     resources_available.ncpus = 16"; echo "     resources_available.ngpus = 2"
+  else echo "     resources_available.ncpus = 72"; echo "     resources_available.ngpus = 0"; fi
+  echo "     resources_available.mem = 515gb"; echo
+done

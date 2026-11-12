@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# FAKE id (tests only): the fake cluster's user is "fakeuser"
+case "$1" in -un|-nu) echo fakeuser;; -Gn) echo fakeuser users;; *) exec /usr/bin/id "$@";; esac

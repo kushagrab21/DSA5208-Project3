@@ -106,6 +106,12 @@ std::string sha256_file(const std::string& path) {
     return s.hex();
 }
 
+std::string sha256_string(const std::string& data) {
+    Sha256 s;
+    s.update(reinterpret_cast<const unsigned char*>(data.data()), data.size());
+    return s.hex();
+}
+
 std::string self_exe_path() {
     char buf[PATH_MAX];
 #if defined(__APPLE__)
@@ -220,6 +226,42 @@ bool append_record(const std::string& path, const std::vector<std::string>& valu
         for (size_t i = 0; i < cols.size(); ++i) f << (i ? "," : "") << cols[i];
         f << "\n";
     }
+    for (size_t i = 0; i < values.size(); ++i) f << (i ? "," : "") << sanitize(values[i]);
+    f << "\n";
+    return bool(f);
+}
+
+bool append_csv_row(const std::string& path, const std::vector<std::string>& cols,
+                    const std::vector<std::string>& values, std::string& err) {
+    if (values.size() != cols.size()) {
+        err = "record has " + std::to_string(values.size()) + " values for " + std::to_string(cols.size()) +
+              " columns";
+        return false;
+    }
+    size_t slash = path.find_last_of('/');
+    if (slash != std::string::npos && !mkdirs(path.substr(0, slash))) {
+        err = "cannot create directory for " + path;
+        return false;
+    }
+    std::string header;
+    for (size_t i = 0; i < cols.size(); ++i) header += (i ? "," : "") + cols[i];
+    struct stat sb;
+    const bool exists = stat(path.c_str(), &sb) == 0 && sb.st_size > 0;
+    if (exists) {
+        std::ifstream in(path);
+        std::string first;
+        std::getline(in, first);
+        if (first != header) {
+            err = path + " exists with a different header (another record schema); not appending";
+            return false;
+        }
+    }
+    std::ofstream f(path, std::ios::app);
+    if (!f) {
+        err = "cannot open " + path;
+        return false;
+    }
+    if (!exists) f << header << "\n";
     for (size_t i = 0; i < values.size(); ++i) f << (i ? "," : "") << sanitize(values[i]);
     f << "\n";
     return bool(f);

@@ -27,6 +27,26 @@ RECORD_COLUMNS = [
 ]
 RECORD_SCHEMA = "p3run-1"
 
+# Must match graph_columns() in src/graph/graph_main.cpp (rows of bin/p3graph, files named *.graph.csv).
+GRAPH_COLUMNS = [
+    "schema", "utc", "cluster", "host", "pbs_jobid", "cell", "tag", "nodes", "ranks", "threads",
+    "dataset", "order", "keep", "vertices", "edges", "nonzeros", "avg_degree", "max_degree",
+    "part", "exchange", "cg", "a", "K", "s", "theta", "seed", "rhs", "mode", "iters_req", "tol",
+    "iters", "iters_min", "iters_max", "repeat",
+    "t_total", "t_solve", "t_iter", "t_halo", "t_reduce", "t_compute", "t_other", "t_halo_max", "t_reduce_max",
+    "t_compute_max", "t_setup", "t_read",
+    "rows_max", "rows_min", "nnz_max", "nnz_min", "nnz_imbalance", "ghosts_max", "ghosts_sum", "edge_cut",
+    "cut_fraction", "neighbors_max", "doubles_per_exch_max", "allreduces", "exchanges",
+    "rel_res", "true_rel_res", "converged", "breakdown",
+    "accuracy", "eval_vertices", "unreached", "majority", "random", "seeds_sha", "communities",
+    "binary_sha256", "git_sha", "build", "mpi_thread",
+]
+GRAPH_SCHEMA = "p3graph-1"
+GRAPH_SUFFIX = ".graph.csv"
+# Where the SNAP data lives: P3_DATA, else the repository's data/ (gitignored, the Mac), else ~/p3data (clusters).
+DATA = os.environ.get("P3_DATA") or (os.path.join(REPO, "data") if os.path.isdir(os.path.join(REPO, "data"))
+                                     else os.path.join(os.path.expanduser("~"), "p3data"))
+
 VALIDATED_COLUMNS = ["utc", "cluster", "host", "binary_sha256", "binary", "build", "validate_sha256",
                      "cases", "bug_binaries_refused", "verdict"]
 
@@ -96,7 +116,7 @@ def binary_version(binary, launcher=None):
                          timeout=120).stdout
     fields = {}
     for line in out.splitlines():
-        if line.startswith("p3cg "):
+        if line.startswith("p3cg ") or line.startswith("p3graph "):
             head, _, build = line.partition(" build=")  # build is last and may contain spaces
             fields["build"] = build.strip()
             for tok in head.split()[1:]:

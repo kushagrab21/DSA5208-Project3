@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# FAKE NUS "hpc" helper (tests only). Every output says FAKE.
+if [[ "${P3_FAKE_ALIAS:-}" == atlas* ]]; then   # Atlas's hpc: help pages, no project or allocation (FAKE)
+  case "$1 $2" in
+    "queue limit") printf 'FAKE hpc queue limit (test double)\nparallel: 12-96 cores per job, 96 per user, 4 jobs\nserial: 1 core, 40 jobs\n';;
+    "cores "|"cpu ") printf 'FAKE hpc cores (test double)\nparallel: up to 96 cores\n';;
+    "mpi ") printf 'FAKE hpc mpi (test double)\n#PBS -q parallel\n#PBS -l select=1:ncpus=96:mpiprocs=96:mem=300gb\n';;
+    *) printf '\n  Use command as:\n  > hpc  option\n  Option: [quota|space] [q|queue] [queue limit] [cpu|cores] [mpi]\n';;
+  esac
+  exit 0
+fi
+if [[ "${P3_FAKE_ALIAS:-}" == vanda ]]; then   # Vanda's hpc, as seen on 12 Nov (FAKE): coloured samples, amgr for projects
+  G=$'\e[1;32m'; Z=$'\e[0m'
+  case "$1" in
+    project) printf '\n To check PBS Project, credits and members, run this command in terminal first:\n   #  amgr login \n\n Please enter with your NUS password to login.\n';;
+    quota|space) printf ' Warning: HOME folder/quota is not ready. Please wait and try again. (FAKE)\n';;
+    cpu) printf '%s#!/bin/bash %s\n%s#PBS -P Project-Name %s\n%s##PBS -q auto_free %s\n%s#PBS -j oe %s\n%s#PBS -l walltime=24:00:00 %s\n%s#PBS -l select=1:ncpus=36:mpiprocs=36:ompthreads=1:mem=240gb %s\n' "$G" "$Z" "$G" "$Z" "$G" "$Z" "$G" "$Z" "$G" "$Z" "$G" "$Z";;
+    gpu) printf ' -P Project-Name     :  Set to use project < Project-Name, e.g. CFP01-CF-nnn or personal-usernage >\n%s#PBS -P Project-Name %s\n%s##PBS -q auto_free %s\n%s#PBS -l select=1:ncpus=36:mpiprocs=1:ompthreads=36:ngpus=1 %s\n' "$G" "$Z" "$G" "$Z" "$G" "$Z";;
+    *) echo "FAKE hpc: unknown subcommand $1" >&2; exit 1;;
+  esac
+  exit 0
+fi
+case "$1" in
+  project) printf 'FAKE hpc project (test double)\nProject      : personal-fakeuser\nCPU core-hours: allocated 1000.0  used 12.5  balance 987.5\nGPU hours    : allocated 50.0  used 0.0  balance 50.0\n';;
+  quota)   printf 'FAKE hpc quota (test double)\nHome: 5 GB of 20 GB\n';;
+  space)   printf 'FAKE hpc space (test double)\n/home/fakeuser  5G used  20G quota\n/scratch/fakeuser  0G used  1T quota\n';;
+  cpu)     printf '#!/bin/bash\n# FAKE sample CPU job script (test double)\n#PBS -N cpu_job\n#PBS -q parallel\n#PBS -P personal-fakeuser\n#PBS -l select=1:ncpus=72:mpiprocs=72:mem=200gb\n#PBS -l walltime=02:00:00\n#PBS -j oe\ncd $PBS_O_WORKDIR\nmodule load nvhpc-hpcx-cuda12/26.1\nmpirun ./a.out\n';;
+  gpu)     printf '#!/bin/bash\n# FAKE sample GPU job script (test double)\n#PBS -N gpu_job\n#PBS -q gpu\n#PBS -P personal-fakeuser\n#PBS -l select=1:ncpus=16:ngpus=2:mem=100gb\n#PBS -l walltime=01:00:00\n#PBS -j oe\ncd $PBS_O_WORKDIR\nmodule load nvhpc-hpcx-cuda12/26.1\n./a.out\n';;
+  *) echo "FAKE hpc: unknown subcommand $1" >&2; exit 1;;
+esac

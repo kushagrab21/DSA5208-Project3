@@ -17,7 +17,7 @@ while anything it depends on is unfilled: a generated value or table used in the
 TERMS (non-standard terms used vs defined with \\term{}) is printed and does not bind: a definition sentence existing
 is not the same as the grader finding the report makes sense.
 
-NUMBER RULES. Outside math: no digit at all, except identifiers (2D/3D, 1D, 5-point/7-point, V1-V5, Lecture 12,
+NUMBER RULES. Outside math: no digit at all, except identifiers (2D/3D, 1D, 5-point/7-point, V1-V5, G1-G3, Lecture 12,
 Project 3, DSA5208, Opus 5.5, SHA-256, student IDs). Inside math: single digits only (constants and exponents such
 as 2d, h^2, P^{2/3}); a number with two or more digits or a decimal point must be a \\val. Inside \\code{}: no
 free-standing number. Ignored: comments, labels/refs/cites, file arguments, lengths and widths, the bibliography.
@@ -48,8 +48,8 @@ REQS = [
     ("E8", "design decisions; which parts communicate most"),
     ("E9", "validation, each test explained, the set kept small"),
     ("E10", "runtime figures from Atlas or Vanda"),
-    ("E11", "synthetic data: how it is generated"),
-    ("E12", "Poisson in 2D and 3D"),
+    ("E11", "data: how the synthetic problem is generated, and conclusions about the real SNAP graphs"),
+    ("E12", "Poisson in 2D and 3D; for the graphs, the effect of sparsity"),
     ("E13", "non-standard terminology defined"),
     ("E14", "log axes for time, size and core count"),
     ("E15", "AI use explained"),
@@ -135,7 +135,8 @@ def remove_cmd(s, name, nargs=1):
         i = j
 
 
-WHITELIST = [r"\b[123]D\b", r"\b[57]-point\b", r"\bV[1-5]\b", r"Lecture~?\s?\d+", r"\bProject\s3\b", r"\bDSA5208\b",
+GRAPH_SECTION = "Real data: community labelling on SNAP graphs"
+WHITELIST = [r"\b[123]D\b", r"\b[57]-point\b", r"\bV[1-5]\b", r"\bG[1-3]\b", r"Lecture~?\s?\d+", r"\bProject\s3\b", r"\bDSA5208\b",
              r"\bOpus\s5\.5\b", r"\bSHA-256\b", r"\b[A-Z]\d{7}[A-Z]\b"]
 
 
@@ -260,6 +261,7 @@ def run(tex_path, no_pdf=False, quiet=False):
     secs = sections(body)
     problems = []
 
+    rowprob = {}
     # what the text actually uses
     used_vals = set(re.findall(r"\\val\{([^}]*)\}", body))
     used_tabs = set(re.findall(r"\\input\{generated/tab_([^}]*)\.tex\}", body))
@@ -319,13 +321,20 @@ def run(tex_path, no_pdf=False, quiet=False):
     if not used_figs:
         wait(["E14", "E10"], "no figures in the report")
 
+    # E11 and E12 are required rows of the real-data part: a report without the graph section (or with it but
+    # without both markers) is refused on those rows, however complete the Poisson part is.
+    gsec = [t for t, s0, e0, rows in secs if t.startswith(GRAPH_SECTION) and {"E11", "E12"} <= set(rows)]
+    if not gsec:
+        for r in ("E11", "E12"):
+            rowprob.setdefault(r, []).append("the section \"%s...\" with \\req{E11} and \\req{E12} is missing" %
+                                             GRAPH_SECTION)
+            problems.append("real-data (SNAP graph) section missing for %s" % r)
     # E rows
     rowmap = {}
     for title, s, e, rows in secs:
         for r in rows:
             rowmap.setdefault(r, []).append(title)
     say("REQUIREMENTS CHECK  %s" % os.path.relpath(tex_path, REPO))
-    rowprob = {}
     # global checks
     hits = hand_typed_numbers(tex)
     say("  hand-typed numbers in the body: %d" % len(hits))
@@ -463,6 +472,11 @@ def selftest():
         attempt("a hand-typed number in the text", lambda v, p, u, w: any("hand-typed" in x for x in p),
                 base.replace("\\subsection{Strong scaling}", "\\subsection{Strong scaling}\nThe speedup was 3.7 "
                              "on four nodes.", 1))
+        # 2b) the real-data (graph) section removed: E11 and E12 must be refused, not merely waiting
+        attempt("the real-data section removed (E11, E12 required)",
+                lambda v, p, u, w: any("real-data" in x for x in p) and "E11" in u and "E12" in u,
+                re.sub(r"\\section\{Real data: community labelling on SNAP graphs\}.*?(?=% =====)", "", base,
+                       flags=re.S))
         # 2) the AI section removed
         attempt("the AI-use section removed", lambda v, p, u, w: any("AI-use" in x for x in p),
                 re.sub(r"\\section\{Declaration of AI use\}.*?(?=\\section)", "", base, flags=re.S))
@@ -580,7 +594,7 @@ def main():
     a = ap.parse_args()
     if a.selftest:
         return selftest()
-    verdict, _, _, _ = run(a.tex, a.no_pdf)
+    verdict, _, _, _, _ = run(a.tex, a.no_pdf)
     return 0 if verdict == "PASS" else 1
 
 

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# FAKE environment modules (tests only): `module -t avail` lists, `load`/`purge`/`list` succeed silently.
+if [[ "${P3_FAKE_ALIAS:-}" == atlas* ]]; then   # before /app1/ebenv: only the old tree (FAKE)
+  if [[ "$1" == "-t" && "$2" == "avail" ]] || [[ "$1" == "avail" ]]; then
+    printf '/app1/modules/centos6.3-intel:\nmvapich2/1.9\nintel/2013\n' >&2
+  fi
+  exit 0
+fi
+if [[ "$1" == "-t" && "$2" == "avail" ]] || [[ "$1" == "avail" ]]; then
+  printf 'FAKE-modules (test double):\nnvhpc/26.1\nnvhpc-hpcx-cuda12/26.1\nnvhpc-hpcx/26.1\nOpenMPI/4.1.6-GCC-13.2.0\nOpenMPI/5.0.3-GCC-13.2.0\nCMake/3.27.6-GCCcore-13.2.0\nPython/3.11.5-GCCcore-13.2.0\ngcc/13.2.0\ncuda/12.4\n' >&2
+fi
+exit 0

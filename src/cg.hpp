@@ -58,5 +58,6 @@ struct Work {
     Vec w, s, z, nv;     // pipelined only: w = A r, s = A p, z = A s, nv = A w
 };
 
+// The stencil solvers (thin wrappers over the templates in cg_impl.hpp).
 SolveStats cg_classic(const Grid& G, Operator& A, const SolveOpts& o, const double* b, Work& W, Timers& t);
 SolveStats cg_pipelined(const Grid& G, Operator& A, const SolveOpts& o, const double* b, Work& W, Timers& t);

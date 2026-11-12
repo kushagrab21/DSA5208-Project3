@@ -27,6 +27,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import graph_plan as GP  # noqa: E402
 import p3common as C  # noqa: E402
 import run_record  # noqa: E402
 
@@ -80,6 +81,8 @@ def job_of(plan, jid):
 def cell_seconds(plan, c):
     """Estimated seconds for one cell (all repeats), from the plan's model. Rough by design; see plan['model']."""
     M = model_of(plan)
+    if GP.is_graph(c):
+        return GP.cell_seconds(plan, c, M)
     N = c["n"] ** c["dim"]
     P = c["ranks"]
     local = N / float(P) * 1.02
@@ -108,6 +111,8 @@ def job_estimate(plan, j):
     secs = sum(cell_seconds(plan, plan["cells"][cid]) for cid in j["cells"]) + M["job_overhead_s"]
     if j.get("validate_first"):
         secs += 600.0
+    if j.get("convert"):
+        secs += GP.prep_seconds(plan, j["convert"])
     # A job that reserves whole nodes (place=excl) is charged for them; otherwise for the cores it asks for.
     if j.get("place", plan.get("pbs", {}).get("place", "excl")) == "excl" and j.get("binary", "cpu") != "offload":
         cores = j["nodes"] * max(plan["cores_per_node"], j["ncpus_per_node"])
@@ -143,6 +148,13 @@ def job_select(plan, j):
     return select
 
 
+def job_safety(plan, j):
+    """Walltime safety factor: the plan's, or the graph model's (larger: iteration counts are uncertain)."""
+    if j.get("binary") == "graph":
+        return max(plan["model"]["safety"], GP.model(plan)["safety"])
+    return plan["model"]["safety"]
+
+
 def walltime(secs, safety):
     s = int(math.ceil(secs * safety / 300.0) * 300)
     return "%02d:%02d:00" % (s // 3600, (s % 3600) // 60)
@@ -152,6 +164,8 @@ def walltime(secs, safety):
 # Records -> cells
 # ----------------------------------------------------------------------------------------------------------------
 def matches(c, r):
+    if GP.is_graph(c):
+        return GP.matches(c, r)
     try:
         same = (int(r["dim"]) == c["dim"] and int(r["n"]) == c["n"] and int(r["ranks"]) == c["ranks"] and
                 int(r["threads"]) == c["threads"] and int(r["nodes"]) == c["nodes"] and
@@ -172,11 +186,15 @@ def gather(plan):
     d = os.path.join(C.RESULTS, cl)
     rows = run_record.load_rows([d]) if os.path.isdir(d) else []
     rows = [r for r in rows if os.path.basename(r["_file"]) != "jobs.csv"]
+    grows = run_record.load_graph_rows([d]) if os.path.isdir(d) else []
     validated = set((e["binary_sha256"], e["cluster"]) for e in C.validated_entries())
+    gvalidated = set((e["binary_sha256"], e["cluster"]) for e in C.validated_entries()
+                     if set(run_record.GRAPH_CASES) <= set(e.get("cases", "").split(";")))
     per = {}
     problems, unplanned, invalid = [], [], []
-    for r in rows:
-        if (r["binary_sha256"], r["cluster"]) not in validated or "bug=0" not in r["build"]:
+    for r in rows + grows:
+        ok = gvalidated if r.get("schema") == C.GRAPH_SCHEMA else validated
+        if (r["binary_sha256"], r["cluster"]) not in ok or "bug=0" not in r["build"]:
             invalid.append(r)
             continue
         cid = r["cell"]
@@ -272,11 +290,12 @@ def cmd_status(plan, require_complete):
     for j in plan["jobs"]:
         secs, cores = job_estimate(plan, j)
         ch = secs * cores / 3600.0
+        sf = job_safety(plan, j)
         est_total += ch
-        est_hi += ch * safety
+        est_hi += ch * sf
         out.append("    %-30s %d node%s x %3d cores  %6.1f / %6.1f core-h  walltime %s  (%d cells)" %
-                   (j["id"], j["nodes"], "s" if j["nodes"] > 1 else " ", cores // j["nodes"], ch, ch * safety,
-                    walltime(secs, safety), len(j["cells"])))
+                   (j["id"], j["nodes"], "s" if j["nodes"] > 1 else " ", cores // j["nodes"], ch, ch * sf,
+                    walltime(secs, sf), len(j["cells"])))
     used = used_core_hours(jobs)
     budget = plan.get("core_hour_budget")
     if isinstance(budget, (int, float)):
@@ -285,8 +304,8 @@ def cmd_status(plan, require_complete):
         btxt = "%s (%s)" % (budget, plan.get("budget_source", ""))
     else:
         btxt = "UNKNOWN (%s)" % plan.get("budget_source", "")
-    out.append("  CORE-HOURS: estimated %.0f (up to %.0f with safety x%.0f); used so far %.1f; budget %s" %
-               (est_total, est_hi, safety, used, btxt))
+    out.append("  CORE-HOURS: estimated %.0f (up to %.0f with the walltime safety factors, x%.0f Poisson, x%.0f graph); "
+               "used so far %.1f; budget %s" % (est_total, est_hi, safety, GP.model(plan)["safety"], used, btxt))
     if isinstance(budget, (int, float)) and est_hi > budget:
         out.append("  WARNING: the plan may exceed the budget")
     print("\n".join(out))
@@ -392,6 +411,10 @@ def coverage(plan):
     for u in P.get("unplanned", []):
         if not u.get("reason"):
             bad.append("unplanned entry without a reason: %s" % u)
+    if not dev:  # the graph extension (E11, E12 and the graph rows of E2/E3/E8)
+        gbad, gnot = GP.coverage(P)
+        bad += gbad
+        not_met += gnot
     P["_not_met"] = not_met
     return bad
 
@@ -446,11 +469,28 @@ def cmd_selftest():
     print("  atlas plan (fallback, real queue limits):    expected PASS     got %s" % ("PASS" if not c0 else c0[:2]))
     print("  atlas + a 192-core and an 8-core job:        expected REFUSED  got %s" %
           ("REFUSED: " + "; ".join(x for x in c1 if "its queue takes" in x)[:200] if c1 else "PASS"))
+    # the graph part: no >=256-core graph-strong cells, and no BFS-order variant cells
+    g1 = copy.deepcopy(plan)
+    g1["groups"]["graph-strong"]["cells"] = [c for c in g1["groups"]["graph-strong"]["cells"]
+                                             if g1["cells"][c]["ranks"] * g1["cells"][c]["threads"] < 256]
+    r1 = coverage(g1)
+    g2 = copy.deepcopy(plan)
+    g2["groups"]["graph-variants"]["cells"] = [c for c in g2["groups"]["graph-variants"]["cells"]
+                                               if g2["cells"][c].get("order") != "bfs"]
+    r2 = coverage(g2)
+    gok = any("graph-strong" in x and "256" in x for x in r1) and any("graph-variants" in x for x in r2)
+    ok = ok and gok
+    print("  vanda without the >=256-core graph-strong cells: expected REFUSED  got %s" %
+          (("REFUSED: " + "; ".join(x for x in r1 if "graph-strong" in x))[:160] if r1 else "PASS"))
+    print("  vanda without the BFS-order graph variants:      expected REFUSED  got %s" %
+          (("REFUSED: " + "; ".join(x for x in r2 if "graph-variants" in x))[:160] if r2 else "PASS"))
     print("SELFTEST run_plan check: %s" % ("QUALIFIED" if ok else "FAILED"))
     return 0 if ok else 1
 
 
 def cell_args(c):
+    if GP.is_graph(c):
+        return GP.cell_args(c)
     a = ["--dim", str(c["dim"]), "--n", str(c["n"]), "--decomp", str(c["decomp"]), "--cg", c["cg"],
          "--halo", c["halo"]]
     if c["mode"] == "fixed":
@@ -474,39 +514,63 @@ def cmd_pbs(plan, jid):
         tpl = f.read()
     secs, cores = job_estimate(plan, j)
     pbs = plan.get("pbs", {})
-    binary = "bin/p3cg_offload" if j.get("binary") == "offload" else "bin/p3cg"
+    graph = j.get("binary") == "graph"
+    binary = "bin/p3cg_offload" if j.get("binary") == "offload" else "bin/p3graph" if graph else "bin/p3cg"
     ncpus = j["ncpus_per_node"]
     select = job_select(plan, j)
     body = []
-    if j.get("validate_first"):
+    if graph:
+        body += ['export P3_DATA="${P3_DATA:-$HOME/p3data}"   # SNAP data, outside the repository (fetch_snap.sh)',
+                 'GREC="${REC%.csv}.graph.csv"']
+        if j.get("validate_first"):
+            # builds only bin/p3graph, bin/p3graph_bug1, bin/p3convert: the qualified bin/p3cg is not touched
+            body += ["scripts/build.sh graph"]
+            for dset in j.get("convert", []):
+                body.append("scripts/convert_snap.sh %s \"$P3_DATA\"" % dset)
+            body += ["python3 checks/validate_graph.py --qualify --binary bin/p3graph --bug-binary bin/p3graph_bug1"]
+            for dset in j.get("convert", []):  # the seed lists (largest s of the sweep; smaller s use a prefix)
+                body.append("p3_launch 1 1 1 bin/p3graph --graph \"$P3_DATA/csr/%s\" --s 20 --iters 1 --rhs 1 "
+                            "--no-record --quiet --write-seeds \"results/%s/graph-seeds/%s-s20.txt\"" %
+                            (dset, plan["cluster"], dset))
+            if j.get("convert"):
+                body.insert(len(body) - len(j["convert"]), "mkdir -p results/%s/graph-seeds" % plan["cluster"])
+    elif j.get("validate_first"):
         flavor = "offload" if j.get("binary") == "offload" else "cpu"
         sfx = "_offload" if flavor == "offload" else ""
         body += ["scripts/build.sh %s" % flavor,
                  "python3 checks/validate.py --qualify --binary bin/p3cg%s --bug-binary bin/p3cg%s_bug1 "
                  "--bug-binary bin/p3cg%s_bug2" % (sfx, sfx, sfx)]
     if j["cells"]:
-        body.append("python3 checks/timing_gate.py --binary %s" % binary)
+        body.append("python3 checks/timing_gate.py --binary %s%s" % (binary, " --require-cases G1,G2" if graph
+                                                                      else ""))
     for i, cid in enumerate(j["cells"]):
         c = plan["cells"][cid]
         group = [g for g, v in plan["groups"].items() if cid in v["cells"]][0]
         rpn = -(-c["ranks"] // c["nodes"])
         rb = "P3_REPORT_BINDINGS=1 " if i == 0 else ""
+        if GP.is_graph(c):
+            # a graph cell that fails (data-dependent, e.g. memory) is reported and the job goes on to the next
+            body.append("%sp3_launch %d %d %d %s --graph \"$P3_DATA/csr/%s\" %s --cell %s --tag %s --record "
+                        "\"$GREC\" || echo \"p3: graph cell %s FAILED (exit $?)\" >&2" %
+                        (rb, c["ranks"], rpn, c["threads"], binary, c["dataset"],
+                         " ".join(shlex.quote(x) for x in cell_args(c)), cid, group, cid))
+            continue
         body.append("%sp3_launch %d %d %d %s %s --cell %s --tag %s --record \"$REC\"" %
                     (rb, c["ranks"], rpn, c["threads"], binary, " ".join(shlex.quote(x) for x in cell_args(c)),
                      cid, group))
     repl = {
-        "{{JOBNAME}}": ("p3-" + jid)[:15],
+        "{{JOBNAME}}": (("p3g-" + jid.split("-graph-", 1)[1]) if graph and "-graph-" in jid else ("p3-" + jid))[:15],
         "{{PLANJOB}}": jid,
         "{{PLAN}}": plan["plan"],
         "{{SELECT}}": select,
         "{{PLACE}}": j.get("place", pbs.get("place", "excl")),
-        "{{WALLTIME}}": walltime(secs, plan["model"]["safety"]),
+        "{{WALLTIME}}": walltime(secs, job_safety(plan, j)),
         "{{QUEUE_LINE}}": ("#PBS -q %s" % job_queue(plan, j)) if job_queue(plan, j) else
         "# queue: cluster default (set pbs.queue_cpu / queue_serial / queue_gpu in the plan from the discovery)",
         "{{PROJECT_LINE}}": ("#PBS -P %s" % pbs["project"]) if pbs.get("project") else
         "# project: none set (set pbs.project in the plan if the cluster requires one)",
         "{{ESTIMATE}}": "%.0f s, %.1f core-hours (x%.0f safety in walltime)" %
-                        (secs, secs * cores / 3600.0, plan["model"]["safety"]),
+                        (secs, secs * cores / 3600.0, job_safety(plan, j)),
         "{{BODY}}": "\n".join(body) if body else "true",
         "{{CPN}}": str(ncpus),
     }
@@ -587,21 +651,24 @@ def cmd_run_local(plan, jid):
     if j is None:
         print("RUN PLAN: REFUSED job %s is not in plan local" % jid)
         return 1
-    gate = subprocess.run([sys.executable, os.path.join(C.REPO, "checks", "timing_gate.py"), "--binary",
-                           os.path.join(C.REPO, "bin", "p3cg")])
+    graph = j.get("binary") == "graph"
+    binary = os.path.join(C.REPO, "bin", "p3graph" if graph else "p3cg")
+    gate = subprocess.run([sys.executable, os.path.join(C.REPO, "checks", "timing_gate.py"), "--binary", binary] +
+                          (["--require-cases", "G1,G2"] if graph else []))
     if gate.returncode != 0:
         return 1
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    rec = os.path.join(C.RESULTS, "local", "smoke-%s.csv" % stamp)
+    rec = os.path.join(C.RESULTS, "local", ("graph-%s" + C.GRAPH_SUFFIX if graph else "smoke-%s.csv") % stamp)
     launcher = C.default_launcher()
     for cid in j["cells"]:
         c = plan["cells"][cid]
         group = [g for g, v in plan["groups"].items() if cid in v["cells"]][0]
         env = dict(os.environ)
         env["OMP_NUM_THREADS"] = str(c["threads"])
-        cmd = launcher + ["-np", str(c["ranks"]), os.path.join(C.REPO, "bin", "p3cg")] + cell_args(c) + \
+        pre = ["--graph", os.path.join(C.DATA, "csr", c["dataset"])] if graph else []
+        cmd = launcher + ["-np", str(c["ranks"]), binary] + pre + cell_args(c) + \
             ["--cell", cid, "--tag", group, "--record", rec, "--quiet"]
-        p = subprocess.run(cmd, env=env, cwd=C.REPO)
+        p = subprocess.run(cmd, env=env, cwd=C.REPO, stdin=subprocess.DEVNULL)
         if p.returncode != 0:
             print("cell %s failed (exit %d)" % (cid, p.returncode))
             return 1
