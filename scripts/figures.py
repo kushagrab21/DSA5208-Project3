@@ -293,6 +293,205 @@ def fig_layout(D):
 
 
 # ---------------------------------------------------------------------------------------------------------------
+# Graph extension (SNAP community labelling): rows of bin/p3graph, cells of the graph-* groups.
+# ---------------------------------------------------------------------------------------------------------------
+import graph_plan as GP  # noqa: E402
+
+ORDERSTYLE = {"natural": ("#2a78d6", "-", "o", "natural (SNAP id) order"),
+              "bfs": ("#eb6834", "--", "s", "BFS (Cuthill-McKee) order")}
+DSCOLOR = dict(zip(GP.ORDER, ["#52514e", "#2a78d6", "#1baf7a", "#6250d6", "#eb6834", "#e34948"]))
+DSMARK = dict(zip(GP.ORDER, ["o", "s", "^", "D", "v", "P"]))
+CGSTYLE = {"classic": ("#2a78d6", "o", "classic CG"), "pipelined": ("#eb6834", "^", "pipelined CG")}
+
+
+def short(ds):
+    return GP.DATASETS[ds]["display"].replace("com-", "")
+
+
+@figure("fig_graph_serial", ["graph-serial"])
+def fig_graph_serial(D):
+    fig, (a1, a2) = new_fig(2)
+    used, meta = [], []
+    for order, (color, ls, mk, lab) in ORDERSTYLE.items():
+        pts = []
+        for cid, c in D.cells("graph-serial", order=order):
+            r = D.row0(cid)
+            pts.append((int(r["nonzeros"]), int(r["vertices"]), D.med(cid, "t_iter"), c["dataset"]))
+            used.append(cid)
+        pts.sort()
+        for ax, k in ((a1, 0), (a2, 1)):
+            ax.plot([p[k] for p in pts], [p[2] for p in pts], color=color, ls=ls, marker=mk, ms=5, lw=1.8,
+                    mec=SURFACE, mew=1, label=lab)
+        if order == "natural":
+            for p in pts:
+                a1.annotate(short(p[3]), (p[0], p[2]), xytext=(-4, 7), textcoords="offset points", fontsize=6.5,
+                            color=INK2, ha="right")
+    for ax, xl in ((a1, "nonzeros of L + aI (2E + V)"), (a2, "vertices V (matrix dimension)")):
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel(xl)
+        ax.margins(x=0.2)
+        meta += axes_meta(ax, xl.split()[0], "size", "time")
+    a1.set_ylabel("time per CG iteration, 1 core (s)")
+    a1.legend(frameon=False, loc="upper left", fontsize=7)
+    return fig, meta, used
+
+
+def _graph_series(D, group, dset, cg):
+    cs = sorted(D.cells(group, dataset=dset, cg=cg, threads=1), key=lambda t: t[1]["ranks"])
+    return cs
+
+
+@figure("fig_graph_strong", ["graph-strong"])
+def fig_graph_strong(D):
+    fig, axes = new_fig(2)
+    used, meta, ticks = [], [], []
+    for ax, dset in zip(axes, GP.STRONG_DATASETS):
+        for cg, (color, mk, lab) in CGSTYLE.items():
+            cs = _graph_series(D, "graph-strong", dset, cg)
+            D.check_same_build([cid for cid, c in cs], "graph-strong %s %s" % (dset, cg))
+            used += [cid for cid, c in cs]
+            xs = [c["ranks"] for cid, c in cs]
+            ys = [D.med(cid, "t_solve") for cid, c in cs]
+            ticks += xs
+            ax.plot(xs, ys, color=color, marker=mk, ms=4.5, lw=1.8, mec=SURFACE, mew=1, label=lab)
+            end_label(ax, xs[-1], ys[-1], cg, dy=-6 if cg == "classic" else 6)
+            if cg == "classic":
+                ax.plot(xs, [ys[0] / x for x in xs], color=MUTED, lw=1, ls=":", label="ideal (classic)")
+        count_axis(ax, ticks)
+        ax.set_yscale("log")
+        ax.set_xlim(min(ticks) / 1.4, max(ticks) * 2.2)
+        ax.set_xlabel("cores (MPI ranks, 1 thread each)")
+        ax.set_title(GP.DATASETS[dset]["display"], loc="left")
+        meta += axes_meta(ax, dset, "cores", "time")
+    axes[0].set_ylabel("time per solve (s)")
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, loc="lower center", ncol=3)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig._p3_layout = True
+    return fig, meta, used
+
+
+@figure("fig_graph_comm", ["graph-strong"])
+def fig_graph_comm(D):
+    fig, axes = new_fig(2)
+    used, meta, ticks = [], [], []
+    comp = [("t_compute", "#1baf7a", "o", "local SpMV + vectors"), ("t_halo", "#6250d6", "s", "ghost exchange"),
+            ("t_reduce", "#e34948", "^", "global reductions")]
+    for ax, dset in zip(axes, GP.STRONG_DATASETS):
+        cs = _graph_series(D, "graph-strong", dset, "classic")
+        D.check_same_build([cid for cid, c in cs], "graph-strong %s classic" % dset)
+        used += [cid for cid, c in cs]
+        ticks += [c["ranks"] for cid, c in cs]
+        for col, color, mk, lab in comp:
+            pts = [(c["ranks"], D.med(cid, col) / float(D.row0(cid)["iters"])) for cid, c in cs]
+            pts = [p for p in pts if p[1] > 0]
+            ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, marker=mk, ms=4.5, lw=1.6, mec=SURFACE,
+                    mew=1, label=lab)
+            end_label(ax, pts[-1][0], pts[-1][1], lab)
+        count_axis(ax, ticks)
+        ax.set_yscale("log")
+        ax.set_xlim(min(ticks) / 1.4, max(ticks) * 6)
+        ax.set_xlabel("cores (MPI ranks)")
+        ax.set_title("%s, classic CG" % GP.DATASETS[dset]["display"], loc="left")
+        meta += axes_meta(ax, dset, "cores", "time")
+    axes[0].set_ylabel("time per iteration, mean over ranks (s)")
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, loc="lower center", ncol=3)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig._p3_layout = True
+    return fig, meta, used
+
+
+VARIANT_ROWS = [(o, p, e) for (o, p) in (("natural", "rows"), ("natural", "nnz"), ("bfs", "nnz"))
+                for e in ("alltoallv", "neighbor", "overlap")]
+
+
+@figure("fig_graph_variants", ["graph-variants"])
+def fig_graph_variants(D):
+    fig, axes = new_fig(2, h=3.4)
+    used, meta = [], []
+    for ax, dset in zip(axes, GP.STRONG_DATASETS):
+        counts = sorted(set(c["ranks"] for cid, c in D.cells("graph-variants", dataset=dset, threads=1)))
+        for ci, n in enumerate(counts):
+            for cg, (_, mk, lab) in CGSTYLE.items():
+                xs, ys = [], []
+                for yi, (o, p, e) in enumerate(VARIANT_ROWS):
+                    cs = D.cells("graph-variants", dataset=dset, threads=1, ranks=n, order=o, part=p, exchange=e,
+                                 cg=cg)
+                    for cid, c in cs:
+                        used.append(cid)
+                        xs.append(D.med(cid, "t_solve"))
+                        ys.append(yi + (-0.15 if cg == "classic" else 0.15))
+                ax.plot(xs, ys, ls="none", marker=mk, ms=5, color=NODES[ci % 2], mec=SURFACE, mew=0.8,
+                        label="%s, %d cores" % (lab, n))
+        ax.set_yticks(range(len(VARIANT_ROWS)))
+        ax.set_yticklabels(["%s/%s, %s" % (o, p, e) for (o, p, e) in VARIANT_ROWS], fontsize=6.5)
+        ax.invert_yaxis()
+        ax.set_xscale("log")
+        ax.set_xlabel("time per solve (s)")
+        ax.set_title(GP.DATASETS[dset]["display"], loc="left")
+        meta += [{"panel": dset, "axis": "x", "quantity": "time", "scale": ax.get_xscale()},
+                 {"panel": dset, "axis": "y", "quantity": "variant", "scale": ax.get_yscale()}]
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, loc="lower center", ncol=4, fontsize=7)
+    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    fig._p3_layout = True
+    return fig, meta, used
+
+
+@figure("fig_graph_sweep", ["graph-sweep"])
+def fig_graph_sweep(D):
+    fig, axes = plt.subplots(2, 3, figsize=(7.0, 4.6), facecolor=SURFACE, sharex="col")
+    for ax in axes.flat:
+        ax.set_facecolor(SURFACE)
+        ax.grid(True, which="major", color=GRID, lw=0.7)
+        ax.set_axisbelow(True)
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+    used, meta = [], []
+    base = {"a": 1.0, "s": 5, "keep": 1.0}
+    sweeps = (("a", "shift a in L + aI"), ("s", "seeds per community s"), ("keep", "average degree 2E/V"))
+    for dset in GP.ORDER:
+        cs = D.cells("graph-sweep", dataset=dset)
+        if not cs:
+            continue
+        for j, (var, xl) in enumerate(sweeps):
+            pts = []
+            for cid, c in cs:
+                if all(c[k] == v for k, v in base.items() if k != var):
+                    r = D.row0(cid)
+                    x = float(r["avg_degree"]) if var == "keep" else c[var]
+                    pts.append((x, D.med(cid, "accuracy"), D.med(cid, "iters") / float(c["rhs"])))
+                    used.append(cid)
+            pts.sort()
+            for i in (0, 1):
+                axes[i][j].plot([p[0] for p in pts], [p[1 + i] for p in pts], color=DSCOLOR[dset],
+                                marker=DSMARK[dset], ms=4, lw=1.4, mec=SURFACE, mew=0.8,
+                                label=GP.DATASETS[dset]["display"] if j == 0 and i == 0 else None)
+    for j, (var, xl) in enumerate(sweeps):
+        for i in (0, 1):
+            ax = axes[i][j]
+            ax.set_xscale("log")
+            if i == 0:
+                ax.set_ylim(0, 1.05)
+            else:
+                ax.set_yscale("log")
+                ax.set_xlabel(xl)
+            meta += [{"panel": "%s-%s" % (var, "accuracy" if i == 0 else "iterations"), "axis": "x",
+                      "quantity": var, "scale": ax.get_xscale()},
+                     {"panel": "%s-%s" % (var, "accuracy" if i == 0 else "iterations"), "axis": "y",
+                      "quantity": "accuracy" if i == 0 else "iterations", "scale": ax.get_yscale()}]
+    axes[0][0].set_ylabel("accuracy (evaluated vertices)")
+    axes[1][0].set_ylabel("CG iterations per solve")
+    h, l = axes[0][0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, loc="lower center", ncol=6, fontsize=7)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig._p3_layout = True
+    return fig, meta, used
+
+
+# ---------------------------------------------------------------------------------------------------------------
 def build(results, out, names=None, stamp_text=None):
     style()
     os.makedirs(out, exist_ok=True)
@@ -344,6 +543,55 @@ def build(results, out, names=None, stamp_text=None):
 # Selftest with fabricated cluster rows (TEST DOUBLE) in a scratch directory
 # ---------------------------------------------------------------------------------------------------------------
 FAKE_SHA = "d0" * 32
+FAKE_GSHA = "e0" * 32  # the TEST-DOUBLE p3graph binary
+
+
+def fake_graph_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
+    """TEST-DOUBLE graph rows (schema p3graph-1) for one graph cell: times from the graph cost model x speed, a made-up
+    accuracy that rises with s and falls with sparsification. Never real data: the build string says TEST DOUBLE."""
+    import p3common as C
+    from run_plan import cell_seconds
+    c = plan["cells"][cid]
+    d = GP.DATASETS[c["dataset"]]
+    V, E = d["V"], int(d["E"] * c["keep"])
+    P, reps = c["ranks"], c.get("repeats", 1)
+    t = speed * cell_seconds(plan, c) / reps
+    it = int(GP.iters_per_solve(c, GP.model(plan))) * c["rhs"]
+    acc = max(0.0, min(1.0, (0.55 + 0.08 * math.log(c["s"] + 1)) * c["keep"] ** 0.4))
+    out = []
+    for rep in range(1, reps + 1):
+        tt = t * (1 + 0.01 * rep)
+        halo = 0.2 * tt if P > 1 else 0.0
+        red = 0.05 * tt * math.log(P, 2) / 8 if P > 1 else 0.0
+        row = dict((k, "0") for k in C.GRAPH_COLUMNS)
+        row.update({
+            "schema": C.GRAPH_SCHEMA, "utc": utc, "cluster": plan["cluster"], "host": host, "pbs_jobid": jobid,
+            "cell": cid, "tag": "test", "nodes": c["nodes"], "ranks": P, "threads": c["threads"],
+            "dataset": c["dataset"], "order": c["order"], "keep": "%g" % c["keep"], "vertices": V, "edges": E,
+            "nonzeros": 2 * E + V, "avg_degree": "%.6e" % (2.0 * E / V), "max_degree": d["dmax"], "part": c["part"],
+            "exchange": c["exchange"], "cg": c["cg"], "a": "%g" % c["a"], "K": c["K"], "s": c["s"],
+            "theta": "0.1", "seed": 1, "rhs": c["rhs"], "mode": c["mode"],
+            "iters_req": c["iters"] if c["mode"] == "fixed" else 100000,
+            "tol": "na" if c["mode"] == "fixed" else "%g" % c["tol"], "iters": it, "iters_min": it // c["rhs"],
+            "iters_max": it // c["rhs"], "repeat": rep, "t_total": "%.6e" % tt, "t_solve": "%.6e" % (tt / c["rhs"]),
+            "t_iter": "%.6e" % (tt / max(it, 1)), "t_halo": "%.6e" % halo, "t_reduce": "%.6e" % red,
+            "t_compute": "%.6e" % (tt - halo - red), "t_other": "0", "t_halo_max": "%.6e" % halo,
+            "t_reduce_max": "%.6e" % red, "t_compute_max": "%.6e" % (tt - halo - red), "t_setup": "1", "t_read": "1",
+            "rows_max": -(-V // P), "rows_min": V // P, "nnz_max": (2 * E + V) // P + 1, "nnz_min": (2 * E + V) // P,
+            "nnz_imbalance": "1.01", "ghosts_max": 0 if P == 1 else min(V, (2 * E) // P),
+            "ghosts_sum": 0 if P == 1 else min(V, (2 * E) // P) * P,
+            "edge_cut": 0 if P == 1 else int(E * (1 - 1.0 / P) * (0.4 if c["order"] == "bfs" else 0.9)),
+            "cut_fraction": "0" if P == 1 else "%.4f" % ((1 - 1.0 / P) * (0.4 if c["order"] == "bfs" else 0.9)),
+            "neighbors_max": 0 if P == 1 else min(P - 1, 64), "doubles_per_exch_max": 0, "allreduces": 2 * it,
+            "exchanges": it, "rel_res": "1e-9", "true_rel_res": "1e-9",
+            "converged": "na" if c["mode"] == "fixed" else "1", "breakdown": "0",
+            "accuracy": "%.6e" % (acc if c["rhs"] == c["K"] else -1), "eval_vertices": 1000,
+            "unreached": "%.6e" % ((1 - c["keep"]) * 0.3 if c["rhs"] == c["K"] else -1), "majority": "0.2",
+            "random": "%.6e" % (1.0 / c["K"]), "seeds_sha": "ab" * 32, "communities": "0;1",
+            "binary_sha256": sha, "git_sha": "testdouble",
+            "build": "omp=1;offload=0;graph=1;bug=0;cxx=TEST DOUBLE;mpi=TEST DOUBLE", "mpi_thread": "funneled"})
+        out.append(row)
+    return out
 
 
 def fake_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
@@ -352,6 +600,8 @@ def fake_rows(plan, cid, jobid, utc, sha, host="TEST-DOUBLE", speed=1.0):
     from run_plan import cell_seconds, model_of
     M = model_of(plan)
     c = plan["cells"][cid]
+    if GP.is_graph(c):
+        return fake_graph_rows(plan, cid, jobid, utc, sha, host, speed)
     N = c["n"] ** c["dim"]
     P = c["ranks"]
     reps = c.get("repeats", 1)
@@ -395,10 +645,15 @@ def fabricate(results, plan_name="vanda", jobs=None):
         if jobs is not None and job["id"] not in jobs:
             continue
         path = os.path.join(results, plan["cluster"], "TESTDOUBLE.%d.csv" % jobi)
+        gpath = os.path.join(results, plan["cluster"], "TESTDOUBLE.%d%s" % (jobi, C.GRAPH_SUFFIX))
         for cid in job["cells"]:
+            graph = GP.is_graph(plan["cells"][cid])
             for row in fake_rows(plan, cid, "TESTDOUBLE.%s.%d" % (plan_name, jobi), "2026-11-13T0%d:00:00Z" %
-                                 (jobi % 10), FAKE_SHA):
-                C.append_csv(path, C.RECORD_COLUMNS, row)
+                                 (jobi % 10), FAKE_GSHA if graph else FAKE_SHA):
+                if graph:
+                    C.append_csv(gpath, C.GRAPH_COLUMNS, row)
+                else:
+                    C.append_csv(path, C.RECORD_COLUMNS, row)
     envd = os.path.join(results, plan["cluster"], "env")
     os.makedirs(envd, exist_ok=True)
     with open(os.path.join(envd, "TESTDOUBLE.0.json"), "w") as f:
@@ -407,6 +662,10 @@ def fabricate(results, plan_name="vanda", jobs=None):
     C.append_csv(os.path.join(results, "validated_binaries.csv"), C.VALIDATED_COLUMNS, {
         "utc": "TESTDOUBLE", "cluster": plan["cluster"], "host": "TEST-DOUBLE", "binary_sha256": FAKE_SHA,
         "binary": "TEST DOUBLE", "build": "TEST DOUBLE", "validate_sha256": "-", "cases": "-",
+        "bug_binaries_refused": "-", "verdict": "QUALIFIED"})
+    C.append_csv(os.path.join(results, "validated_binaries.csv"), C.VALIDATED_COLUMNS, {
+        "utc": "TESTDOUBLE", "cluster": plan["cluster"], "host": "TEST-DOUBLE", "binary_sha256": FAKE_GSHA,
+        "binary": "TEST DOUBLE p3graph", "build": "TEST DOUBLE", "validate_sha256": "-", "cases": "G1;G2",
         "bug_binaries_refused": "-", "verdict": "QUALIFIED"})
 
 
@@ -439,21 +698,26 @@ def selftest():
         print("  time/size/core axes not logarithmic: %d %s" % (len(bad), bad if bad else ""))
         ok &= not bad
         # a local row among the cluster rows must make the figures refuse
+        import run_record
         src = os.path.join(REPO, "results", "local")
-        local_rows = C.read_csv(sorted(os.path.join(src, f) for f in os.listdir(src) if f.endswith(".csv"))[0]) \
-            if os.path.isdir(src) else []
-        if local_rows:
-            lr = dict((k, local_rows[0][k]) for k in C.RECORD_COLUMNS)
-            C.append_csv(os.path.join(res, "vanda", "smuggled_local.csv"), C.RECORD_COLUMNS, lr)
+        for graph, cols, name in ((False, C.RECORD_COLUMNS, "smuggled_local.csv"),
+                                  (True, C.GRAPH_COLUMNS, "smuggled_local" + C.GRAPH_SUFFIX)):
+            files = run_record.expand([src], graph=graph) if os.path.isdir(src) else []
+            local_rows = C.read_csv(files[0]) if files else []
+            what = "local %s row among cluster rows" % ("graph" if graph else "Poisson")
+            if not local_rows:
+                print("  %s: test skipped, no results/local rows" % what)
+                ok = False
+                continue
+            sm = os.path.join(res, "vanda", name)
+            C.append_csv(sm, cols, dict((k, local_rows[0][k]) for k in cols))
             try:
                 build(res, os.path.join(td, "figures2"))
-                print("  local row among cluster rows: NOT refused")
+                print("  %s: NOT refused" % what)
                 ok = False
             except C.Refused as e:
-                print("  local row among cluster rows: REFUSED (%s)" % e)
-        else:
-            print("  local row test skipped: no results/local rows")
-            ok = False
+                print("  %s: REFUSED (%s)" % (what, e))
+            os.remove(sm)
     after = dict((g, snapshot(g)) for g in guard)
     clean = before == after
     print("  figures/ and report/ untouched by the selftest: %s" % ("yes" if clean else "NO"))

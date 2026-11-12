@@ -333,9 +333,17 @@ def write(P):
             print("REFUSED: %s is frozen; record changes as 'unplanned' or 'reruns' entries with a reason" % path)
             return 1
         # keep hand-entered fields across regeneration
-        for k in ("core_hour_budget", "gpu_hour_budget", "budget_source", "pbs", "unplanned", "reruns", "model"):
+        for k in ("core_hour_budget", "gpu_hour_budget", "budget_source", "pbs", "unplanned", "reruns", "model",
+                  "amendments", "graph_model"):
             if k in old:
                 P.p[k] = old[k]
+        # items added by an amendment (scripts/make_graph_plan.py) are not this script's to drop
+        for k in ("groups", "cells"):
+            for iid, it in old.get(k, {}).items():
+                if it.get("amendment") and iid not in P.p[k]:
+                    P.p[k][iid] = it
+        have = set(j["id"] for j in P.p["jobs"])
+        P.p["jobs"] += [j for j in old.get("jobs", []) if j.get("amendment") and j["id"] not in have]
     with open(path, "w") as f:
         json.dump(P.p, f, indent=1, sort_keys=False)
         f.write("\n")

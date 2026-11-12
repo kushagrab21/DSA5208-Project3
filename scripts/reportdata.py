@@ -56,8 +56,11 @@ class ClusterData:
         self.cluster = self.plan["cluster"]
         d = os.path.join(results, self.cluster)
         files = run_record.expand([d]) if os.path.isdir(d) else []
-        self.files = files
+        gfiles = run_record.expand([d], graph=True) if os.path.isdir(d) else []
+        self.files = files + gfiles
         self.rows = run_record.figure_rows(files, validated=validated(results)) if files else []
+        # the graph solver's rows (p3graph, qualified by validate_graph.py on this cluster), same rules
+        self.rows += run_record.graph_figure_rows(gfiles, validated=validated(results)) if gfiles else []
         self.cell_rows = {}
         by = {}
         for r in self.rows:

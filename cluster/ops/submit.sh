@@ -14,13 +14,17 @@ cat SYNCED 2>/dev/null || echo "commit none"
 if [ -f bin/p3cg ]; then
   echo "bin $( { sha256sum bin/p3cg 2>/dev/null || shasum -a 256 bin/p3cg; } | cut -d' ' -f1)"
 else echo "bin missing"; fi
+if [ -f bin/p3graph ]; then
+  echo "gbin $( { sha256sum bin/p3graph 2>/dev/null || shasum -a 256 bin/p3graph; } | cut -d' ' -f1)"
+else echo "gbin missing"; fi
 EOS
 )"
 rcommit="$(awk '$1=="commit"{print $2}' <<<"$state")"
 rplan="$(awk -v k="plan_$cl" '$1==k{print $2}' <<<"$state")"
 rbin="$(awk '$1=="bin"{print $2}' <<<"$state")"
+rgbin="$(awk '$1=="gbin"{print $2}' <<<"$state")"
 "$PY" "$OPS/opslib.py" submit-check --cluster "$cl" --job "$job" --remote-commit "$rcommit" \
-  --remote-plan "$rplan" --remote-bin "$rbin" || exit 1
+  --remote-plan "$rplan" --remote-bin "$rbin" --remote-gbin "$rgbin" || exit 1
 "$PY" "$REPO/checks/run_plan.py" pbs --plan "$cl" --job "$job" | grep -v '^note:' || exit 1
 script="$GENERATED/$cl/$job.pbs"
 if [[ "$dry" == "--dry-run" ]]; then echo "DRY RUN: would copy ${script#$REPO/} and qsub it on $alias"; exit 0; fi

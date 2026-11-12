@@ -16,3 +16,4 @@ figures/*.pdf
 figures/*.meta.json
 # PBS job logs fetched for diagnosis (never part of the submission)
 cluster/logs/
+data/

@@ -14,6 +14,7 @@ option(P3_OFFLOAD "OpenMP target offload of the same kernels (UNTESTED until run
 option(P3_NATIVE  "-march=native (only when compiling on the node type that runs the code)" OFF)
 set(P3_OFFLOAD_FLAGS "-mp=gpu" CACHE STRING "compile+link flags for P3_OFFLOAD (nvhpc default)")
 set(PLANT_HALO_BUG 0 CACHE STRING "0 = correct build; 1 = skip one halo face; 2 = shift one halo face (validation only)")
+set(PLANT_GHOST_BUG 0 CACHE STRING "p3graph: 0 = correct build; 1 = one neighbour's ghosts never stored (validation only)")
 
 find_package(MPI REQUIRED COMPONENTS CXX)
 
@@ -65,6 +66,27 @@ if(P3_OFFLOAD)
   target_link_options(p3cg PRIVATE ${_off})
 elseif(P3_OPENMP)
   target_link_libraries(p3cg PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+# The graph extension (CPU only): p3graph (community labelling with the same CG solvers, cg_impl.hpp, on the
+# distributed CSR operator) and p3convert (SNAP edge list -> binary CSR; serial).
+if(NOT P3_OFFLOAD)
+  add_executable(p3graph src/graph/graph_main.cpp src/graph/dcsr.cpp src/graph/label.cpp src/kernels.cpp
+                         src/grid.cpp src/record.cpp)
+  target_link_libraries(p3graph PRIVATE MPI::MPI_CXX)
+  target_compile_definitions(p3graph PRIVATE PLANT_GHOST_BUG=${PLANT_GHOST_BUG} P3_GIT_SHA="${P3_GIT_SHA}")
+  target_compile_options(p3graph PRIVATE -Wall -Wextra)
+  if(P3_NATIVE)
+    target_compile_options(p3graph PRIVATE -march=native)
+  endif()
+  if(P3_OPENMP)
+    target_link_libraries(p3graph PRIVATE OpenMP::OpenMP_CXX)
+  endif()
+  add_executable(p3convert src/graph/convert.cpp)
+  target_compile_options(p3convert PRIVATE -Wall -Wextra)
+endif()
+if(NOT PLANT_GHOST_BUG STREQUAL "0")
+  message(WARNING "PLANT_GHOST_BUG=${PLANT_GHOST_BUG}: p3graph is deliberately WRONG (for qualifying validate_graph.py)")
 endif()
 
 if(NOT PLANT_HALO_BUG STREQUAL "0")

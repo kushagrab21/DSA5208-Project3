@@ -7,6 +7,7 @@
 #include <vector>
 
 std::string sha256_file(const std::string& path);  // hex digest, "" on failure
+std::string sha256_string(const std::string& data);
 std::string self_exe_path();
 std::string detect_cluster(const std::string& host, std::string& warning);
 std::string pbs_jobid();  // PBS_JOBID or "none"
@@ -20,3 +21,7 @@ const std::vector<std::string>& record_columns();
 // Appends one row (values in record_columns() order); writes the header when the file is new.
 // Creates parent directories. Returns false with err on failure.
 bool append_record(const std::string& path, const std::vector<std::string>& values, std::string& err);
+
+// Generic form for other record schemas (the graph solver): refuses to append to a file whose header differs.
+bool append_csv_row(const std::string& path, const std::vector<std::string>& cols,
+                    const std::vector<std::string>& values, std::string& err);
