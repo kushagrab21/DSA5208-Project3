@@ -125,6 +125,63 @@ check, then commit. Then freeze `config/run_plan.atlas.json`, commit, `sync.sh a
 
 `cluster/ops/test_fake_atlas.sh` rehearses exactly this sequence on a fake Atlas.
 
+## Vanda (the ≥256-core runs and the GPU run)
+
+What the Vanda discovery (12 Nov, 05:55 UTC) established, and what the tools do about it:
+
+- **Queues.** Jobs submit with `#PBS -P <project>` and no `-q`.
+  - The default routing queue `auto` sends CPU jobs to `batch_cpu` (1–720 cores per job, 10 nodes, 6 running per
+    user, 240 h) and GPU jobs (`ngpus` ≥ 1) to `batch_gpu` (1–2 GPUs, 2 nodes).
+  - Both are charged to the project. The free route (`-q auto_free`: 1-core, 2–160-core and ≤36-core-GPU queues) is
+    not used, because 288 cores do not fit it.
+  - `apply_discovery.py` now resolves routes. The samples are in ANSI colour, which used to hide every `#PBS` line;
+    the codes are now stripped.
+- **Project and budget.** `hpc project` needs `amgr login` (NUS password), so the project and the budgets are passed
+  on the command line: `personal-bhatnagar.kushagra.m`, 10 000 CPU-hours, 1 000 GPU-hours. `submit.sh` checks the
+  worst case of every job against both (a GPU job's cores also count as CPU-hours, to be safe).
+- **Nodes.** `cpu_node` is 72 cores with 501 GB per node; `gpu_node` is 72 cores with 2 GPUs. Jobs request 2.9 GB per
+  core (209 GB per full node), far above what the runs use (about 10 GB per node).
+- **Environment** (`cluster/vanda/env.sh`):
+  - CPU jobs use `foss/2025b` with `Python/3.13.5-GCCcore-14.3.0`: the same compiler and MPI as Atlas, built by the
+    same direct `mpicxx` line. If the node preloads a foreign libfabric, the toolchain's goes first; either way it is
+    logged.
+  - GPU jobs use `nvhpc-hpcx-cuda12/26.1` (nvc++ `-mp=gpu`).
+  - The job stops at once if `mpicxx` or `python3` is missing.
+- **GPU job.** `vanda-gpu` builds `bin/p3cg_offload*` on the GPU node and qualifies them there with `validate.py
+  --qualify` (the offload binary has its own hash). Only then does the timing gate let the 1- and 2-GPU cells run.
+
+**First Vanda sequence (key works through `atlas8`):**
+```bash
+cd ~/Desktop/final_assignment/build && git status --short            # must print nothing
+ssh -o BatchMode=yes vanda true && echo key-ok
+python3 scripts/apply_discovery.py results/vanda/env/discover-20261112T055509Z.txt \
+  --project personal-bhatnagar.kushagra.m --budget-cpu 10000 --budget-gpu 1000 \
+  --budget-source "hpc project after amgr login, 12 Nov" --mem-per-cpu-gb 2.9          # READ the diff
+python3 scripts/apply_discovery.py results/vanda/env/discover-20261112T055509Z.txt \
+  --project personal-bhatnagar.kushagra.m --budget-cpu 10000 --budget-gpu 1000 \
+  --budget-source "hpc project after amgr login, 12 Nov" --mem-per-cpu-gb 2.9 --apply
+python3 checks/run_plan.py check --plan vanda                         # PASS
+git add config/run_plan.vanda.json cluster/vanda/env.sh && git commit -m "Vanda project, budgets, memory from discovery"
+cluster/ops/sync.sh vanda
+cluster/ops/submit.sh vanda vanda-validate
+cluster/ops/poll.sh vanda      # until finished; after fetch read cluster/logs/vanda/: "p3 env (vanda/cpu): loaded foss/2025b",
+cluster/ops/fetch.sh vanda     #   the libfabric line, and validate.py's QUALIFICATION line
+cluster/ops/submit.sh vanda vanda-calibrate
+cluster/ops/poll.sh vanda; cluster/ops/fetch.sh vanda               # measured bandwidths, new walltimes
+# freeze: set "frozen": true in config/run_plan.vanda.json
+git commit -am "Freeze the Vanda plan" && cluster/ops/sync.sh vanda
+cluster/ops/submit.sh vanda vanda-4node                    # 288 cores: the cells a late outage would cost most
+cluster/ops/submit.sh vanda vanda-gpu                      # E7: offload build + its own qualification + GPU cells
+cluster/ops/submit.sh vanda vanda-1node-scaling            # 1..72 cores, the 1-core baselines of every speedup
+cluster/ops/submit.sh vanda vanda-2node                    # 144 cores
+cluster/ops/submit.sh vanda vanda-serial                   # E2 on Vanda
+cluster/ops/submit.sh vanda vanda-1node-variants-layouts
+```
+`batch_cpu` runs 6 jobs per user at once and `batch_gpu` 4, so all of these can be queued together. If
+`vanda-validate` fails, read its log, fix `env.sh`, commit, add a rerun reason for `vanda-validate` to the plan,
+commit, sync and resubmit, as was done on Atlas. `cluster/ops/test_fake_cluster.sh` rehearses this sequence,
+including the GPU job, on a fake Vanda with the same routes.
+
 ## Failures
 
 **Job killed at the walltime.** poll shows `FAILED (exit 271)` (or `-29`), `walltime exceeded`, `missing records k/n`.

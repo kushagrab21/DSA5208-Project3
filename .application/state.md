@@ -95,6 +95,26 @@ The binary embeds the git sha, so a commit followed by scripts/build.sh changes 
 - Tests: cluster/ops/test_fake_atlas.sh (19 steps), requirements selftest scenarios (Atlas only, mixed clusters,
   mixed build), test_fake_cluster.sh (32 steps) unchanged and passing.
 
+## Turn 5 (12 Nov 2026): Vanda made runnable on the first submit
+- Real Vanda discovery results/vanda/env/discover-20261112T055509Z.txt: -P route `auto` -> batch_cpu (1-720 cores,
+  10 nodes, 6 running) / batch_gpu (1-2 GPUs); cpu_node 72 cores x 501 GB (211 GB was only rn-003, offline);
+  foss/2025b + Python/3.13.5-GCCcore-14.3.0 (= Atlas), nvhpc-hpcx-cuda12/26.1; hpc samples in ANSI colour.
+- apply_discovery: strips ANSI, resolves routing (route_destinations, from_route_only), default queue (qstat -Bf or
+  `auto` implied by the samples), project/budgets/mem from CLI (--project, --budget-cpu/--budget-gpu/--budget-source,
+  --mem-per-cpu-gb), select_ompthreads, GPU shape per GPU, every job checked against its landing queue.
+- env.sh (vanda): cpu = ebenv + foss/2025b + Python (no purge); offload = nvhpc-hpcx-cuda12/26.1 (+ Python fallback);
+  refusals are top-level returns; set -e safe; libfabric guard when a foreign one is preloaded; all logged.
+- Fixed set -e hazards found by the fake (would have killed the first Vanda job): failing command substitution in an
+  assignment (ld.so.preload read; grep -v on an empty LD_LIBRARY_PATH); Atlas env.sh got the same pipeline guard and
+  the LD_PRELOAD comment fix.
+- run_plan: ompthreads in select, GPU limits; Vanda plan: GPU job 1 x 72 cores + 2 GPUs, batch limits recorded.
+- opslib: GPU-hour budget (gpu_hour_budget), worst case per GPU job; fetch copies into the staging folder (openrsync
+  made a directory for a missing file).
+- Tests: test_fake_cluster.sh 39 steps (routing, env guards, GPU job with its own qualification) all as expected;
+  test_fake_atlas.sh 19; all selftests pass.
+
+## Next (parent): cluster/RUNBOOK.md "Vanda" first sequence. Atlas: atlas-calibrate 1040047 still queued.
+
 ## Tonight (parent): cluster/RUNBOOK.md "Atlas" - discover atlas8 again -> apply_discovery (read, --apply) -> check ->
 commit -> sync -> submit atlas-validate -> poll/fetch -> submit atlas-calibrate -> poll/fetch.
 
