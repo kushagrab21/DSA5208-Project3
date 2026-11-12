@@ -657,27 +657,36 @@ def cluster_values(out, results, figures):
         pend("lay.top.sent", reqs, w)
         table(out, "layout", ["ranks $\\times$ threads per node", "time (s)"], [], "lr", reqs, False, w)
 
-    # ---- GPU (E7)
+    # ---- GPU (E7): the 1-GPU cells (job vanda-gpu1) are enough for E7; the 2-GPU cells (vanda-gpu, which needs a
+    # whole GPU node) are shown when they exist and do not hold E7 back (amendment gpu-split-2026-11-12)
     reqs = ["E7"]
-    if G.complete("gpu") and D.complete("layout"):
+    one = [(cid, c) for cid, c in G.cells("gpu") if c["gpus"] == 1]
+    lay1 = [cid for cid, c in D.cells("layout") if c["nodes"] == 1]
+    one_done = bool(one) and all(cid in G.cell_rows for cid, c in one)
+    lay1_done = bool(lay1) and all(cid in D.cell_rows for cid in lay1)
+    hd = ["grid", "GPUs", "GPU time (s)", "best 1-node CPU time (s)", "CPU node / GPU"]
+    if one_done and lay1_done:
         rows = []
         for d in (2, 3):
             cpu_best = min(D.med(cid) for cid, c in D.cells("layout", dim=d, nodes=1))
             for cid, c in sorted(G.cells("gpu", dim=d), key=lambda t: t[1]["gpus"]):
+                if cid not in G.cell_rows:  # a 2-GPU cell still waiting: say so in its row
+                    rows.append("%dD & %d & \\multicolumn{3}{l}{\\pendingrow{a whole GPU node (job vanda-gpu)}}" %
+                                (d, c["gpus"]))
+                    continue
                 t = G.med(cid)
                 rows.append(["%dD" % d, str(c["gpus"]), sig(t, 3), sig(cpu_best, 3), fx(cpu_best / t, 2)])
                 if c["gpus"] == 1:
                     put("gpu.%d.t" % d, sig(t, 3), reqs)
                     put("gpu.%d.vsnode" % d, fx(cpu_best / t, 2), reqs)
-        table(out, "gpu", ["grid", "GPUs", "GPU time (s)", "best 1-node CPU time (s)", "CPU node / GPU"], rows,
-              "lrrrr", reqs)
+        table(out, "gpu", hd, rows, "lrrrr", reqs)
     else:
-        w = "; ".join(G.waiting("gpu") + D.waiting("layout"))
+        w = "; ".join(([] if one_done else ["%s gpu: the 1-GPU runs (job vanda-gpu1)" % G.cluster]) +
+                      ([] if lay1_done else D.waiting("layout")))
         for d in (2, 3):
             pend("gpu.%d.t" % d, reqs, w)
             pend("gpu.%d.vsnode" % d, reqs, w)
-        table(out, "gpu", ["grid", "GPUs", "GPU time (s)", "best 1-node CPU time (s)", "CPU node / GPU"], [],
-              "lrrrr", reqs, False, w)
+        table(out, "gpu", hd, [], "lrrrr", reqs, False, w)
 
     # ---- figure slots
     freqs = {"fig_serial": ["E2", "E10", "E14"], "fig_serial_tol": ["E2", "E10", "E14"],

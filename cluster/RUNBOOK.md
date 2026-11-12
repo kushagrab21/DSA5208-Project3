@@ -171,7 +171,9 @@ cluster/ops/poll.sh vanda; cluster/ops/fetch.sh vanda               # measured b
 # freeze: set "frozen": true in config/run_plan.vanda.json
 git commit -am "Freeze the Vanda plan" && cluster/ops/sync.sh vanda
 cluster/ops/submit.sh vanda vanda-4node                    # 288 cores: the cells a late outage would cost most
-cluster/ops/submit.sh vanda vanda-gpu                      # E7: offload build + its own qualification + GPU cells
+cluster/ops/submit.sh vanda vanda-gpu                      # 2-GPU cells: needs a whole GPU node (both GPUs free)
+cluster/ops/submit.sh vanda vanda-gpu1                     # E7: half a GPU node, 1 GPU; offload build + own qualification
+                                                           #   (amendment gpu-split-2026-11-12: vanda-gpu waited 4 h+)
 cluster/ops/submit.sh vanda vanda-1node-scaling            # 1..72 cores, the 1-core baselines of every speedup
 cluster/ops/submit.sh vanda vanda-2node                    # 144 cores
 cluster/ops/submit.sh vanda vanda-serial                   # E2 on Vanda

@@ -134,9 +134,10 @@ def job_select(plan, j):
     """PBS select string: chunks, cores, MPI ranks, GPUs, memory (per job, or per core from the discovery)."""
     pbs = plan.get("pbs", {})
     n = j["ncpus_per_node"]
-    select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], n, n)
-    if pbs.get("select_ompthreads"):
-        select += ":ompthreads=1"  # the site's samples carry it; every run sets OMP_NUM_THREADS itself
+    # a job may give its own MPI processes and threads per chunk (the `hpc gpu` sample: mpiprocs=1:ompthreads=36)
+    select = "select=%d:ncpus=%d:mpiprocs=%d" % (j["nodes"], n, j.get("mpiprocs", n))
+    if pbs.get("select_ompthreads") or "ompthreads" in j:
+        select += ":ompthreads=%d" % j.get("ompthreads", 1)  # the site's samples carry it; runs set OMP_NUM_THREADS
     if j.get("gpus_per_node"):
         select += ":ngpus=%d" % j["gpus_per_node"] + pbs.get("select_extra_gpu", "")
     else:

@@ -7445,12 +7445,30 @@
    "validate_first": true,
    "place": "excl",
    "cells": [
-    "2d-n8192-r1x1-N1-d2-clas-bloc-i100-g1",
     "2d-n8192-r2x1-N1-d2-clas-bloc-i100-g2",
-    "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1",
     "3d-n406-r2x1-N1-d3-clas-bloc-i100-g2"
    ],
-   "note": "one full GPU node (2 GPUs x 36 cores, `hpc gpu` sample): offload build (nvc++ -mp=gpu) + its own validate.py qualification on the GPU node, then the 1- and 2-GPU cells"
+   "note": "one full GPU node (2 GPUs x 36 cores, `hpc gpu` sample): offload build (nvc++ -mp=gpu) + its own validate.py qualification on the GPU node, then the 1- and 2-GPU cells",
+   "changed_by": [
+    "gpu-split-2026-11-12"
+   ]
+  },
+  {
+   "id": "vanda-gpu1",
+   "nodes": 1,
+   "ncpus_per_node": 36,
+   "gpus_per_node": 1,
+   "binary": "offload",
+   "validate_first": true,
+   "place": "pack",
+   "mpiprocs": 1,
+   "ompthreads": 36,
+   "cells": [
+    "2d-n8192-r1x1-N1-d2-clas-bloc-i100-g1",
+    "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1"
+   ],
+   "note": "half a GPU node (`hpc gpu` sample: 1 GPU, 36 cores): offload build + its own validate.py qualification on the GPU node, then the 1-GPU cells",
+   "amendment": "gpu-split-2026-11-12"
   },
   {
    "id": "vanda-graph-prep",
@@ -7755,6 +7773,14 @@
   {
    "job": "vanda-1node-variants-layouts",
    "reason": "1546588 exit 254 in 5 s: Open MPI refused to bind 1 rank x 72 threads across two 36-core sockets; p3_launch now maps such ranks unbound and lets OpenMP pin threads (12 Nov)"
+  },
+  {
+   "cell": "2d-n8192-r1x1-N1-d2-clas-bloc-i100-g1",
+   "reason": "amendment gpu-split-2026-11-12: vanda-gpu 1546583 was queued with its pre-split script (all four GPU cells); if it runs, its rows for this 1-GPU cell duplicate vanda-gpu1's"
+  },
+  {
+   "cell": "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1",
+   "reason": "amendment gpu-split-2026-11-12: vanda-gpu 1546583 was queued with its pre-split script (all four GPU cells); if it runs, its rows for this 1-GPU cell duplicate vanda-gpu1's"
   }
  ],
  "limits_source": "results/vanda/env/discover-20261112T055509Z.txt",
@@ -7846,6 +7872,33 @@
      "vanda-graph-sweep"
     ],
     "cells": 190
+   }
+  },
+  {
+   "id": "gpu-split-2026-11-12",
+   "by": "scripts/amend_vanda_gpu_split.py",
+   "utc": "2026-11-12T11:28:15Z",
+   "plan_frozen_when_added": true,
+   "reason": "vanda-gpu (PBS 1546583: select=1:ncpus=72:mpiprocs=72:ompthreads=1:ngpus=2, place=excl) stayed queued for over 4 hours with the qstat comment \"Placement set is too small: Insufficient amount of resource: ngpus (R: 2 A: 1 T: 70)\": a whole GPU node with both GPUs free never came. Its two 1-GPU cells move to a new job vanda-gpu1 in the `hpc gpu` sample shape (1 GPU, 36 cores, half a node, no place=excl), with its own offload build and validate.py qualification on the GPU node; E7 needs only the 1-GPU cells. vanda-gpu keeps its resources and the two 2-GPU cells (12 Nov 2026).",
+   "adds": {
+    "jobs": [
+     "vanda-gpu1"
+    ],
+    "cells": 0
+   },
+   "changes": {
+    "vanda-gpu": {
+     "cells_before": [
+      "2d-n8192-r1x1-N1-d2-clas-bloc-i100-g1",
+      "2d-n8192-r2x1-N1-d2-clas-bloc-i100-g2",
+      "3d-n406-r1x1-N1-d3-clas-bloc-i100-g1",
+      "3d-n406-r2x1-N1-d3-clas-bloc-i100-g2"
+     ],
+     "cells_after": [
+      "2d-n8192-r2x1-N1-d2-clas-bloc-i100-g2",
+      "3d-n406-r2x1-N1-d3-clas-bloc-i100-g2"
+     ]
+    }
    }
   }
  ]

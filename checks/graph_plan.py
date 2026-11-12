@@ -203,9 +203,9 @@ def coverage(plan):
     for kind, items in (("group", list(g.items())), ("cell", list(cells.items())),
                         ("job", [(j["id"], j) for j in P["jobs"]])):
         for iid, it in items:
-            am = it.get("amendment")
-            if am and not (am in ams and ams[am].get("reason")):
-                bad.append("%s %s names amendment %s, which is not recorded with a reason" % (kind, iid, am))
+            for am in [it.get("amendment")] + list(it.get("changed_by", [])):  # added by / changed by
+                if am and not (am in ams and ams[am].get("reason")):
+                    bad.append("%s %s names amendment %s, which is not recorded with a reason" % (kind, iid, am))
     for j in P["jobs"]:
         gc = [cid for cid in j["cells"] if is_graph(cells.get(cid, {}))]
         if gc and j.get("binary") != "graph":

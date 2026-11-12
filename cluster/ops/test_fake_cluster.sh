@@ -70,6 +70,10 @@ step "submit vanda-gpu: offload build and its OWN qualification on the (fake) GP
   env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu
 step "the GPU job log: environment and qualification" \
   bash -c "grep -h -E 'p3 env \\(vanda/offload|QUALIFICATION|VALIDATED BINARY|TIMING GATE' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3-vanda-gpu.o*"
+step "submit vanda-gpu1 (amendment gpu-split: half a GPU node, 1 GPU x 36 cores; its own offload build + qualification, then the 1-GPU cells)" \
+  env FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-gpu1
+step "the gpu1 script asks for the hpc gpu sample shape, and its log shows the qualification and the gate" \
+  bash -c "grep -h '^#PBS -l' $P3_GENERATED/vanda/vanda-gpu1.pbs; grep -h -E 'QUALIFICATION|TIMING GATE' $P3_FAKE_ROOT/vanda/home/p3/cluster/logs/p3-vanda-gpu1.o*"
 step "submit vanda-4node (the fake kills it at the walltime halfway)" env FAKE_FAIL_JOBS=vanda-4node FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-4node
 step "submit vanda-serial and leave it queued" env FAKE_QUEUE_ONLY=1 FAKE_SPEED=1.6 cluster/ops/submit.sh vanda vanda-serial
 step "poll: one failed job, one queued" cluster/ops/poll.sh vanda
