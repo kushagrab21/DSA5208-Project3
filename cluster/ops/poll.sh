@@ -15,8 +15,11 @@ echo "=== QSTAT ==="
 qstat -x -f "$@" 2>&1 || qstat -f "$@" 2>&1 || true
 for id in "$@"; do
   echo "=== ROWS $id ==="
-  f="results/$cl/$id.csv"
-  if [ -f "$f" ]; then echo $(( $(wc -l < "$f") - 1 )); else echo 0; fi
+  n=0   # rows of the Poisson record and of the graph record (<id>.graph.csv) of this job
+  for f in "results/$cl/$id.csv" "results/$cl/$id.graph.csv"; do
+    if [ -f "$f" ]; then n=$(( n + $(wc -l < "$f") - 1 )); fi
+  done
+  echo $n
 done
 echo "=== EVENTS ==="
 f="results/$cl/jobs.csv"

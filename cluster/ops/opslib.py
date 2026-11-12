@@ -84,7 +84,7 @@ def kind_of(job):
 
 def estimate(plan, job):
     secs, cores = RP.job_estimate(plan, job)
-    safety = RP.model_of(plan)["safety"]
+    safety = RP.job_safety(plan, job)  # x3 for graph jobs (graph_model), the plan's for the others
     return secs, cores, secs * cores / 3600.0, secs * safety * cores / 3600.0, RP.walltime(secs, safety)
 
 
@@ -93,7 +93,7 @@ def gpu_worst(plan, job):
     g = job["nodes"] * job.get("gpus_per_node", 0)
     if not g:
         return 0.0
-    secs = RP.job_estimate(plan, job)[0] * RP.model_of(plan)["safety"]
+    secs = RP.job_estimate(plan, job)[0] * RP.job_safety(plan, job)
     return g * math.ceil(secs / 300.0) * 300 / 3600.0
 
 
