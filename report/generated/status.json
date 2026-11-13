@@ -1,0 +1,8209 @@
+{
+ "values": {
+  "iters": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "repeats": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.thr": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.cells": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.median": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.nthr": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.serial.max1s": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.long.min": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.long.n": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rep.long.max": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cpn": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "rankcounts": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "topcores": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "topnodes": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "scale.where": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "st.counts": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "lay.cpn": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "lay.nodes": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "lay.topnodes": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "lay.topnodes.phrase": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "atlas.cpn": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "atlas.topcores": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "atlas.topnodes": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.n2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.N2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.Nsci2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.nnz2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.n2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.per2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.ws2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "ser.line2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "ser.plane3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.top.n2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.top.N2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serial.list2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serialtol.list2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.mem2": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.n3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.N3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.Nsci3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.nnz3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.n3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.per3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.ws3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.top.n3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "weak.top.N3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serial.list3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serialtol.list3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "strong.mem3": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serial.Nmin": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serial.Nmax": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "serialtol.tol": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "slab.thick": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "slab.max": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "scale.beyond": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.vanda.cells": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "bytes.classic": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "bytes.pipelined": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "vec.classic": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "vec.pipelined": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "vec.extra": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.cells": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.jobs": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.layouts": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.variantsP": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "geo.3d.slab.halo": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "geo.3d.slab.ratio": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "geo.3d.cube.halo": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "geo.3d.cube.ratio": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "plan.atlas.cells": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "val.where": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.cluster": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.stamp": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.sha": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.ncases": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.runs": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.order.lo": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.order.hi": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.ordertol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.iters": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.tol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.pipetol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.pipe.truetol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.order.V1": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.order.V2": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.max2": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.max3": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.max": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.agree.margin": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.cond.2": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.cond.3": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.pipe.iters": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.pipe.maxdiff": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.pipe.minbound": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.bug.min": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.bug.max": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.bug.n": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.tol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.maxit": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.n": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.ranks": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.classic.verdict": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.classic.iters": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.classic.rec": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.classic.true": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipelined.verdict": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipe.sent": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipe.best": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipelined.iters": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipelined.rec": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.floor.pipelined.true": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "cl.serial": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.serialtol": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.strong": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.variants": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.layout": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.name": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.gpu": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.used": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "env.serialnote": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.mem": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.cxx": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.mpi": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.gpu.cxx": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.gpu.mpi": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.gpu.node": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.mempersock": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.gpus": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "env.jobs": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "val.cl.sha": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.programs": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "val.timed.sent": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "rec.cells": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ns2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.nsnnz2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.slope2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.nsizes2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n64": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n128": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n256": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n512": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n1024": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n2048": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n4096": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.2.n8192": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ns3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.nsnnz3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.slope3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.nsizes3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n16": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n25": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n40": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n64": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n101": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n161": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n256": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ws.3.n406": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.itslope2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tslope2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tslope.pred2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tcslope2": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.itslope3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tslope3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tslope.pred3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.tcslope3": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "st.2.classic.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.classic.Stop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.classic.Etop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.pipelined.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.pipelined.Stop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.pipelined.Etop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.2.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.classic.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.classic.Stop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.classic.Etop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.pipelined.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.pipelined.Stop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.pipelined.Etop": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "st.3.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "wk.2.classic.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.classic.Etop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.pipelined.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.pipelined.Etop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.2.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.classic.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.classic.Etop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.pipelined.Ttop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.pipelined.Etop": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.3.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "spread.sent": {
+   "filled": true,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "spread.cap": {
+   "filled": true,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "spread.tabnote": {
+   "filled": true,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "spread.except": {
+   "filled": true,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "meas.top": {
+   "filled": false,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "meas.where": {
+   "filled": false,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "meas.both": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.top.n2": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "wk.top.n3": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "scale.note": {
+   "filled": false,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "scale.maxcores": {
+   "filled": false,
+   "reqs": [
+    "E3",
+    "E4"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+  },
+  "cm.2.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "cm.2.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "cm.2.comp": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "cm.3.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "cm.3.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "cm.3.comp": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "var.2.top.best": {
+   "filled": false,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+  },
+  "var.2.top.spread": {
+   "filled": false,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+  },
+  "var.3.top.best": {
+   "filled": false,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+  },
+  "var.3.top.spread": {
+   "filled": false,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+  },
+  "var.2.node.best": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.2.node.spread": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.best": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.spread": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.1.best": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.1.spread": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.best": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "lay.2.top.spread": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "lay.3.1.best": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.1.spread": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.best": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "lay.3.top.spread": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "lay.top.sent": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "gpu.2.cpu.what": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.cpu.tab": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.cpu.t": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.t": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.vsnode": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.cpu.what": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.cpu.tab": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.cpu.t": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.t": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.vsnode": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ndata": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.datalist": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.strongdata": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.K": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.s": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.a": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.theta": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.tol": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.avals": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.svals": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keepvals": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keeplist": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.rhs": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.siters": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "gr.longrep": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.plan.cells": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "gr.plan.coreh": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "gr.strong.counts.plan": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.strong.counts": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.var.cores": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.where": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.layouts": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.spmv": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.x": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.iters": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.spmvtol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.xtol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.densetol": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.conv": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.bound": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.acc": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.dense": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.tinyV": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.tinyE": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.bugspmv": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.bugacc": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "gr.val.bugby": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "cl.gr.serial": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.gr.strong": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.gr.variants": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "cl.gr.sweep": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  },
+  "gr.keep.email-Eu-core.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.email-Eu-core.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.email-Eu-core.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.email-Eu-core.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.email-Eu-core.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.email-Eu-core": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.email-Eu-core": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-amazon.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-amazon.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-amazon.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-amazon.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-amazon.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.com-amazon": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.com-amazon": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-dblp.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-dblp.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-dblp.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-dblp.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-dblp.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.com-dblp": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.com-dblp": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-youtube.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-youtube.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-youtube.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-youtube.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-youtube.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.com-youtube": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.com-youtube": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-lj.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-lj.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-lj.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-lj.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-lj.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.com-lj": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.com-lj": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-orkut.acc": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-orkut.unr": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-orkut.itratio": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-orkut.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.keep.com-orkut.loss": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.com-orkut": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.maj.com-orkut": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.lo": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.acc.hi": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.aslope": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.sweep.ranks": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.sweep.ranks.email": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ser.ns.natural": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ser.ns.bfs": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ser.slope": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ser.slopebfs": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.ser.bfsgain": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.classic.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.classic.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.pipelined.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.pipelined.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-lj.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-lj.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-lj.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-lj.ghosts": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-lj.nbrs": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.classic.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.classic.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.classic.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.classic.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.pipelined.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.pipelined.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.pipelined.T1": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.com-orkut.pipelined.Enode": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-orkut.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-orkut.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-orkut.ghosts": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.comm.com-orkut.nbrs": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.st.top": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "gr.cut.com-lj.natural.rows": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-lj.natural.rows": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.cut.com-lj.natural.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-lj.natural.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.cut.com-lj.bfs.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-lj.bfs.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-lj.best": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-lj.spread": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-lj.top": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.cut.com-orkut.natural.rows": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-orkut.natural.rows": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.cut.com-orkut.natural.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-orkut.natural.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.cut.com-orkut.bfs.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.imb.com-orkut.bfs.nnz": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-orkut.best": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-orkut.spread": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "gr.var.com-orkut.top": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "node.sockets": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "node.cps": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "node.cpu": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "cal.core.n": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.node.n": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.minN": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.core": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.node": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.ratio": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.bytes.classic": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.bytes.pipelined": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.byteratio": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.classic": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.classic.stencil": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.classic.xr": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.classic.p": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.pipelined": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.pipelined.stencil": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.st.pipelined.upd": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.flops2": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.ai2": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.flops3": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cg.ai3": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "spec.cpu.channels": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.cpu.mts": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.cpu.memtype": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.cpu.peak": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.node.peak": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.cpu.cache": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.gpu.name": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.gpu.mem": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "spec.gpu.bw": {
+   "filled": true,
+   "reqs": [
+    "E10"
+   ],
+   "waiting_for": ""
+  },
+  "cal.node.ofpeak": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "cal.core.ofpeak": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.1.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.1.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.1.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.one.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.one.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.one.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.4.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.4.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.4.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.9.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.9.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.9.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.18.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.18.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.18.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.q.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.q.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.q.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.36.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.36.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.36.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.half.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.half.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.half.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.72.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.72.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.72.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.144.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.144.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.144.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.256.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.256.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.256.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.288.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.288.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.288.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.1.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.1.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.1.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.one.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.one.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.one.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.4.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.4.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.4.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.9.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.9.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.9.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.18.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.18.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.18.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.q.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.q.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.q.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.36.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.36.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.36.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.half.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.half.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.half.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.72.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.72.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.72.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.144.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.144.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.144.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.256.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.256.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.256.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.288.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.288.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pipelined.288.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pratio.1": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.one": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.2": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.4": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.9": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.18": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.q": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.36": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.half": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.72": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.144": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pratio.256": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.pratio.288": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.2.classic.one.ns": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.2.ns": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.gain.q.half": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.gain.half.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.gain.node.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.1.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.1.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.1.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.one.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.one.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.one.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.4.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.4.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.4.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.9.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.9.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.9.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.18.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.18.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.18.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.q.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.q.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.q.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.36.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.36.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.36.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.half.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.half.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.half.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.72.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.72.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.72.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.144.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.144.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.144.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.256.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.256.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.256.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.288.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.288.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.288.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.1.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.1.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.1.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.one.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.one.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.one.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.4.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.4.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.4.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.9.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.9.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.9.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.18.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.18.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.18.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.q.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.q.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.q.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.36.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.36.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.36.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.half.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.half.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.half.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.72.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.72.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.72.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.144.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.144.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.144.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.256.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.256.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.256.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.288.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.288.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pipelined.288.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pratio.1": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.one": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.2": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.4": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.9": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.18": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.q": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.36": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.half": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.72": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.144": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pratio.256": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.pratio.288": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "pst.3.classic.one.ns": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.2.ns": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.gain.q.half": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.gain.half.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.gain.node.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.1.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.1.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.one.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.one.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.4.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.4.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.9.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.9.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.18.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.18.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.q.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.q.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.36.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.36.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.half.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.half.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.72.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.72.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.144.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.144.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.256.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.classic.256.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.classic.288.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.classic.288.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pipelined.1.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.1.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.one.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.one.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.2.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.2.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.4.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.4.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.9.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.9.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.18.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.18.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.q.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.q.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.36.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.36.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.half.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.half.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.72.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.72.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.144.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.144.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.256.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pipelined.256.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pipelined.288.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pipelined.288.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pratio.1": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.one": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.4": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.9": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.18": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.q": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.36": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.half": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.72": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.144": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.256": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.pratio.288": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.2.classic.one.ns": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2.ns": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.2node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.ratio.2node.node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.1.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.1.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.one.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.one.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.4.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.4.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.9.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.9.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.18.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.18.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.q.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.q.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.36.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.36.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.half.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.half.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.72.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.72.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.144.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.144.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.256.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.classic.256.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.classic.288.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.classic.288.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pipelined.1.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.1.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.one.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.one.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.2.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.2.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.4.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.4.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.9.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.9.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.18.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.18.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.q.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.q.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.36.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.36.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.half.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.half.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.72.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.72.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.144.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.144.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.256.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pipelined.256.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pipelined.288.E": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pipelined.288.T": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pratio.1": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.one": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.4": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.9": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.18": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.q": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.36": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.half": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.72": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.144": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.256": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.pratio.288": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "pwk.3.classic.one.ns": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2.ns": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.2node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.ratio.2node.node": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.node.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.node.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2node.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2node.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.node.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.node.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2node.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2node.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d1.halo": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d1.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d1.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d2.halo": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d2.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d2.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d3.halo": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d3.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.d3.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.slab": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.blocks": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.node.ovl.gain": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.2.node.classic.spread": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "node.q": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n64.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n64.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n128.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n128.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n256.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n256.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n512.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n512.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n1024.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n1024.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n2048.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n2048.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n4096.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n4096.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n8192.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.2.n8192.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n16.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n16.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n25.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n25.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n40.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n40.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n64.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n64.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n101.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n101.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n161.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n161.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n256.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n256.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n406.ns": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.3.n406.N": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "ser.ratio32": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.smax": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.amax": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gr.rand": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "node.cpn": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "node.cpn2": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "node.half": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.slowdown": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.slowdown": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.itratio": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.classic.slowdown": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.2node.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.2node.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.2node.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.2node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.2node.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pipelined.slowdown": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pratio.node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-orkut.itratio": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.T": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.hybrid": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.hybrid.T": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.h8": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.imb.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.a2a": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.ovl": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.pipe": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.cut.nat": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.nbrs.nat": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.cut.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.nbrs.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.cut.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.nbrs.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-lj.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.T": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.hybrid": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.hybrid.T": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.h8": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.imb.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.a2a": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.ovl": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.pipe": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.cut.nat": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.nbrs.nat": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.cut.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.nbrs.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.cut.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.nbrs.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gv.com-orkut.node.halo": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gs.email-Eu-core.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.email-Eu-core.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.email-Eu-core.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.email-Eu-core.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-amazon.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-amazon.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-amazon.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-amazon.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-dblp.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-dblp.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-dblp.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-dblp.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-youtube.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-youtube.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-youtube.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-youtube.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-lj.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-lj.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-lj.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-lj.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.bfsratio": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.natspread": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.bfsratio.fast": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.ns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.email-Eu-core.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-amazon.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-dblp.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-youtube.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-lj.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s1.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s1.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s1.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s20.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s20.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s20.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s2.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s2.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.s2.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.amin.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.amin.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.amin.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.a100.acc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.a100.unr": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.a100.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.amin": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.it": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.deg": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.dmax": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gw.com-orkut.itratio": {
+   "filled": true,
+   "reqs": [
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gr.lift.range": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "gs.bytes.row": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.bytes.nnz": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.bpnnz": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.com-orkut.streamns": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "ser.bpnnz2": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gs.vsgrid": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "cal.share": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "generated_at": {
+   "filled": true,
+   "reqs": [],
+   "waiting_for": ""
+  }
+ },
+ "tables": {
+  "geometry": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "plan": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E3",
+    "E4",
+    "E6",
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "valorder": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "valagree": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "valpipe": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "valbugs": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "cases": {
+   "filled": true,
+   "reqs": [
+    "E9"
+   ],
+   "waiting_for": ""
+  },
+  "serial": {
+   "filled": true,
+   "reqs": [
+    "E2"
+   ],
+   "waiting_for": ""
+  },
+  "strong2": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "strong3": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "weak2": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "weak3": {
+   "filled": false,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  },
+  "comm": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "variants": {
+   "filled": false,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+  },
+  "layout": {
+   "filled": false,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+  },
+  "gpu": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "graphdata": {
+   "filled": true,
+   "reqs": [
+    "E11",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "graphacc": {
+   "filled": true,
+   "reqs": [
+    "E11"
+   ],
+   "waiting_for": ""
+  },
+  "graphstrong": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+  },
+  "graphpart": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "graphpart72": {
+   "filled": false,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": "288-core variants: vanda graph-variants: 40 of 80 runs recorded"
+  },
+  "graphserial": {
+   "filled": true,
+   "reqs": [
+    "E2",
+    "E12"
+   ],
+   "waiting_for": ""
+  }
+ },
+ "figures": {
+  "fig_serial": {
+   "filled": true,
+   "partial": false,
+   "reqs": [
+    "E2",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "",
+   "meta": "figures/fig_serial.meta.json"
+  },
+  "fig_serial_tol": {
+   "filled": true,
+   "partial": false,
+   "reqs": [
+    "E2",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "",
+   "meta": "figures/fig_serial_tol.meta.json"
+  },
+  "fig_strong": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E3",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded",
+   "meta": "figures/fig_strong.meta.json"
+  },
+  "fig_weak": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E4",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda weak: 32 of 40 runs recorded",
+   "meta": "figures/fig_weak.meta.json"
+  },
+  "fig_efficiency": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E3",
+    "E4",
+    "E14"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded",
+   "meta": "figures/fig_efficiency.meta.json"
+  },
+  "fig_comm": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E5",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda strong: 32 of 40 runs recorded",
+   "meta": "figures/fig_comm.meta.json"
+  },
+  "fig_layout": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E6",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda layout: 10 of 20 runs recorded",
+   "meta": "figures/fig_layout.meta.json"
+  },
+  "fig_graph_serial": {
+   "filled": true,
+   "partial": false,
+   "reqs": [
+    "E2",
+    "E12",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "",
+   "meta": "figures/fig_graph_serial.meta.json"
+  },
+  "fig_graph_strong": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E3",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded",
+   "meta": "figures/fig_graph_strong.meta.json"
+  },
+  "fig_graph_comm": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E5",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded",
+   "meta": "figures/fig_graph_comm.meta.json"
+  },
+  "fig_graph_variants": {
+   "filled": false,
+   "partial": true,
+   "reqs": [
+    "E8",
+    "E12",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded",
+   "meta": "figures/fig_graph_variants.meta.json"
+  },
+  "fig_graph_sweep": {
+   "filled": true,
+   "partial": false,
+   "reqs": [
+    "E11",
+    "E12",
+    "E10",
+    "E14"
+   ],
+   "waiting_for": "",
+   "meta": "figures/fig_graph_sweep.meta.json"
+  }
+ },
+ "validation_source": "results/validation/vanda/20261112T063938Z.json",
+ "requirements": {
+  "E3": {
+   "filled": false,
+   "kind": "waiting",
+   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+  },
+  "E4": {
+   "filled": false,
+   "kind": "waiting",
+   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+  }
+ },
+ "graph_validation_source": "results/validation/vanda/20261112T072321Z-graph.json",
+ "appendix_files": [
+  "src/par.hpp",
+  "src/grid.hpp",
+  "src/grid.cpp",
+  "src/kernels.hpp",
+  "src/kernels.cpp",
+  "src/halo.hpp",
+  "src/halo.cpp",
+  "src/cg.hpp",
+  "src/cg.cpp",
+  "src/record.hpp",
+  "src/record.cpp",
+  "src/main.cpp",
+  "src/cg_impl.hpp",
+  "src/graph/csrfile.hpp",
+  "src/graph/dcsr.hpp",
+  "src/graph/dcsr.cpp",
+  "src/graph/label.hpp",
+  "src/graph/label.cpp",
+  "src/graph/graph_main.cpp",
+  "src/graph/convert.cpp",
+  "CMakeLists.txt",
+  "scripts/build.sh",
+  "scripts/fetch_snap.sh",
+  "scripts/convert_snap.sh",
+  "cluster/vanda/env.sh",
+  "checks/validate.py",
+  "checks/validate_graph.py",
+  "README.md"
+ ],
+ "appendix_unknown_chars": [],
+ "results": "/Users/kushagra/Desktop/final_assignment/build/results",
+ "figures_dir": "/Users/kushagra/Desktop/final_assignment/build/figures"
+}

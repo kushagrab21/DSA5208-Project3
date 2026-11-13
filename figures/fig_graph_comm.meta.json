@@ -1,0 +1,66 @@
+{
+ "figure": "fig_graph_comm",
+ "script": "scripts/figures.py",
+ "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "plan": "vanda",
+ "cluster": "vanda",
+ "groups": [
+  "graph-strong"
+ ],
+ "utc": "2026-11-13T06:58:18Z",
+ "status": "partial",
+ "axes": [
+  {
+   "panel": "com-lj",
+   "axis": "x",
+   "quantity": "cores",
+   "scale": "log"
+  },
+  {
+   "panel": "com-lj",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  },
+  {
+   "panel": "com-orkut",
+   "axis": "x",
+   "quantity": "cores",
+   "scale": "log"
+  },
+  {
+   "panel": "com-orkut",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  }
+ ],
+ "rows": 46,
+ "sources": [
+  {
+   "path": "results/vanda/1546820.stdct-mgmt-02.graph.csv",
+   "sha256": "968bfaa416c76b298abd57967be9143e6aebe42eec1a9bd3927e8cfa7a567dd2",
+   "rows_used": 4
+  },
+  {
+   "path": "results/vanda/1546893.stdct-mgmt-02.graph.csv",
+   "sha256": "15357ef4dfb1872ee827b0ce4a370dfa22e58af148299d0fe8c6899625801e31",
+   "rows_used": 36
+  },
+  {
+   "path": "results/vanda/1546895.stdct-mgmt-02.graph.csv",
+   "sha256": "9fc255424292f8172f52703119719810468baf885e0166b63dec3716404d757b",
+   "rows_used": 6
+  }
+ ],
+ "binaries": [
+  "9da57b11ddd28571469c01612673917f297e113f2d4f013064b13c73005ded69"
+ ],
+ "clusters": [
+  "vanda"
+ ],
+ "image_sha256": "9024cf94db582310f1c47d141cf6bafb81df4a009c5d0f5ed57593fc4e515493",
+ "waiting_for": [
+  "vanda graph-strong: 32 of 40 runs recorded"
+ ]
+}

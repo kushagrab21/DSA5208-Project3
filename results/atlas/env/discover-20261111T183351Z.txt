@@ -1,0 +1,1078 @@
+
+=== host ===
+atlas8-c01
+Linux atlas8-c01 3.10.0-1160.95.1.el7.x86_64 #1 SMP Mon Jul 24 13:59:37 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+Wed Nov 11 18:33:52 UTC 2026
+
+=== cpu ===
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                80
+On-line CPU(s) list:   0-79
+Thread(s) per core:    1
+Core(s) per socket:    40
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             AuthenticAMD
+CPU family:            25
+Model:                 1
+Model name:            AMD EPYC 7643 48-Core Processor
+Stepping:              1
+CPU MHz:               2295.686
+BogoMIPS:              4591.37
+Virtualization:        AMD-V
+Hypervisor vendor:     KVM
+Virtualization type:   full
+L1d cache:             64K
+L1i cache:             64K
+L2 cache:              512K
+L3 cache:              16384K
+NUMA node0 CPU(s):     0-39
+NUMA node1 CPU(s):     40-79
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm art rep_good nopl extd_apicid eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw perfctr_core invpcid_single ssbd rsb_ctxsw ibrs ibpb stibp vmmcall fsgsbase tsc_adjust bmi1 avx2 smep bmi2 invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 clzero xsaveerptr arat npt lbrv nrip_save tsc_scale vmcb_clean flushbyasid pausefilter pfthreshold v_vmsave_vmload vgif umip pku ospke vaes vpclmulqdq overflow_recov succor intel_stibp
+nproc: 80
+
+=== memory ===
+              total        used        free      shared  buff/cache   available
+Mem:             80          45          19           2          15          31
+Swap:            15          15           0
+
+=== tools ===
+python3    /usr/bin/python3
+mpicxx     /app1/centos6.3/gnu/mvapich2-1.9/bin/mpicxx
+mpirun     /app1/centos6.3/gnu/mvapich2-1.9/bin/mpirun
+cmake      /usr/bin/cmake
+qsub       /opt/pbs/bin/qsub
+qstat      /opt/pbs/bin/qstat
+module     module
+hpc        /app1/common/bin/hpc
+gstat      /opt/pbs/bin/gstat
+pbsnodes   /opt/pbs/bin/pbsnodes
+sha256sum  /usr/bin/sha256sum
+rsync      /usr/bin/rsync
+Python 3.6.8
+
+=== qstat_Q ===
+Queue              Max   Tot Ena Str   Que   Run   Hld   Wat   Trn   Ext Type
+---------------- ----- ----- --- --- ----- ----- ----- ----- ----- ----- ----
+normal               0     0  no  no     0     0     0     0     0     0 Rou*
+C2100                0     0  no  no     0     0     0     0     0     0 Exe*
+dmlogina8            0     0  no yes     0     0     0     0     0     0 Exe*
+parallel_test        0     0  no yes     0     0     0     0     0     0 Exe*
+serial               0   174 yes yes    77    96     0     0     0     0 Exe*
+workshop             0     0  no yes     0     0     0     0     0     0 Exe*
+dmlogina9            0     0  no yes     0     0     0     0     0     0 Exe*
+benchmark            0     0  no yes     0     0     0     0     0     0 Exe*
+reserved01           0     0 yes yes     0     0     0     0     0     0 Exe*
+hpc6a                0     0 yes yes     0     0     0     0     0     0 Exe*
+ood                  0     0 yes yes     0     0     0     0     0     0 Exe*
+ood-cloud            0     2 yes yes     1     1     0     0     0     0 Exe*
+colo-bliu            0     0 yes yes     0     0     0     0     0     0 Exe*
+xq-foo_lab           0     1 yes yes     0     1     0     0     0     0 Exe*
+colo-bliu-login      0     0  no  no     0     0     0     0     0     0 Exe*
+gpu_workshop         0     0  no  no     0     0     0     0     0     0 Exe*
+colo-chmlu           0     0 yes yes     0     0     0     0     0     0 Exe*
+largemem             0     0 yes yes     0     0     0     0     0     0 Exe*
+gracehopper          0     0 yes yes     0     0     0     0     0     0 Exe*
+green                0     0 yes yes     0     0     0     0     0     0 Exe*
+ood-foo_lab          0     0 yes yes     0     0     0     0     0     0 Exe*
+parallel             0   999 yes yes   260   113   623     0     0     0 Exe*
+
+=== qstat_Qf ===
+Queue: normal
+    queue_type = Route
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    resources_max.walltime = 720:00:00
+    resources_default.walltime = 240:00:00
+    route_destinations = large,short,serial,gpu,parallel,parallel8,parallel24
+    enabled = False
+    started = False
+
+Queue: C2100
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccev709,ccev711,ccewjh,e0001020,phyat,phyv240,phyv250
+    from_route_only = False
+    resources_max.walltime = 720:00:00
+    resources_min.ncpus = 1
+    resources_default.walltime = 240:00:00
+    default_chunk.ncpus = 12
+    resources_assigned.mem = 270gb
+    resources_assigned.mpiprocs = 72
+    resources_assigned.ncpus = 72
+    resources_assigned.nodect = 6
+    max_run_res.ncpus = [u:PBS_GENERIC=96]
+    node_group_key = cluster
+    enabled = False
+    started = False
+
+Queue: dmlogina8
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    resources_max.ndesktops = 10
+    resources_max.walltime = 24:00:00
+    resources_min.ndesktops = 1
+    resources_default.place = free
+    resources_default.walltime = 24:00:00
+    default_chunk.mem = 512mb
+    default_chunk.ncpus = 1
+    hasnodes = True
+    enabled = False
+    started = True
+
+Queue: parallel_test
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    from_route_only = False
+    resources_max.mem = 450gb
+    resources_max.ncpus = 180
+    resources_max.ngpus = 0
+    resources_max.walltime = 01:00:00
+    resources_min.mem = 2gb
+    resources_min.ncpus = 12
+    resources_default.walltime = 01:00:00
+    default_chunk.ncpus = 12
+    resources_assigned.mem = 0gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    max_run = [u:PBS_GENERIC=20]
+    max_run_res.ncpus = [u:ccev3282=200]
+    max_run_soft = [u:PBS_GENERIC=2]
+    hasnodes = True
+    node_group_key = cluster
+    enabled = False
+    started = True
+
+Queue: serial
+    queue_type = Execution
+    Priority = 151
+    total_jobs = 174
+    state_count = Transit:0 Queued:77 Held:0 Waiting:0 Running:96 Exiting:0 Beg
+	un:1 
+    from_route_only = False
+    resources_max.mem = 15gb
+    resources_max.ncpus = 1
+    resources_max.ngpus = 0
+    resources_max.walltime = 720:00:00
+    resources_min.mem = 2gb
+    resources_min.ncpus = 1
+    resources_default.mem = 4gb
+    resources_default.walltime = 240:00:00
+    default_chunk.node_pool = horse
+    resources_available.ngpus = 0
+    resources_assigned.mem = 824180736kb
+    resources_assigned.mpiprocs = 46
+    resources_assigned.ncpus = 173
+    resources_assigned.nodect = 173
+    max_run = [u:PBS_GENERIC=40]
+    hasnodes = True
+    node_group_key = cluster
+    enabled = True
+    started = True
+
+Queue: workshop
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = False
+    acl_users = ccekuma@*,ccekwk@*,ccev1459@*,ccev1466@*,ccev1980,ccev711@*,
+	ccev713@*,ccevg@*,ccewjh@*,cceyeoeh@*
+    from_route_only = False
+    resources_max.ncpus = 20
+    resources_max.ngpus = 0
+    resources_max.walltime = 02:00:00
+    resources_min.ncpus = 10
+    resources_default.walltime = 00:30:00
+    default_chunk.ncpus = 1
+    resources_assigned.mem = 0gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    max_run = [u:PBS_GENERIC=1]
+    max_run_res.ncpus = [u:PBS_GENERIC=20]
+    node_group_key = cluster
+    enabled = False
+    started = True
+
+Queue: dmlogina9
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    resources_max.ndesktops = 10
+    resources_max.walltime = 24:00:00
+    resources_min.ndesktops = 1
+    resources_default.ndesktops = 1
+    resources_default.place = free
+    resources_default.walltime = 24:00:00
+    default_chunk.mem = 512mb
+    default_chunk.ncpus = 2
+    hasnodes = True
+    enabled = False
+    started = True
+
+Queue: benchmark
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccev1459@*,ccev1466@*,ccev709@*,ccev711@*,ccewjh@*,cceyeoeh@*,
+	ceedy@*
+    from_route_only = False
+    resources_max.ncpus = 96
+    resources_max.walltime = 720:00:00
+    resources_default.walltime = 24:00:00
+    max_run = [u:PBS_GENERIC=4]
+    max_run_res.ncpus = [u:PBS_GENERIC=96]
+    node_group_key = cluster
+    enabled = False
+    started = True
+
+Queue: reserved01
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = cceyeoeh@*,e0268404@*
+    resources_max.mem = 96gb
+    resources_max.ncpus = 48
+    resources_assigned.mem = 0gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    enabled = True
+    started = True
+
+Queue: hpc6a
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccekwk@*,ccev3293@*,ccewjh@*,cceyeoeh@*,chmcyq@*,chrisg25@*,
+	dbsv621@*,e0538161@*,e0564322@*,e0712625@*,e0725514@*,e0949146@*,e1124423,
+	eiich01,gayaninp,ilyasd01@*,jasmineo@*,jren@*,ktyap@*,manish.s@*,mcosta@*,
+	nlqcheng@*,rikky@*,snm_02@*,theo.a@*,tsltaywb@*,yumengxi@*
+    from_route_only = False
+    resources_max.mem = 700gb
+    resources_max.ncpus = 192
+    resources_max.nodect = 2
+    resources_max.walltime = 72:00:00
+    resources_min.ncpus = 1
+    resources_default.walltime = 24:00:00
+    resources_assigned.mem = 0gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    max_run = [u:PBS_GENERIC=1]
+    max_run_res.ncpus = [u:PBS_GENERIC=192]
+    max_run_res.nodect = [u:PBS_GENERIC=2]
+    hasnodes = True
+    node_group_key = cluster
+    enabled = True
+    started = True
+
+Queue: ood
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    from_route_only = False
+    resources_max.walltime = 12:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 01:00:00
+    enabled = True
+    started = True
+
+Queue: ood-cloud
+    queue_type = Execution
+    total_jobs = 2
+    state_count = Transit:0 Queued:1 Held:0 Waiting:0 Running:1 Exiting:0 Begun
+	:0 
+    from_route_only = False
+    resources_max.walltime = 12:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 01:00:00
+    resources_assigned.mem = 4gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 1
+    resources_assigned.nodect = 1
+    hasnodes = True
+    enabled = True
+    started = True
+
+Queue: colo-bliu
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = cceyeoeh@,chao.li@*,e0950183@*,e0950333@*,e1068499@*,e1068508@*,
+	e1101919@*,e1101920@*,e1101943@*,e1124313@*,e1124770@*,e1124850@*,
+	e1124923@*,e1124932@*,e1248903@*,e1327989@*,e1353433@*,e1353486@*,
+	e1372905@*,e1554770@*,e1561487,e1561487@*,haowu@*,jiaqi@*,liang_y@*,
+	mcosta@*
+    from_route_only = False
+    resources_max.walltime = 720:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 24:00:00
+    resources_assigned.mem = 0gb
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    hasnodes = True
+    enabled = True
+    started = True
+
+Queue: xq-foo_lab
+    queue_type = Execution
+    total_jobs = 1
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:1 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccev4005@*,cceyeoeh,cceyeoeh@*,cjmlee@*,e0072521@*,e0500915@*,
+	e0546463@*,e0934133,e0958350@*,e0983537@*,e1463017,emfv-09@*,jennyxw@*,
+	mcosta@*,mdcrg@*,nyl12@*,tsltaywb@*,yike.zhu@*
+    from_route_only = False
+    resources_max.mem = 350gb
+    resources_max.ncpus = 96
+    resources_max.nodect = 1
+    resources_max.walltime = 720:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 24:00:00
+    resources_assigned.mem = 100663296kb
+    resources_assigned.mpiprocs = 24
+    resources_assigned.ncpus = 24
+    resources_assigned.nodect = 1
+    max_run_res.ncpus = [u:PBS_GENERIC=96]
+    hasnodes = True
+    enabled = True
+    started = True
+
+Queue: colo-bliu-login
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = e0950183@*,e1068499@*,e1068508@*,e1101919@*,e1101920@*,e1101943@*,
+	e1124313@*,e1124770@*,e1124850@*,e1124923@*,e1248903@*,haowu@*,mcosta@*
+    from_route_only = False
+    resources_max.mem = 4gb
+    resources_max.ncpus = 1
+    resources_max.walltime = 24:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 24:00:00
+    max_run = [u:PBS_GENERIC=1]
+    max_run_res.ncpus = [o:PBS_ALL=10]
+    enabled = False
+    started = False
+
+Queue: gpu_workshop
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccekwk@*,ccev1459@*,ccev1466@*,ccev711@*,ccev713@*,ccewjh@*,
+	cceyeoeh@*,ktyap@*,manish.s@*,tsltaywb@*
+    from_route_only = False
+    resources_max.mem = 160gb
+    resources_max.ncpus = 20
+    resources_max.ngpus = 2
+    resources_max.walltime = 72:00:00
+    resources_min.mem = 20gb
+    resources_min.ncpus = 5
+    resources_min.ngpus = 1
+    resources_default.mem = 30gb
+    resources_default.walltime = 24:00:00
+    default_chunk.model = volta
+    default_chunk.ncpus = 5
+    default_chunk.ngpus = 1
+    resources_available.model = volta
+    max_run = [u:PBS_GENERIC=3]
+    max_run_res.mem = [u:PBS_GENERIC=700gb]
+    max_run_res.ncpus = [u:PBS_GENERIC=45]
+    max_run_res.ngpus = [u:PBS_GENERIC=3]
+    max_run_soft = [u:PBS_GENERIC=2]
+    node_group_key = cluster
+    enabled = False
+    started = False
+
+Queue: colo-chmlu
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = brian.ku@*,ccev3282@*,ccev4005@*,chmlu@*,chmv606@*,e0148545@*,
+	e0261925@*,e0732532@*,e0774346@*,e0952266@*,e1075536@*,e1121129@*,
+	e1122212@*,e1123076@*,e1132386@*,e1353150@*,e1354932@*,e1398677@*,mcosta@*,
+	ziyu-dong@*,zs.huang@*
+    from_route_only = False
+    resources_default.mem = 4gb
+    resources_assigned.mem = 0gb
+    resources_assigned.mpiprocs = 0
+    resources_assigned.ncpus = 0
+    resources_assigned.nodect = 0
+    hasnodes = True
+    enabled = True
+    started = True
+
+Queue: largemem
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccekwk@*,ccewjh@*,cceyeoeh@*,ktyap@*,manish.s@*,mcosta@*,rikky@*
+    from_route_only = False
+    resources_max.mem = 1800gb
+    resources_max.ncpus = 128
+    resources_max.walltime = 72:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 24:00:00
+    hasnodes = True
+    enabled = True
+    started = True
+
+Queue: gracehopper
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccekwk@*,ccewjh@*,cceyeoeh@*,ktyap@*,manish.s@*,rikky@*
+    from_route_only = False
+    resources_max.walltime = 72:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 24:00:00
+    enabled = True
+    started = True
+
+Queue: green
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = ccev711@*,ccev713@*,ccewjh@*,cceyeoeh@*,e0774715@*
+    from_route_only = False
+    resources_max.ncpus = 20
+    resources_max.ngpus = 0
+    resources_max.walltime = 02:00:00
+    resources_min.ncpus = 1
+    resources_default.walltime = 00:30:00
+    default_chunk.ncpus = 2
+    max_run = [u:PBS_GENERIC=1]
+    max_run_res.ncpus = [u:PBS_GENERIC=20]
+    node_group_key = cluster
+    enabled = True
+    started = True
+
+Queue: ood-foo_lab
+    queue_type = Execution
+    total_jobs = 0
+    state_count = Transit:0 Queued:0 Held:0 Waiting:0 Running:0 Exiting:0 Begun
+	:0 
+    acl_user_enable = True
+    acl_users = e0983537@*,mcosta@*
+    from_route_only = False
+    resources_max.walltime = 72:00:00
+    resources_default.mem = 4gb
+    resources_default.ncpus = 1
+    resources_default.walltime = 01:00:00
+    enabled = True
+    started = True
+
+Queue: parallel
+    queue_type = Execution
+    Priority = 100
+    total_jobs = 999
+    state_count = Transit:0 Queued:260 Held:623 Waiting:0 Running:113 Exiting:0
+	 Begun:3 
+    from_route_only = False
+    resources_max.mem = 540gb
+    resources_max.ncpus = 96
+    resources_max.ngpus = 0
+    resources_max.walltime = 720:00:00
+    resources_min.mem = 2gb
+    resources_min.ncpus = 12
+    resources_default.walltime = 240:00:00
+    default_chunk.node_pool = par12
+    resources_assigned.mem = 7095713792kb
+    resources_assigned.mpiprocs = 1380
+    resources_assigned.ncpus = 2038
+    resources_assigned.nodect = 119
+    resources_assigned.vmem = 0gb
+    max_run = [u:PBS_GENERIC=4]
+    max_run_res.ncpus = [u:PBS_GENERIC=96]
+    hasnodes = True
+    node_group_key = cluster
+    enabled = True
+    started = True
+
+
+=== gstat ===
+
+ =============================================================
+              TIME: Thu Nov 12 02:30:01 +08 2026    
+ =============================================================
+
+ ============= Status of Parallel & Serial Queues ============
+          Queue :    Running :    Waiting  : Users_in_Queue
+       parallel :        110 :        887  :         26
+         serial :         94 :         78  :          5
+ -------------------------------------------------------------
+
+
+ =============== Status of all compute nodes =================
+   Cluster :  Total  Busy  Partial-Free Free   Off   Down  Oth
+     cnode :     34     8      17         0     6     2     1
+ -------------------------------------------------------------
+
+
+=== pbsnodes ===
+atlas8-c01
+     state = free
+     resources_available.mem = 197510064kb
+     resources_available.ncpus = 24
+     resources_available.ngpus = 4
+atlas9-c01
+     state = down
+     resources_available.mem = 186080mb
+     resources_available.ncpus = 40
+cnode-33-43-21
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-22
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-23
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-24
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+colo-bliu-01
+     state = free
+     resources_available.mem = 791883340kb
+     resources_available.ncpus = 192
+cnode-33-43-25
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-26
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-27
+     state = free
+     resources_available.mem = 387751292kb
+     resources_available.ncpus = 96
+cnode-33-43-28
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-29
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+colo-chmlu-02
+     state = free
+     resources_available.mem = 791997012kb
+     resources_available.ncpus = 64
+colo-chmlu-03
+     state = free
+     resources_available.mem = 791997008kb
+     resources_available.ncpus = 64
+colo-chmlu-01
+     state = free
+     resources_available.mem = 791997008kb
+     resources_available.ncpus = 64
+cnode-33-42-149
+     state = state-unknown
+     resources_available.mem = 1908215mb
+     resources_available.ncpus = 128
+gracehopper
+     state = free
+     resources_available.mem = 599842816kb
+     resources_available.ncpus = 72
+colo-chmlu-04
+     state = free
+     resources_available.mem = 791957096kb
+     resources_available.ncpus = 64
+colo-chmlu-05
+     state = free
+     resources_available.mem = 791957444kb
+     resources_available.ncpus = 64
+colo-chmlu-06
+     state = free
+     resources_available.mem = 791957096kb
+     resources_available.ncpus = 64
+colo-chmlu-07
+     state = free
+     resources_available.mem = 791957092kb
+     resources_available.ncpus = 64
+colo-chmlu-08
+     state = free
+     resources_available.mem = 791957096kb
+     resources_available.ncpus = 64
+cnode-33-43-20
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-30
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-31
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-32
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-33
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-34
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-35
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-36
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-37
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-38
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-39
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-40
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-42
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-43
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-44
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-45
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-46
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-47
+     state = down
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-49
+     state = job-busy
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-50
+     state = offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-51
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-52
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-53
+     state = free
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+cnode-33-43-54
+     state = down,offline
+     resources_available.mem = 367306mb
+     resources_available.ncpus = 96
+
+=== hpc_project ===
+
+  Use command as:
+  > hpc  option
+  Option: [quota|space]          ==> to list available space and quota
+          [q|queue]              ==> to list batch queues and status
+          [queue limit]          ==> to list batch queues description and CPU/Mem limits
+          [cpu|cores]            ==> to list cpu/cores allowed to use
+          [batch|jobs|submit]    ==> to list instruction on batch job submission
+          [mpi|mpijob|parallel]  ==> to list instruction on MPI   job submission
+          [R|Rjob]               ==> to list instruction on R     job submission
+          [DL [batch] ] [volta]  ==> to list instruction on Deep Learning job submission
+          [parallel20 ]          ==> to list instruction on using queue < parallel20 >
+          [dos|win]              ==> to list instruction on common problem with Windows text file/program
+          [hpctmp|workspace]     ==> to list instruction on using HPC workspace /hpctmp.
+          [alphafold]            ==> to list instruction on Alphafold job submission
+
+
+=== hpc_quota ===
+
+ HPC home disk quota is not available to view. Exit...
+
+
+ HPCTMP disk quota is not available to view. Exit...
+
+
+=== hpc_space ===
+
+ HPC home disk quota is not available to view. Exit...
+
+
+ HPCTMP disk quota is not available to view. Exit...
+
+
+=== module_avail ===
+2.2_mvapich_gnu-test
+3.0_openmpi_gnu-test
+4ti2/1.6.9-GCC-11.3.0
+ABINIT/9.10.3-intel-2022a
+ABINIT/9.4.2-intel-2021a
+ABINIT/9.6.2-foss-2022a
+ABINIT/9.6.2-intel-2021a
+ABINIT/9.6.2-intel-2021b
+ABINIT/9.6.2-intel-2022a
+ABRA2/2.23-GCC-10.2.0
+ABRicate/1.0.0-gompi-2021a
+Abseil/20210324.2-GCCcore-11.2.0
+Abseil/20230125.2-GCCcore-11.3.0
+Abseil/20230125.2-GCCcore-12.2.0
+Abseil/20230125.3-GCCcore-12.3.0
+Abseil/20240116.1-GCCcore-13.2.0
+Abseil/20240722.0-GCCcore-13.3.0
+absl-py/2.1.0-GCCcore-12.3.0
+abTEM/1.0.0b26-foss-2020b-ASE-3.22.0
+ABySS/2.2.5-foss-2020b
+ABySS/2.3.7-foss-2023a
+ack/3.4.0-GCCcore-10.2.0
+ACTC/1.1-GCCcore-11.3.0
+AdapterRemoval/2.3.2-GCC-10.3.0
+AdapterRemoval/2.3.2-GCC-11.2.0
+AdapterRemoval/2.3.3-GCC-11.3.0
+adjustText/0.7.3-foss-2021b
+AdmixTools/7.0.2-foss-2021b
+affinity/20230524-foss-2022a
+affinity/20230524-intel-2022a
+AGAT/0.9.2-GCC-11.2.0
+aiohttp/3.8.1-GCCcore-10.2.0
+aiohttp/3.8.1-GCCcore-10.3.0
+aiohttp/3.8.1-GCCcore-11.2.0
+aiohttp/3.8.3-GCCcore-11.3.0
+aiohttp/3.8.5-GCCcore-12.3.0
+ALAMODE/1.4.2-foss-2022b
+Alfred/0.2.6-GCC-11.2.0
+ALL/0.9.2-foss-2023a
+alleleCount/4.2.1-GCC-11.3.0
+alleleIntegrator/0.8.8-foss-2022a-R-4.2.1
+almosthere/2.0.2-GCCcore-10.2.0
+AlphaFold/2.1.2-foss-2021a
+AlphaFold/2.2.2-foss-2021a
+AlphaFold/2.2.2-foss-2021a-avx2
+AlphaFold/2.3.1-foss-2022a
+AlphaFold/2.3.1-foss-2022a-CUDA-11.7.0
+AlphaFold/2.3.4-foss-2022a-ColabFold
+AlphaFold/2.3.4-foss-2022a-CUDA-11.7.0-ColabFold
+alsa-lib/1.2.8-GCCcore-10.2.0
+alsa-lib/1.2.8-GCCcore-11.2.0
+alsa-lib/1.2.8-GCCcore-11.3.0
+Amber/22.0-foss-2022a-AmberTools-23.0
+Amber/22.5-foss-2022a-AmberTools-23.5
+Amber/22.5-foss-2022a-AmberTools-23.5-CUDA-11.7.0
+Amber/24.3-foss-2023a-AmberTools-24.10-CUDA-12.1.1
+AmberTools/21-foss-2021a
+ambit/733c529-foss-2021b-psi4
+AMICA/2024.1.19-intel-2023a
+AMOS/3.1.0-foss-2021b
+AMPHORA2/20190730-gompi-2020b-Java-13-pthreads-avx2
+AMPL-MP/3.1.0-GCCcore-10.3.0
+AMPtk/1.5.4-foss-2021b
+AMRFinderPlus/3.11.18-gompi-2022b
+AMRFinderPlus/3.11.26-gompi-2022b
+angsd/0.935-GCC-10.2.0
+angsd/0.940-GCC-11.2.0
+ANIcalculator/1.0-GCCcore-10.3.0
+ANIcalculator/1.0-GCCcore-11.3.0
+anndata/0.10.5.post1-foss-2023a
+anndata/0.8.0-foss-2022a
+Annocript/2.0-foss-2022a
+ANSYS/2025R2-foss-2022b
+ANTLR/2.7.7-GCCcore-11.2.0-Java-11
+ANTLR/2.7.7-GCCcore-11.3.0-Java-11
+ANTs/2.3.5-foss-2021a
+ANTs/2.5.0-foss-2022a
+ANTs/2.5.0-foss-2022b
+any2fasta/0.4.2-GCCcore-10.3.0
+any2fasta/0.4.2-GCCcore-11.2.0
+AOCC/3.1.0-GCCcore-11.2.0
+AOCC/3.2.0-GCCcore-11.2.0
+AOCC/3.2.0-GCCcore-11.3.0
+AOCC/4.0.0-GCCcore-11.3.0
+AOCC/4.0.0-GCCcore-12.2.0
+AOCL-BLAS/5.0-GCC-14.2.0
+AOCL-BLAS/5.1-GCC-14.3.0
+ape/5.7-1.3-foss-2022a-R-4.2.1
+ape/5.7-1.3-foss-2022a-R-4.2.1_parallel_nj
+ape/5.7-1-foss-2022a-R-4.2.1
+ape/5.7-1-foss-2022a-R-4.2.1_longint_nj
+/app1/modules/centos6.3-intel:
+APR/1.7.0-GCCcore-10.2.0
+APR/1.7.0-GCCcore-10.3.0
+APR/1.7.0-GCCcore-11.2.0
+APR/1.7.0-GCCcore-11.3.0
+APR-util/1.6.1-GCCcore-10.2.0
+APR-util/1.6.1-GCCcore-10.3.0
+APR-util/1.6.1-GCCcore-11.2.0
+APR-util/1.6.1-GCCcore-11.3.0
+ARAGORN/1.2.41-foss-2021b
+ARAGORN/1.2.41-foss-2022b
+Arb/2.22.1-GCC-11.2.0
+Arcade-Learning-Environment/0.7.3-foss-2021b
+Arcade-Learning-Environment/0.8.1-foss-2022a
+Archive-Zip/1.68-GCCcore-10.2.0
+Archive-Zip/1.68-GCCcore-11.2.0
+Archive-Zip/1.68-GCCcore-11.3.0
+ArchR/1.0.1-foss-2021b-R-4.1.2
+ArchR/1.0.2-foss-2023a-R-4.3.2
+archspec/0.1.2-GCCcore-10.3.0
+archspec/0.1.3-GCCcore-11.2.0
+archspec/0.1.4-GCCcore-11.3.0
+archspec/0.2.0-GCCcore-12.2.0
+archspec/0.2.1-GCCcore-12.3.0
+ARGoS/3.0.0-beta59-GCC-11.2.0
+argtable/2.13-GCCcore-10.3.0
+aria2/1.36.0-GCCcore-11.3.0
+Armadillo/10.7.5-foss-2021a
+Armadillo/11.4.3-foss-2022a
+Armadillo/11.4.3-foss-2022b
+Armadillo/12.6.2-foss-2023a
+Armadillo/12.8.0-foss-2023b
+Armadillo/12.8.0-intel-2023b
+arosics/1.7.6-foss-2021a
+arpack-ng/3.8.0-foss-2020b
+arpack-ng/3.8.0-foss-2021a
+arpack-ng/3.8.0-foss-2021b
+arpack-ng/3.8.0-foss-2022a
+arpack-ng/3.8.0-foss-2022b
+arpack-ng/3.9.0-foss-2023a
+arpack-ng/3.9.0-foss-2023b
+arpack-ng/3.9.0-intel-2023b
+Arriba/2.2.1-GCC-11.2.0
+Arriba/2.3.0-GCC-11.2.0
+Arrow/0.17.1-foss-2020b
+Arrow/6.0.0-foss-2021a
+Arrow/6.0.0-foss-2021b
+Arrow/6.0.1-foss-2021a
+Arrow/8.0.0-foss-2022a
+Arrow/8.0.0-foss-2022a_test
+arrow-R/11.0.0.3-foss-2022b-R-4.2.2
+arrow-R/14.0.0.2-foss-2023a-R-4.3.2
+arrow-R/16.1.0-foss-2023b-R-4.4.1
+arrow-R/6.0.0.2-foss-2021a-R-4.1.0
+arrow-R/6.0.0.2-foss-2021b-R-4.1.2
+arrow-R/6.0.0.2-foss-2021b-R-4.2.0
+arrow-R/8.0.0-foss-2022a-R-4.2.1
+ArviZ/0.11.4-foss-2021b
+ArviZ/0.11.4-intel-2021b
+ArviZ/0.12.1-foss-2022a
+ArviZ/0.12.1-intel-2022a
+ArviZ/0.16.1-foss-2023a
+ASCAT/3.1.2-foss-2022a-R-4.2.1
+ASE/3.20.1-foss-2020b
+ASE/3.22.0-foss-2020b
+ASE/3.22.0-foss-2021b
+ASE/3.22.0-intel-2021a
+ASE/3.22.1-foss-2021b
+ASE/3.22.1-foss-2022a
+ASE/3.22.1-foss-2022a-without-spglib
+ASE/3.22.1-intel-2021b
+ASE/3.22.1-intel-2022a
+ASF-SearchAPI/6.5.0-foss-2022a
+assimp/5.2.5-GCCcore-12.3.0
+assimp/5.3.1-GCCcore-13.2.0
+astropy/4.3.1-foss-2021a
+astropy/4.3.1-foss-2021b
+astropy/4.3.1-intel-2021a
+astropy/5.0.4-foss-2021a
+astropy/5.1.1-foss-2022a
+astropy/5.1.1-intel-2022a
+ATK/2.36.0-GCCcore-10.2.0
+ATK/2.36.0-GCCcore-10.3.0
+ATK/2.36.0-GCCcore-11.2.0
+ATK/2.38.0-GCCcore-11.3.0
+ATK/2.38.0-GCCcore-12.2.0
+ATK/2.38.0-GCCcore-12.3.0
+ATK/2.38.0-GCCcore-13.2.0
+atools/1.4.8-GCCcore-11.2.0-Python-2.7.18
+atools/1.5.1-GCCcore-11.2.0
+at-spi2-atk/2.38.0-GCCcore-10.2.0
+at-spi2-atk/2.38.0-GCCcore-10.3.0
+at-spi2-atk/2.38.0-GCCcore-11.2.0
+at-spi2-atk/2.38.0-GCCcore-11.3.0
+at-spi2-atk/2.38.0-GCCcore-12.2.0
+at-spi2-atk/2.38.0-GCCcore-12.3.0
+at-spi2-atk/2.38.0-GCCcore-13.2.0
+at-spi2-core/2.38.0-GCCcore-10.2.0
+at-spi2-core/2.40.2-GCCcore-10.3.0
+at-spi2-core/2.40.3-GCCcore-11.2.0
+at-spi2-core/2.44.1-GCCcore-11.3.0
+at-spi2-core/2.46.0-GCCcore-12.2.0
+at-spi2-core/2.49.91-GCCcore-12.3.0
+at-spi2-core/2.50.0-GCCcore-13.2.0
+attr/2.5.1-GCCcore-11.2.0
+attr/2.5.1-GCCcore-11.3.0
+attrdict3/2.0.2-GCCcore-11.2.0
+attrdict3/2.0.2-GCCcore-11.3.0
+AUGUSTUS/3.4.0-foss-2021b
+AUGUSTUS/3.5.0-foss-2022a
+AUGUSTUS/3.5.0-foss-2022b
+Austin/3.2.0-GCCcore-11.2.0
+Autoconf/2.69-GCCcore-10.2.0
+Autoconf/2.69-GCCcore-6.4.0
+Autoconf/2.69-GCCcore-8.2.0
+Autoconf/2.69-GCCcore-8.3.0
+Autoconf/2.69-GCCcore-9.3.0
+Autoconf/2.71-GCCcore-10.3.0
+Autoconf/2.71-GCCcore-11.2.0
+Autoconf/2.71-GCCcore-11.3.0
+Autoconf/2.71-GCCcore-12.2.0
+Autoconf/2.71-GCCcore-12.3.0
+Autoconf/2.71-GCCcore-13.2.0
+Autoconf/2.72-GCCcore-13.3.0
+Autoconf/2.72-GCCcore-14.2.0
+Autoconf/2.72-GCCcore-14.3.0
+Autoconf-archive/2021.02.19-GCCcore-10.2.0
+Autoconf-archive/2023.02.20-GCCcore-11.3.0
+AutoDock/4.2.6-GCC-10.3.0
+AutoDock-GPU/1.5.3-GCC-10.3.0-CUDA-11.3.1
+AutoDock-GPU/1.5.3-GCC-11.3.0-CUDA-11.7.0
+AutoDock-Vina/1.2.5-foss-2023b
+Automake/1.16.1-GCCcore-8.2.0
+Automake/1.16.1-GCCcore-8.3.0
+Automake/1.16.1-GCCcore-9.3.0
+Automake/1.16.2-GCCcore-10.2.0
+Automake/1.16.3-GCCcore-10.3.0
+Automake/1.16.4-GCCcore-11.2.0
+Automake/1.16.5-GCCcore-11.3.0
+Automake/1.16.5-GCCcore-12.2.0
+Automake/1.16.5-GCCcore-12.3.0
+Automake/1.16.5-GCCcore-13.2.0
+Automake/1.16.5-GCCcore-13.3.0
+Automake/1.17-GCCcore-14.2.0
+Automake/1.18-GCCcore-14.3.0
+Autotools/20180311-GCCcore-8.2.0
+Autotools/20180311-GCCcore-8.3.0
+Autotools/20180311-GCCcore-9.3.0
+Autotools/20200321-GCCcore-10.2.0
+Autotools/20210128-GCCcore-10.3.0
+Autotools/20210726-GCCcore-11.2.0
+Autotools/20220317-GCCcore-11.3.0
+Autotools/20220317-GCCcore-12.2.0
+Autotools/20220317-GCCcore-12.3.0
+Autotools/20220317-GCCcore-13.2.0
+Autotools/20231222-GCCcore-13.3.0
+Autotools/20240712-GCCcore-14.2.0
+Autotools/20250527-GCCcore-14.3.0
+avro-cpp/1.11.1-GCC-11.2.0
+awscli/2.11.21-GCCcore-11.3.0
+Ax/0.3.3-foss-2022a
+BA3-SNPS-autotune/2.1.2-GCC-11.3.0
+BabelStream/3.4-GCC-11.2.0-omp
+babl/0.1.86-GCCcore-10.3.0
+Bambi/0.7.1-foss-2021b
+Bambi/0.7.1-intel-2021b
+bambu/3.6.0-foss-2023b-R-4.4.1
+bamFilters/2022-06-30-GCC-11.3.0
+BAMM/2.5.0-foss-2022a
+bam-readcount/0.8.0-GCC-11.2.0
+bamtofastq/1.4.0-GCCcore-10.3.0
+BamTools/2.5.1-GCC-10.2.0
+BamTools/2.5.2-GCC-11.2.0
+BamTools/2.5.2-GCC-11.3.0
+BamTools/2.5.2-GCC-12.2.0
+Bandage/0.9.0-GCCcore-11.2.0
+Bandage/0.9.0-GCCcore-11.3.0
+barrnap/0.9-gompi-2021b
+basemap/1.3.6-foss-2022a
+bashplotlib/0.6.5-GCCcore-10.3.0
+BayesAss3-SNPs/1.1-GCC-11.3.0
+bayesforecast/1.0.1-foss-2022a-R-4.2.1
+BayesPrism/2.0-foss-2022a-R-4.2.1
+Bazel/3.7.2-GCCcore-10.2.0
+Bazel/3.7.2-GCCcore-10.3.0
+Bazel/3.7.2-GCCcore-11.2.0
+Bazel/4.2.2-GCCcore-11.2.0
+Bazel/5.1.1-GCCcore-11.3.0
+Bazel/6.3.1-GCCcore-12.3.0
+BBMap/38.87-foss-2020a
+BBMap/38.98-GCC-11.2.0
+BBMap/39.01-GCC-11.3.0
+BBMap/39.01-GCC-12.2.0
+bcbio-gff/0.6.7-foss-2021a
+bcbio-gff/0.7.0-foss-2022a
+BCFtools/1.12-GCC-10.3.0
+BCFtools/1.14-GCC-11.2.0
+BCFtools/1.15.1-GCC-11.3.0
+BCFtools/1.17-GCC-12.2.0
+BCFtools/1.18-GCC-12.3.0
+bcl2fastq2/2.20.0-GCC-10.2.0
+bcl2fastq2/2.20.0-GCC-10.3.0
+bcl2fastq2/2.20.0-GCC-11.2.0
+bcl2fastq2/2.20.0-GCC-11.3.0
+bcrypt/4.0.1-GCCcore-12.3.0
+BDBag/1.6.3-intel-2021b
+beagle-lib/3.1.2-GCC-10.2.0
+beagle-lib/3.1.2-GCC-10.3.0
+beagle-lib/4.0.0-GCC-11.3.0
+
+=== end ===

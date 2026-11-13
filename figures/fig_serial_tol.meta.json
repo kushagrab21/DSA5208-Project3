@@ -1,0 +1,53 @@
+{
+ "figure": "fig_serial_tol",
+ "script": "scripts/figures.py",
+ "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "plan": "vanda",
+ "cluster": "vanda",
+ "groups": [
+  "serial-tol"
+ ],
+ "utc": "2026-11-13T06:58:17Z",
+ "status": "filled",
+ "axes": [
+  {
+   "panel": "iterations",
+   "axis": "x",
+   "quantity": "size",
+   "scale": "log"
+  },
+  {
+   "panel": "iterations",
+   "axis": "y",
+   "quantity": "iterations",
+   "scale": "log"
+  },
+  {
+   "panel": "time",
+   "axis": "x",
+   "quantity": "size",
+   "scale": "log"
+  },
+  {
+   "panel": "time",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  }
+ ],
+ "rows": 10,
+ "sources": [
+  {
+   "path": "results/vanda/1546587.stdct-mgmt-02.csv",
+   "sha256": "81280eb2d700d72434b78ab1e81c37d3dbe83a9ff628e5d8ddc2601f4bcb6f33",
+   "rows_used": 10
+  }
+ ],
+ "binaries": [
+  "a0006417c4285eacaa10928b4550493befee52e1c3babc09d946ba40cb448849"
+ ],
+ "clusters": [
+  "vanda"
+ ],
+ "image_sha256": "08287f90bbfa487f822dac52df6b4261bf8dc06df44ca6924caea7a49c115e78"
+}

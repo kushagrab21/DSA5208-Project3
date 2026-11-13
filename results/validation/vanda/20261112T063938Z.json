@@ -1,0 +1,1031 @@
+{
+ "stamp": "20261112T063938Z",
+ "validate_sha256": "a3954e88c63db8f88237c974c66da83c86f63f2969fce9f66b01172402b603c0",
+ "launcher": "mpirun --prtemca prte_launch_agent /app1/ebapps/arches/flat-avx2/software/PRRTE/3.0.11-GCCcore-14.3.0/bin/prted -x PATH -x LD_LIBRARY_PATH -x P3_CLUSTER -x PBS_JOBID --bind-to none -x OMP_NUM_THREADS",
+ "tolerances": {
+  "order_band": [
+   1.9,
+   2.1
+  ],
+  "order_solve_tol": 1e-12,
+  "agree_iters": 25,
+  "agree_tol": 1e-10,
+  "pipe_tol": 1e-10
+ },
+ "cases": [
+  {
+   "id": "V1",
+   "name": "order-2d",
+   "purpose": "2D serial solver converges and its error against the exact solution falls as h^2",
+   "why": "the 5-/7-point stencil is second order, so halving h divides the error by 4 (order 2); solves use tol 1e-12 so the algebraic error is far below the discretisation error"
+  },
+  {
+   "id": "V2",
+   "name": "order-3d",
+   "purpose": "3D serial solver converges and its error against the exact solution falls as h^2",
+   "why": "the 5-/7-point stencil is second order, so halving h divides the error by 4 (order 2); solves use tol 1e-12 so the algebraic error is far below the discretisation error"
+  },
+  {
+   "id": "V3",
+   "name": "agree-2d",
+   "purpose": "2D parallel runs (1D/2D splits, uneven blocks, both halo variants, threads) equal the serial run to rounding",
+   "why": "after the same 25 iterations, a P-rank run differs from the 1-rank run only in the order in which the partial sums of each dot product are added (the stencil and vector updates are the same operations on the same numbers once the halos are right); CG amplifies those last-bit differences to ~1e-13 here. 1e-10 leaves a margin of more than 100x over that and is ~9 orders below the effect of one wrong halo face (~0.5)"
+  },
+  {
+   "id": "V4",
+   "name": "agree-3d",
+   "purpose": "3D parallel runs (1D/2D/3D splits, uneven blocks, both halo variants, threads) equal the serial run to rounding",
+   "why": "after the same 25 iterations, a P-rank run differs from the 1-rank run only in the order in which the partial sums of each dot product are added (the stencil and vector updates are the same operations on the same numbers once the halos are right); CG amplifies those last-bit differences to ~1e-13 here. 1e-10 leaves a margin of more than 100x over that and is ~9 orders below the effect of one wrong halo face (~0.5)"
+  },
+  {
+   "id": "V5",
+   "name": "pipelined",
+   "purpose": "pipelined CG (1 and 4 ranks) reaches the same converged answer as classic CG, 2D and 3D",
+   "why": "pipelined CG uses different recurrences, so its iterates are not rounding-equal to classic CG; only converged answers can be compared. For any x, ||x - x*||/||x*|| <= cond(A) ||b - Ax||/||b||, with cond(A) = cot^2(pi h/2) for this operator, so two converged answers must satisfy ||x_p - x_s||/||x_s|| <= cond(A) (rho_p + rho_s) / (1 - cond(A) rho_s), rho = true relative residual"
+  }
+ ],
+ "correct": {
+  "binary": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3cg",
+  "sha256": "a0006417c4285eacaa10928b4550493befee52e1c3babc09d946ba40cb448849",
+  "build": "omp=201511;offload=0;bug=0;cxx=14.3.0;mpi=Open MPI v5.0.8",
+  "passed": true,
+  "failed": [],
+  "runs": 27,
+  "details": {
+   "V1": {
+    "name": "order-2d",
+    "ok": true,
+    "items": [
+     {
+      "kind": "solve",
+      "dim": 2,
+      "n": 31,
+      "iters": 118,
+      "converged": true,
+      "err_max": 9.070087e-05,
+      "err_l2": 4.74638e-05,
+      "true_rel_res": 7.473377e-13
+     },
+     {
+      "kind": "solve",
+      "dim": 2,
+      "n": 63,
+      "iters": 239,
+      "converged": true,
+      "err_max": 2.27137e-05,
+      "err_l2": 1.186698e-05,
+      "true_rel_res": 9.535957e-13
+     },
+     {
+      "kind": "solve",
+      "dim": 2,
+      "n": 127,
+      "iters": 481,
+      "converged": true,
+      "err_max": 5.678538e-06,
+      "err_l2": 2.966807e-06,
+      "true_rel_res": 2.940508e-12
+     },
+     {
+      "kind": "order",
+      "dim": 2,
+      "n_from": 31,
+      "n_to": 63,
+      "order": 1.997553652817835,
+      "ok": true
+     },
+     {
+      "kind": "order",
+      "dim": 2,
+      "n_from": 63,
+      "n_to": 127,
+      "order": 1.9999712908213887,
+      "ok": true
+     }
+    ]
+   },
+   "V2": {
+    "name": "order-3d",
+    "ok": true,
+    "items": [
+     {
+      "kind": "solve",
+      "dim": 3,
+      "n": 15,
+      "iters": 73,
+      "converged": true,
+      "err_max": 0.0001559551,
+      "err_l2": 5.881627e-05,
+      "true_rel_res": 9.760557e-13
+     },
+     {
+      "kind": "solve",
+      "dim": 3,
+      "n": 31,
+      "iters": 150,
+      "converged": true,
+      "err_max": 3.929274e-05,
+      "err_l2": 1.470915e-05,
+      "true_rel_res": 9.697831e-13
+     },
+     {
+      "kind": "solve",
+      "dim": 3,
+      "n": 63,
+      "iters": 309,
+      "converged": true,
+      "err_max": 9.823844e-06,
+      "err_l2": 3.677579e-06,
+      "true_rel_res": 1.049e-12
+     },
+     {
+      "kind": "order",
+      "dim": 3,
+      "n_from": 15,
+      "n_to": 31,
+      "order": 1.9887960522457122,
+      "ok": true
+     },
+     {
+      "kind": "order",
+      "dim": 3,
+      "n_from": 31,
+      "n_to": 63,
+      "order": 1.9999032183408187,
+      "ok": true
+     }
+    ]
+   },
+   "V3": {
+    "name": "agree-2d",
+    "ok": true,
+    "items": [
+     {
+      "kind": "agree",
+      "dim": 2,
+      "n": 50,
+      "ranks": 2,
+      "threads": 1,
+      "decomp": 1,
+      "halo": "blocking",
+      "diff": 4.59632862562409e-15,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 2,
+      "n": 50,
+      "ranks": 3,
+      "threads": 1,
+      "decomp": 1,
+      "halo": "overlap",
+      "diff": 5.856706193359849e-15,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 2,
+      "n": 50,
+      "ranks": 4,
+      "threads": 1,
+      "decomp": 2,
+      "halo": "blocking",
+      "diff": 5.65685474396252e-15,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 2,
+      "n": 50,
+      "ranks": 6,
+      "threads": 1,
+      "decomp": 2,
+      "halo": "overlap",
+      "diff": 6.091202724031234e-15,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 2,
+      "n": 50,
+      "ranks": 2,
+      "threads": 2,
+      "decomp": 2,
+      "halo": "overlap",
+      "diff": 4.9231654157834464e-14,
+      "ok": true
+     }
+    ]
+   },
+   "V4": {
+    "name": "agree-3d",
+    "ok": true,
+    "items": [
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 4,
+      "threads": 1,
+      "decomp": 1,
+      "halo": "blocking",
+      "diff": 1.2549527257693936e-13,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 4,
+      "threads": 1,
+      "decomp": 2,
+      "halo": "overlap",
+      "diff": 5.850355906424168e-14,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 6,
+      "threads": 1,
+      "decomp": 3,
+      "halo": "overlap",
+      "diff": 2.1351912664909338e-13,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 8,
+      "threads": 1,
+      "decomp": 3,
+      "halo": "blocking",
+      "diff": 5.532990365402684e-13,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 8,
+      "threads": 1,
+      "decomp": 3,
+      "halo": "overlap",
+      "diff": 8.441017497804684e-13,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "dim": 3,
+      "n": 21,
+      "ranks": 2,
+      "threads": 2,
+      "decomp": 3,
+      "halo": "blocking",
+      "diff": 2.1795581765962325e-13,
+      "ok": true
+     }
+    ]
+   },
+   "V5": {
+    "name": "pipelined",
+    "ok": true,
+    "items": [
+     {
+      "kind": "pipelined",
+      "dim": 2,
+      "n": 63,
+      "ranks": 1,
+      "halo": "blocking",
+      "cond": 1659.3796462927587,
+      "iters_classic": 215,
+      "iters_pipelined": 215,
+      "rho_s": 8.474345e-11,
+      "rho_p": 1.153582e-10,
+      "converged": true,
+      "diff": 1.1784558248521118e-12,
+      "bound": 3.3204465189223304e-07,
+      "ok": true
+     },
+     {
+      "kind": "pipelined",
+      "dim": 2,
+      "n": 63,
+      "ranks": 4,
+      "halo": "overlap",
+      "cond": 1659.3796462927587,
+      "iters_classic": 215,
+      "iters_pipelined": 215,
+      "rho_s": 8.474345e-11,
+      "rho_p": 1.093958e-10,
+      "converged": true,
+      "diff": 9.151101379279466e-13,
+      "bound": 3.2215076529788336e-07,
+      "ok": true
+     },
+     {
+      "kind": "pipelined",
+      "dim": 3,
+      "n": 31,
+      "ranks": 1,
+      "halo": "blocking",
+      "cond": 414.3450622319015,
+      "iters_classic": 132,
+      "iters_pipelined": 132,
+      "rho_s": 9.336227e-11,
+      "rho_p": 9.341822e-11,
+      "converged": true,
+      "diff": 3.595076966119973e-14,
+      "bound": 7.739157674658596e-08,
+      "ok": true
+     },
+     {
+      "kind": "pipelined",
+      "dim": 3,
+      "n": 31,
+      "ranks": 4,
+      "halo": "overlap",
+      "cond": 414.3450622319015,
+      "iters_classic": 132,
+      "iters_pipelined": 132,
+      "rho_s": 9.336227e-11,
+      "rho_p": 9.343217e-11,
+      "converged": true,
+      "diff": 5.728522185826957e-14,
+      "bound": 7.739735686042768e-08,
+      "ok": true
+     }
+    ]
+   }
+  }
+ },
+ "bugs": [
+  {
+   "binary": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3cg_bug1",
+   "sha256": "fc740e0b9ea9486da9b1f02b2ed0893afee16bc1af36fada48fcb536019b109c",
+   "build": "omp=201511;offload=0;bug=1;cxx=14.3.0;mpi=Open MPI v5.0.8",
+   "refused": true,
+   "refused_by": [
+    "V3",
+    "V4",
+    "V5"
+   ],
+   "runs": 25,
+   "details": {
+    "V1": {
+     "name": "order-2d",
+     "ok": true,
+     "items": [
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 31,
+       "iters": 118,
+       "converged": true,
+       "err_max": 9.070087e-05,
+       "err_l2": 4.74638e-05,
+       "true_rel_res": 7.473377e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 63,
+       "iters": 239,
+       "converged": true,
+       "err_max": 2.27137e-05,
+       "err_l2": 1.186698e-05,
+       "true_rel_res": 9.535957e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 127,
+       "iters": 481,
+       "converged": true,
+       "err_max": 5.678538e-06,
+       "err_l2": 2.966807e-06,
+       "true_rel_res": 2.940508e-12
+      },
+      {
+       "kind": "order",
+       "dim": 2,
+       "n_from": 31,
+       "n_to": 63,
+       "order": 1.997553652817835,
+       "ok": true
+      },
+      {
+       "kind": "order",
+       "dim": 2,
+       "n_from": 63,
+       "n_to": 127,
+       "order": 1.9999712908213887,
+       "ok": true
+      }
+     ]
+    },
+    "V2": {
+     "name": "order-3d",
+     "ok": true,
+     "items": [
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 15,
+       "iters": 73,
+       "converged": true,
+       "err_max": 0.0001559551,
+       "err_l2": 5.881627e-05,
+       "true_rel_res": 9.760557e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 31,
+       "iters": 150,
+       "converged": true,
+       "err_max": 3.929274e-05,
+       "err_l2": 1.470915e-05,
+       "true_rel_res": 9.697831e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 63,
+       "iters": 309,
+       "converged": true,
+       "err_max": 9.823844e-06,
+       "err_l2": 3.677579e-06,
+       "true_rel_res": 1.049e-12
+      },
+      {
+       "kind": "order",
+       "dim": 3,
+       "n_from": 15,
+       "n_to": 31,
+       "order": 1.9887960522457122,
+       "ok": true
+      },
+      {
+       "kind": "order",
+       "dim": 3,
+       "n_from": 31,
+       "n_to": 63,
+       "order": 1.9999032183408187,
+       "ok": true
+      }
+     ]
+    },
+    "V3": {
+     "name": "agree-2d",
+     "ok": false,
+     "items": [
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 2,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "blocking",
+       "diff": 0.5768375726223033,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 3,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "overlap",
+       "diff": 0.7619005011927104,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "blocking",
+       "diff": 0.5768375726223032,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 6,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.7619005011927104,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 2,
+       "threads": 2,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.5768375726223032,
+       "ok": false
+      }
+     ]
+    },
+    "V4": {
+     "name": "agree-3d",
+     "ok": false,
+     "items": [
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "blocking",
+       "diff": 0.7484023658661325,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.5010564391091412,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 6,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "overlap",
+       "diff": 0.653238403797292,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 8,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "blocking",
+       "diff": 0.5010564391091425,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 8,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "overlap",
+       "diff": 0.5010564391091417,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 2,
+       "threads": 2,
+       "decomp": 3,
+       "halo": "blocking",
+       "diff": 0.5010564391091424,
+       "ok": false
+      }
+     ]
+    },
+    "V5": {
+     "name": "pipelined",
+     "ok": false,
+     "items": [
+      {
+       "kind": "pipelined",
+       "dim": 2,
+       "n": 63,
+       "ranks": 1,
+       "halo": "blocking",
+       "cond": 1659.3796462927587,
+       "iters_classic": 215,
+       "iters_pipelined": 215,
+       "rho_s": 8.474345e-11,
+       "rho_p": 1.153582e-10,
+       "converged": true,
+       "diff": 1.1784558248521118e-12,
+       "bound": 3.3204465189223304e-07,
+       "ok": true
+      },
+      {
+       "kind": "pipelined",
+       "dim": 2,
+       "n": 63,
+       "ranks": 4,
+       "halo": "overlap",
+       "cond": 1659.3796462927587,
+       "iters_classic": 215,
+       "iters_pipelined": 20000,
+       "rho_s": 8.474345e-11,
+       "rho_p": 78.89419,
+       "converged": false,
+       "diff": 1.2143415582147463,
+       "bound": 130915.431506426,
+       "ok": false
+      },
+      {
+       "kind": "pipelined",
+       "dim": 3,
+       "n": 31,
+       "ranks": 1,
+       "halo": "blocking",
+       "cond": 414.3450622319015,
+       "iters_classic": 132,
+       "iters_pipelined": 132,
+       "rho_s": 9.336227e-11,
+       "rho_p": 9.341822e-11,
+       "converged": true,
+       "diff": 3.595076966119973e-14,
+       "bound": 7.739157674658596e-08,
+       "ok": true
+      },
+      {
+       "kind": "pipelined",
+       "dim": 3,
+       "n": 31,
+       "ranks": 4,
+       "halo": "overlap",
+       "cond": 414.3450622319015,
+       "iters_classic": 132,
+       "iters_pipelined": 20000,
+       "rho_s": 9.336227e-11,
+       "rho_p": 19.01892,
+       "converged": false,
+       "diff": 0.99908772924172,
+       "bound": 7880.395895869017,
+       "ok": false
+      }
+     ]
+    }
+   }
+  },
+  {
+   "binary": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3cg_bug2",
+   "sha256": "0d8688d77e39b75da795e4016bc1ec97e99fe28c9b66c217533f8127c9b5f5c0",
+   "build": "omp=201511;offload=0;bug=2;cxx=14.3.0;mpi=Open MPI v5.0.8",
+   "refused": true,
+   "refused_by": [
+    "V3",
+    "V4",
+    "V5"
+   ],
+   "runs": 25,
+   "details": {
+    "V1": {
+     "name": "order-2d",
+     "ok": true,
+     "items": [
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 31,
+       "iters": 118,
+       "converged": true,
+       "err_max": 9.070087e-05,
+       "err_l2": 4.74638e-05,
+       "true_rel_res": 7.473377e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 63,
+       "iters": 239,
+       "converged": true,
+       "err_max": 2.27137e-05,
+       "err_l2": 1.186698e-05,
+       "true_rel_res": 9.535957e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 2,
+       "n": 127,
+       "iters": 481,
+       "converged": true,
+       "err_max": 5.678538e-06,
+       "err_l2": 2.966807e-06,
+       "true_rel_res": 2.940508e-12
+      },
+      {
+       "kind": "order",
+       "dim": 2,
+       "n_from": 31,
+       "n_to": 63,
+       "order": 1.997553652817835,
+       "ok": true
+      },
+      {
+       "kind": "order",
+       "dim": 2,
+       "n_from": 63,
+       "n_to": 127,
+       "order": 1.9999712908213887,
+       "ok": true
+      }
+     ]
+    },
+    "V2": {
+     "name": "order-3d",
+     "ok": true,
+     "items": [
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 15,
+       "iters": 73,
+       "converged": true,
+       "err_max": 0.0001559551,
+       "err_l2": 5.881627e-05,
+       "true_rel_res": 9.760557e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 31,
+       "iters": 150,
+       "converged": true,
+       "err_max": 3.929274e-05,
+       "err_l2": 1.470915e-05,
+       "true_rel_res": 9.697831e-13
+      },
+      {
+       "kind": "solve",
+       "dim": 3,
+       "n": 63,
+       "iters": 309,
+       "converged": true,
+       "err_max": 9.823844e-06,
+       "err_l2": 3.677579e-06,
+       "true_rel_res": 1.049e-12
+      },
+      {
+       "kind": "order",
+       "dim": 3,
+       "n_from": 15,
+       "n_to": 31,
+       "order": 1.9887960522457122,
+       "ok": true
+      },
+      {
+       "kind": "order",
+       "dim": 3,
+       "n_from": 31,
+       "n_to": 63,
+       "order": 1.9999032183408187,
+       "ok": true
+      }
+     ]
+    },
+    "V3": {
+     "name": "agree-2d",
+     "ok": false,
+     "items": [
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 2,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "blocking",
+       "diff": 0.545903922140104,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 3,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "overlap",
+       "diff": 0.7303660603851889,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "blocking",
+       "diff": 0.545903922140104,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 6,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.730366060385189,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 2,
+       "n": 50,
+       "ranks": 2,
+       "threads": 2,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.5459039221401037,
+       "ok": false
+      }
+     ]
+    },
+    "V4": {
+     "name": "agree-3d",
+     "ok": false,
+     "items": [
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 1,
+       "halo": "blocking",
+       "diff": 0.7196393447656411,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 4,
+       "threads": 1,
+       "decomp": 2,
+       "halo": "overlap",
+       "diff": 0.45586626325315743,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 6,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "overlap",
+       "diff": 0.5971271125647345,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 8,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "blocking",
+       "diff": 0.4558662632531572,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 8,
+       "threads": 1,
+       "decomp": 3,
+       "halo": "overlap",
+       "diff": 0.45586626325315743,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "dim": 3,
+       "n": 21,
+       "ranks": 2,
+       "threads": 2,
+       "decomp": 3,
+       "halo": "blocking",
+       "diff": 0.45586626325315727,
+       "ok": false
+      }
+     ]
+    },
+    "V5": {
+     "name": "pipelined",
+     "ok": false,
+     "items": [
+      {
+       "kind": "pipelined",
+       "dim": 2,
+       "n": 63,
+       "ranks": 1,
+       "halo": "blocking",
+       "cond": 1659.3796462927587,
+       "iters_classic": 215,
+       "iters_pipelined": 215,
+       "rho_s": 8.474345e-11,
+       "rho_p": 1.153582e-10,
+       "converged": true,
+       "diff": 1.1784558248521118e-12,
+       "bound": 3.3204465189223304e-07,
+       "ok": true
+      },
+      {
+       "kind": "pipelined",
+       "dim": 2,
+       "n": 63,
+       "ranks": 4,
+       "halo": "overlap",
+       "cond": 1659.3796462927587,
+       "iters_classic": 215,
+       "iters_pipelined": 20000,
+       "rho_s": 8.474345e-11,
+       "rho_p": 63.06509,
+       "converged": false,
+       "diff": 0.8226073772355293,
+       "bound": 104648.94145365861,
+       "ok": false
+      },
+      {
+       "kind": "pipelined",
+       "dim": 3,
+       "n": 31,
+       "ranks": 1,
+       "halo": "blocking",
+       "cond": 414.3450622319015,
+       "iters_classic": 132,
+       "iters_pipelined": 132,
+       "rho_s": 9.336227e-11,
+       "rho_p": 9.341822e-11,
+       "converged": true,
+       "diff": 3.595076966119973e-14,
+       "bound": 7.739157674658596e-08,
+       "ok": true
+      },
+      {
+       "kind": "pipelined",
+       "dim": 3,
+       "n": 31,
+       "ranks": 4,
+       "halo": "overlap",
+       "cond": 414.3450622319015,
+       "iters_classic": 132,
+       "iters_pipelined": 20000,
+       "rho_s": 9.336227e-11,
+       "rho_p": 55.91844,
+       "converged": false,
+       "diff": 1.1060204186851235,
+       "bound": 23169.530398044182,
+       "ok": false
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "info": {
+  "dim": 2,
+  "n": 63,
+  "ranks": 4,
+  "tol": 1e-14,
+  "maxit": 3000,
+  "classic": {
+   "iters": 258,
+   "converged": true,
+   "rel_res": 9.937341e-15,
+   "true_rel_res": 5.264897e-13
+  },
+  "pipelined": {
+   "iters": 3000,
+   "converged": false,
+   "rel_res": 2.869841e-12,
+   "true_rel_res": 1.537059e-09
+  }
+ },
+ "cluster": "vanda",
+ "host": "CN-152",
+ "mode": "qualify",
+ "qualified": true
+}

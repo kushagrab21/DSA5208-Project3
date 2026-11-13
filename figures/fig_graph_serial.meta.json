@@ -1,0 +1,53 @@
+{
+ "figure": "fig_graph_serial",
+ "script": "scripts/figures.py",
+ "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "plan": "vanda",
+ "cluster": "vanda",
+ "groups": [
+  "graph-serial"
+ ],
+ "utc": "2026-11-13T06:58:18Z",
+ "status": "filled",
+ "axes": [
+  {
+   "panel": "nonzeros",
+   "axis": "x",
+   "quantity": "size",
+   "scale": "log"
+  },
+  {
+   "panel": "nonzeros",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  },
+  {
+   "panel": "vertices",
+   "axis": "x",
+   "quantity": "size",
+   "scale": "log"
+  },
+  {
+   "panel": "vertices",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  }
+ ],
+ "rows": 36,
+ "sources": [
+  {
+   "path": "results/vanda/1546820.stdct-mgmt-02.graph.csv",
+   "sha256": "968bfaa416c76b298abd57967be9143e6aebe42eec1a9bd3927e8cfa7a567dd2",
+   "rows_used": 36
+  }
+ ],
+ "binaries": [
+  "9da57b11ddd28571469c01612673917f297e113f2d4f013064b13c73005ded69"
+ ],
+ "clusters": [
+  "vanda"
+ ],
+ "image_sha256": "54006790e0fd37e97359270d2227df331270bfe5e4b9909ed79d27404709f43f"
+}

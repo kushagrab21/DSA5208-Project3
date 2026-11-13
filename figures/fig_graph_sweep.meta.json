@@ -1,0 +1,101 @@
+{
+ "figure": "fig_graph_sweep",
+ "script": "scripts/figures.py",
+ "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "plan": "vanda",
+ "cluster": "vanda",
+ "groups": [
+  "graph-sweep"
+ ],
+ "utc": "2026-11-13T06:58:18Z",
+ "status": "filled",
+ "axes": [
+  {
+   "panel": "a-accuracy",
+   "axis": "x",
+   "quantity": "a",
+   "scale": "log"
+  },
+  {
+   "panel": "a-accuracy",
+   "axis": "y",
+   "quantity": "accuracy",
+   "scale": "linear"
+  },
+  {
+   "panel": "a-iterations",
+   "axis": "x",
+   "quantity": "a",
+   "scale": "log"
+  },
+  {
+   "panel": "a-iterations",
+   "axis": "y",
+   "quantity": "iterations",
+   "scale": "log"
+  },
+  {
+   "panel": "s-accuracy",
+   "axis": "x",
+   "quantity": "s",
+   "scale": "log"
+  },
+  {
+   "panel": "s-accuracy",
+   "axis": "y",
+   "quantity": "accuracy",
+   "scale": "linear"
+  },
+  {
+   "panel": "s-iterations",
+   "axis": "x",
+   "quantity": "s",
+   "scale": "log"
+  },
+  {
+   "panel": "s-iterations",
+   "axis": "y",
+   "quantity": "iterations",
+   "scale": "log"
+  },
+  {
+   "panel": "keep-accuracy",
+   "axis": "x",
+   "quantity": "keep",
+   "scale": "log"
+  },
+  {
+   "panel": "keep-accuracy",
+   "axis": "y",
+   "quantity": "accuracy",
+   "scale": "linear"
+  },
+  {
+   "panel": "keep-iterations",
+   "axis": "x",
+   "quantity": "keep",
+   "scale": "log"
+  },
+  {
+   "panel": "keep-iterations",
+   "axis": "y",
+   "quantity": "iterations",
+   "scale": "log"
+  }
+ ],
+ "rows": 82,
+ "sources": [
+  {
+   "path": "results/vanda/1546900.stdct-mgmt-02.graph.csv",
+   "sha256": "5b40fa37eda67649176498b0a7e6268eeeadb6560a3cbb7027fa5660377759e6",
+   "rows_used": 82
+  }
+ ],
+ "binaries": [
+  "9da57b11ddd28571469c01612673917f297e113f2d4f013064b13c73005ded69"
+ ],
+ "clusters": [
+  "vanda"
+ ],
+ "image_sha256": "115e3f9331941b25c4ccd7b34c96a3dfc4e4e492b7df421224879e0930a03d82"
+}

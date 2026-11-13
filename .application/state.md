@@ -281,6 +281,20 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   appendix on p26, 84 pages. requirements_check knows \figslotfloat.
 - Not done (deferred by the parent): recommendation 4 (margins) until the cluster data are in.
 
+## Turn 13 (13 Nov 2026): the repository as a private archive (.application/repo_transfer.md, binding)
+- .gitignore rewritten with a reason per entry. Tracked now: results/ (run records, validation .json/.csv, job ledger,
+  node descriptions), figures/*.pdf and their .meta.json, report/DSA5208_Project3_Report.pdf, report/generated/ (except
+  listing/, its diff shows which numbers changed). Ignored: bin/, _build/, __pycache__/, .venv/, data/, cluster/logs/,
+  cluster/generated/ (regenerated from the plan), results/.staging/ (refilled by fetch.sh), results/ops_tests/ and
+  results/validation/**/*.txt (terminal transcripts; requirements_check counts them as log files), figures/dev/,
+  report/*.log, report/generated/listing/, .DS_Store.
+- Checked: no private keys or tokens in the tracked set ("password" appears only in prose), no file over 5 MB.
+  The PBS project string (the user's NUS account) is in config/run_plan.vanda.json and RUNBOOK, as the scripts need it.
+- README rewritten for a reader without context: what the program solves, where things are, why numbers are generated,
+  why the plan was fixed in advance, why a program is timed only after passing the tests on that cluster, building
+  locally, running on Vanda, adding the remaining runs, the AI declaration (Section 10 wording). No measured results.
+- process/ (copy of the process notes) from repo_transfer.md was not part of this brief; left to the parent.
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.

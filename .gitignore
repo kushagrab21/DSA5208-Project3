@@ -1,19 +1,44 @@
-# build outputs
+# What stays out of the repository, and why. Everything else is tracked, including the run records in results/,
+# the report's figures and the built report PDF, because those cannot be recreated without the cluster time that
+# produced them.
+
+# Build outputs: rebuilt from src/ by scripts/build.sh or CMake on any machine.
 /bin/
 _build/
 __pycache__/
 .venv/
-# generated data: kept on disk, packaging decided at report time (no log files or terminal output in the submission)
-results/
-cluster/generated/
-figures/dev/
-.DS_Store
-# generated report artefacts (rebuilt by scripts/make_report.sh from results/ and the scripts)
-report/generated/
-report/*.pdf
-report/*.log
-figures/*.pdf
-figures/*.meta.json
-# PBS job logs fetched for diagnosis (never part of the submission)
-cluster/logs/
+
+# Downloaded SNAP graphs: large, not ours to redistribute, and fetched again on the cluster by scripts/fetch_snap.sh.
 data/
+
+# PBS terminal output of the cluster jobs. The grader asks for no log files, and everything the report uses is in the
+# run records under results/.
+cluster/logs/
+
+# Job scripts written from the plan by checks/run_plan.py pbs. They are regenerated from config/ on demand.
+cluster/generated/
+
+# The copy that cluster/ops/fetch.sh empties and refills on every fetch. The merged records are in results/<cluster>/.
+results/.staging/
+
+# Transcripts of the fake-cluster tests (cluster/ops/test_fake_cluster.sh). They are terminal output, rewritten by
+# every test run, and no report number comes from them.
+results/ops_tests/
+
+# Terminal transcripts of the validation runs. The .json and .csv files next to them hold the same results and are
+# what the report reads, and the grader asks for no terminal output.
+results/validation/**/*.txt
+
+# Draft figures drawn during development. The report uses only figures/*.pdf.
+figures/dev/
+
+# LaTeX log of the report build.
+report/*.log
+
+# ASCII copies of the appendix files, rewritten by scripts/make_report.sh from the sources on every build. The rest
+# of report/generated/ (the values and tables) is tracked, because the tracked PDF depends on it and its diff shows
+# which report numbers changed when new run records arrive.
+report/generated/listing/
+
+# macOS folder metadata.
+.DS_Store

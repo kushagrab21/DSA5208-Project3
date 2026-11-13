@@ -1,0 +1,16 @@
+pbs_jobid,plan,job,event,utc,nodes,ncpus_per_node,gpus_per_node,host,commit,cells,select,walltime,est_core_hours,state,exit_status,walltime_used,core_hours_used,note
+1040043.venus01,atlas,atlas-validate,submit,2026-11-11T19:01:20Z,1,12,0,atlas8,38a85770a3f3222e5f9d0d168b9f9ce7c068fa3a,,select=1:ncpus=12:mpiprocs=12:mem=38gb,00:30:00,3.00,,,,,worst=6.00 kind=validate
+1040043.venus01,atlas,atlas-validate,final,2026-11-11T19:01:40Z,1,12,,,,,,,,F,127,0:00:11,0.04,qstat; 0 qualified binaries; FAILED (exit 127); no qualified binary recorded
+1040044.venus01,atlas,atlas-validate,submit,2026-11-11T19:03:30Z,1,12,0,atlas8,8a08fc68dd0c50b5cf496e3c34477a686a830441,,select=1:ncpus=12:mpiprocs=12:mem=38gb,00:30:00,3.00,,,,,worst=6.00 kind=validate
+1040044.venus01,atlas,atlas-validate,final,2026-11-11T19:05:20Z,1,12,,,,,,,,F,2,0:01:09,0.23,qstat; 0 qualified binaries; FAILED (exit 2); no qualified binary recorded
+1040044.venus01,atlas,atlas-validate,start,2026-11-11T19:03:48Z,1,12,0,cnode-33-43-51,,,,,,,,,,
+1040044.venus01,atlas,atlas-validate,end,2026-11-11T19:04:42Z,1,12,0,cnode-33-43-51,,,,,,,,,,
+1040045.venus01,atlas,atlas-validate,submit,2026-11-11T19:07:18Z,1,12,0,atlas8,9c63f168701f590c669aecae1333c8cd81ba4683,,select=1:ncpus=12:mpiprocs=12:mem=38gb,00:30:00,3.00,,,,,worst=6.00 kind=validate
+1040045.venus01,atlas,atlas-validate,final,2026-11-11T19:09:46Z,1,12,,,,,,,,F,2,0:01:53,0.38,qstat; 0 qualified binaries; FAILED (exit 2); no qualified binary recorded
+1040045.venus01,atlas,atlas-validate,start,2026-11-11T19:07:48Z,1,12,0,cnode-33-43-20,,,,,,,,,,
+1040045.venus01,atlas,atlas-validate,end,2026-11-11T19:09:12Z,1,12,0,cnode-33-43-20,,,,,,,,,,
+1040046.venus01,atlas,atlas-validate,submit,2026-11-11T19:10:49Z,1,12,0,atlas8,3023a295dc5299be370ea50044ad5ddcc7a77c97,,select=1:ncpus=12:mpiprocs=12:mem=38gb,00:30:00,3.00,,,,,worst=6.00 kind=validate
+1040046.venus01,atlas,atlas-validate,final,2026-11-11T19:15:36Z,1,12,,,,,,,,F,0,0:03:55,0.78,qstat; 1 qualified binary
+1040046.venus01,atlas,atlas-validate,start,2026-11-11T19:11:06Z,1,12,0,cnode-33-43-20,,,,,,,,,,
+1040046.venus01,atlas,atlas-validate,end,2026-11-11T19:14:47Z,1,12,0,cnode-33-43-20,,,,,,,,,,
+1040047.venus01,atlas,atlas-calibrate,submit,2026-11-11T19:16:00Z,1,96,0,atlas8,3023a295dc5299be370ea50044ad5ddcc7a77c97,2d-n8192-r1x1-N1-d2-clas-bloc-i100;3d-n406-r1x1-N1-d3-clas-bloc-i100;2d-n8192-r96x1-N1-d2-clas-bloc-i100;3d-n406-r96x1-N1-d3-clas-bloc-i100,select=1:ncpus=96:mpiprocs=96:mem=298gb,00:25:00,19.78,,,,,worst=39.56 kind=calibration

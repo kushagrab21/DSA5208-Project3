@@ -1,0 +1,576 @@
+{
+ "stamp": "20261112T072321Z",
+ "validate_sha256": "c450cb291f0a1180e9ae1005253db8182ae9969a0999e9bfefa58e4c4616b956",
+ "launcher": "mpirun --prtemca prte_launch_agent /app1/ebapps/arches/flat-avx2/software/PRRTE/3.0.11-GCCcore-14.3.0/bin/prted -x PATH -x LD_LIBRARY_PATH -x P3_CLUSTER -x PBS_JOBID --bind-to none -x OMP_NUM_THREADS",
+ "data": "/home/svu/bhatnagar.kushagra.m/p3data",
+ "convert": {
+  "path": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3convert",
+  "sha256": "5347e86b11fb8302c79dc9ca15407a96f81c58045e1fcf4856d3a710001f76fa"
+ },
+ "tolerances": {
+  "agree_iters": 10,
+  "agree_tol": 1e-10,
+  "spmv_tol": 1e-14,
+  "conv_tol": 1e-12,
+  "dense_tol": 1e-10,
+  "dense_solve_tol": 1e-13,
+  "dense_a": 0.5
+ },
+ "cases": [
+  {
+   "id": "G1",
+   "name": "agree-email",
+   "purpose": "on email-Eu-core, the parallel SpMV and 10 CG iterations (classic and pipelined; 2-5 ranks, threads; rows/nnz partitions; alltoallv/neighbor/overlap exchange; natural and BFS order) equal the 1-rank run to rounding, and converged parallel answers are within the condition-number bound of the 1-rank answer",
+   "why": "SpMV: every y_i = (d_i + a) x_i - sum of the neighbours' x_j is the same floating-point sum in every partition and exchange (rows keep their neighbour order), so natural-order layouts agree bitwise and the BFS-numbered file, whose rows list the same neighbours in another order, agrees to rounding (~1e-15); 1e-14 leaves a margin, while one missing ghost changes y_i by a whole x_j. CG after 10 iterations: runs differ only in the order in which the dot products' partial sums are added (~1e-15 here); 1e-10 is far above that and far below the effect of one wrong ghost. Measured on email-Eu-core, that rounding difference grows about 1000x every 5 iterations once CG has resolved the hub eigenvalues (1e-13 at 15, 1e-10 at 20, 1e-7 at 25 iterations; also between 1 and 2 threads on one rank), so a fixed-iteration comparison is sharp only up to ~10 iterations. Converged answers are compared like V5: ||x_P - x_1||/||x_1|| <= c (rho_P + rho_1)/(1 - c rho_1), rho = true relative residual, with c = (2 d_max + a)/a >= cond(L + aI) (Gershgorin: lambda_max(L) <= 2 d_max)"
+  },
+  {
+   "id": "G2",
+   "name": "dense-tiny",
+   "purpose": "on a hand-made graph (two 5-cliques, a bridge, a tail, a self-loop, a duplicate edge), the converter's counts are as constructed and x matches a dense solve on 1-3 ranks; labels are all correct",
+   "why": "for the tiny graph cond(L + aI) <= (2 d_max + a)/a = 21 (d_max = 5, a = 0.5), and the solves stop at a relative residual of 1e-13, so the relative error is at most ~21 x 1e-13 = 2e-12; 1e-10 leaves a 50x margin; a lost ghost or a wrong edge changes x by more than 1e-3"
+  }
+ ],
+ "correct": {
+  "binary": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3graph",
+  "sha256": "9da57b11ddd28571469c01612673917f297e113f2d4f013064b13c73005ded69",
+  "build": "omp=201511;offload=0;graph=1;bug=0;cxx=14.3.0;mpi=Open MPI v5.0.8",
+  "passed": true,
+  "failed": [],
+  "runs": 17,
+  "details": {
+   "G1": {
+    "name": "agree-email",
+    "ok": true,
+    "items": [
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 2,
+      "threads": 1,
+      "order": "natural",
+      "part": "rows",
+      "exchange": "alltoallv",
+      "spmv_diff": 0.0,
+      "x_diff": 1.2592285333325899e-15,
+      "ghosts": 929,
+      "edge_cut": 4806,
+      "nnz_imbalance": 1.583557,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 3,
+      "threads": 1,
+      "order": "natural",
+      "part": "nnz",
+      "exchange": "neighbor",
+      "spmv_diff": 0.0,
+      "x_diff": 2.010498019824885e-15,
+      "ghosts": 1729,
+      "edge_cut": 10081,
+      "nnz_imbalance": 1.004225,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 4,
+      "threads": 1,
+      "order": "natural",
+      "part": "rows",
+      "exchange": "overlap",
+      "spmv_diff": 0.0,
+      "x_diff": 1.6978045575333687e-15,
+      "ghosts": 2375,
+      "edge_cut": 9939,
+      "nnz_imbalance": 1.851447,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 4,
+      "threads": 2,
+      "order": "natural",
+      "part": "nnz",
+      "exchange": "alltoallv",
+      "spmv_diff": 0.0,
+      "x_diff": 2.840470034949146e-15,
+      "ghosts": 2488,
+      "edge_cut": 11523,
+      "nnz_imbalance": 1.003109,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 5,
+      "threads": 1,
+      "order": "bfs",
+      "part": "nnz",
+      "exchange": "neighbor",
+      "spmv_diff": 2.3293955672437677e-15,
+      "x_diff": 2.9226135862631684e-15,
+      "ghosts": 3028,
+      "edge_cut": 11461,
+      "nnz_imbalance": 1.019075,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "classic",
+      "ranks": 3,
+      "threads": 2,
+      "order": "bfs",
+      "part": "rows",
+      "exchange": "overlap",
+      "spmv_diff": 2.3293955672437677e-15,
+      "x_diff": 2.7549952054810944e-15,
+      "ghosts": 1567,
+      "edge_cut": 8247,
+      "nnz_imbalance": 1.611415,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "pipelined",
+      "ranks": 4,
+      "threads": 1,
+      "order": "natural",
+      "part": "nnz",
+      "exchange": "overlap",
+      "spmv_diff": 0.0,
+      "x_diff": 1.3864381004624319e-15,
+      "ghosts": 2488,
+      "edge_cut": 11523,
+      "nnz_imbalance": 1.003109,
+      "ok": true
+     },
+     {
+      "kind": "agree",
+      "cg": "pipelined",
+      "ranks": 3,
+      "threads": 1,
+      "order": "bfs",
+      "part": "rows",
+      "exchange": "neighbor",
+      "spmv_diff": 2.3293955672437677e-15,
+      "x_diff": 3.808692936972952e-15,
+      "ghosts": 1567,
+      "edge_cut": 8247,
+      "nnz_imbalance": 1.611415,
+      "ok": true
+     },
+     {
+      "kind": "converged",
+      "ranks": 4,
+      "order": "natural",
+      "part": "rows",
+      "exchange": "overlap",
+      "cg": "classic",
+      "diff": 4.314510028707395e-14,
+      "bound": 1.3540152610299358e-09,
+      "rho": 9.655814e-13,
+      "rho_ref": 9.939197e-13,
+      "accuracy": 0.7583643,
+      "accuracy_ref": 0.7583643,
+      "ok": true
+     },
+     {
+      "kind": "converged",
+      "ranks": 3,
+      "order": "bfs",
+      "part": "nnz",
+      "exchange": "neighbor",
+      "cg": "pipelined",
+      "diff": 4.5543340162058325e-11,
+      "bound": 6.293233579449184e-07,
+      "rho": 9.09749e-10,
+      "rho_ref": 9.939197e-13,
+      "accuracy": 0.7583643,
+      "accuracy_ref": 0.7583643,
+      "ok": true
+     }
+    ]
+   },
+   "G2": {
+    "name": "dense-tiny",
+    "ok": true,
+    "items": [
+     {
+      "kind": "convert",
+      "meta": {
+       "schema": "p3graphmeta-1",
+       "name": "tiny",
+       "edge_lines": 26,
+       "comment_lines": 2,
+       "malformed_lines": 0,
+       "self_loops_dropped": 2,
+       "duplicate_entries_dropped": 2,
+       "vertices": 13,
+       "edges": 23,
+       "nonzeros_offdiag": 46,
+       "isolated_vertices": 1,
+       "avg_degree": 3.538462,
+       "max_degree": 5,
+       "neighbour_spread_natural": {
+        "mean": 1.87,
+        "max": 4
+       },
+       "neighbour_spread_bfs": {
+        "mean": 1.87,
+        "max": 4
+       },
+       "communities": 3,
+       "community_lines": 3,
+       "community_members": 13,
+       "community_members_dropped": 0,
+       "community_size_max": 7,
+       "community_size_min": 1,
+       "community_kind": "cmty"
+      },
+      "expected": {
+       "vertices": 13,
+       "edges": 23,
+       "self_loops_dropped": 2,
+       "duplicate_entries_dropped": 2,
+       "isolated_vertices": 1,
+       "communities": 3,
+       "max_degree": 5
+      },
+      "ok": true
+     },
+     {
+      "kind": "dense",
+      "ranks": 1,
+      "order": "natural",
+      "part": "nnz",
+      "exchange": "neighbor",
+      "cg": "classic",
+      "diff": 6.420540497903146e-16,
+      "iters": 14,
+      "true_rel_res": 6.503617e-16,
+      "accuracy": 1.0,
+      "ok": true
+     },
+     {
+      "kind": "dense",
+      "ranks": 3,
+      "order": "natural",
+      "part": "rows",
+      "exchange": "neighbor",
+      "cg": "classic",
+      "diff": 6.434437142091592e-16,
+      "iters": 14,
+      "true_rel_res": 6.448133e-16,
+      "accuracy": 1.0,
+      "ok": true
+     },
+     {
+      "kind": "dense",
+      "ranks": 3,
+      "order": "natural",
+      "part": "nnz",
+      "exchange": "overlap",
+      "cg": "pipelined",
+      "diff": 2.3237619517618985e-15,
+      "iters": 14,
+      "true_rel_res": 6.300012e-15,
+      "accuracy": 1.0,
+      "ok": true
+     },
+     {
+      "kind": "dense",
+      "ranks": 2,
+      "order": "bfs",
+      "part": "rows",
+      "exchange": "alltoallv",
+      "cg": "classic",
+      "diff": 5.311509621676099e-16,
+      "iters": 14,
+      "true_rel_res": 8.382933e-16,
+      "accuracy": 1.0,
+      "ok": true
+     }
+    ]
+   }
+  }
+ },
+ "bugs": [
+  {
+   "binary": "/nfs/home/svu/bhatnagar.kushagra.m/p3/bin/p3graph_bug1",
+   "sha256": "ff99b52b551156746be97699bd831d7dc19fc4f3047130b53c682cf65e2d81f3",
+   "build": "omp=201511;offload=0;graph=1;bug=1;cxx=14.3.0;mpi=Open MPI v5.0.8",
+   "refused": true,
+   "refused_by": [
+    "G1",
+    "G2"
+   ],
+   "runs": 17,
+   "details": {
+    "G1": {
+     "name": "agree-email",
+     "ok": false,
+     "items": [
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 2,
+       "threads": 1,
+       "order": "natural",
+       "part": "rows",
+       "exchange": "alltoallv",
+       "spmv_diff": 1.9936384882978735,
+       "x_diff": 0.17583495660426612,
+       "ghosts": 929,
+       "edge_cut": 4806,
+       "nnz_imbalance": 1.583557,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 3,
+       "threads": 1,
+       "order": "natural",
+       "part": "nnz",
+       "exchange": "neighbor",
+       "spmv_diff": 1.898965746698033,
+       "x_diff": 0.12361553470364627,
+       "ghosts": 1729,
+       "edge_cut": 10081,
+       "nnz_imbalance": 1.004225,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 4,
+       "threads": 1,
+       "order": "natural",
+       "part": "rows",
+       "exchange": "overlap",
+       "spmv_diff": 2.2698963804200227,
+       "x_diff": 0.14562430346702826,
+       "ghosts": 2375,
+       "edge_cut": 9939,
+       "nnz_imbalance": 1.851447,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 4,
+       "threads": 2,
+       "order": "natural",
+       "part": "nnz",
+       "exchange": "alltoallv",
+       "spmv_diff": 1.3226252521903334,
+       "x_diff": 0.1108897245640055,
+       "ghosts": 2488,
+       "edge_cut": 11523,
+       "nnz_imbalance": 1.003109,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 5,
+       "threads": 1,
+       "order": "bfs",
+       "part": "nnz",
+       "exchange": "neighbor",
+       "spmv_diff": 1.1302103005997997,
+       "x_diff": 0.12889825215046274,
+       "ghosts": 3028,
+       "edge_cut": 11461,
+       "nnz_imbalance": 1.019075,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "classic",
+       "ranks": 3,
+       "threads": 2,
+       "order": "bfs",
+       "part": "rows",
+       "exchange": "overlap",
+       "spmv_diff": 2.442155792666141,
+       "x_diff": 0.16092745165060976,
+       "ghosts": 1567,
+       "edge_cut": 8247,
+       "nnz_imbalance": 1.611415,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "pipelined",
+       "ranks": 4,
+       "threads": 1,
+       "order": "natural",
+       "part": "nnz",
+       "exchange": "overlap",
+       "spmv_diff": 1.3226252521903334,
+       "x_diff": 0.1107339785096435,
+       "ghosts": 2488,
+       "edge_cut": 11523,
+       "nnz_imbalance": 1.003109,
+       "ok": false
+      },
+      {
+       "kind": "agree",
+       "cg": "pipelined",
+       "ranks": 3,
+       "threads": 1,
+       "order": "bfs",
+       "part": "rows",
+       "exchange": "neighbor",
+       "spmv_diff": 2.442155792666141,
+       "x_diff": 0.1699235224422269,
+       "ghosts": 1567,
+       "edge_cut": 8247,
+       "nnz_imbalance": 1.611415,
+       "ok": false
+      },
+      {
+       "kind": "converged",
+       "ranks": 4,
+       "order": "natural",
+       "part": "rows",
+       "exchange": "overlap",
+       "cg": "classic",
+       "diff": 0.25183797377967704,
+       "bound": 1.3694703743405503e-09,
+       "rho": 9.879477e-13,
+       "rho_ref": 9.939197e-13,
+       "accuracy": 0.5873606,
+       "accuracy_ref": 0.7583643,
+       "ok": false
+      },
+      {
+       "kind": "converged",
+       "ranks": 3,
+       "order": "bfs",
+       "part": "nnz",
+       "exchange": "neighbor",
+       "cg": "pipelined",
+       "diff": 0.2468620785102235,
+       "bound": 3.285532252943297,
+       "rho": 0.00475475,
+       "rho_ref": 9.939197e-13,
+       "accuracy": 0.6802974,
+       "accuracy_ref": 0.7583643,
+       "ok": false
+      }
+     ]
+    },
+    "G2": {
+     "name": "dense-tiny",
+     "ok": false,
+     "items": [
+      {
+       "kind": "convert",
+       "meta": {
+        "schema": "p3graphmeta-1",
+        "name": "tiny",
+        "edge_lines": 26,
+        "comment_lines": 2,
+        "malformed_lines": 0,
+        "self_loops_dropped": 2,
+        "duplicate_entries_dropped": 2,
+        "vertices": 13,
+        "edges": 23,
+        "nonzeros_offdiag": 46,
+        "isolated_vertices": 1,
+        "avg_degree": 3.538462,
+        "max_degree": 5,
+        "neighbour_spread_natural": {
+         "mean": 1.87,
+         "max": 4
+        },
+        "neighbour_spread_bfs": {
+         "mean": 1.87,
+         "max": 4
+        },
+        "communities": 3,
+        "community_lines": 3,
+        "community_members": 13,
+        "community_members_dropped": 0,
+        "community_size_max": 7,
+        "community_size_min": 1,
+        "community_kind": "cmty"
+       },
+       "expected": {
+        "vertices": 13,
+        "edges": 23,
+        "self_loops_dropped": 2,
+        "duplicate_entries_dropped": 2,
+        "isolated_vertices": 1,
+        "communities": 3,
+        "max_degree": 5
+       },
+       "ok": true
+      },
+      {
+       "kind": "dense",
+       "ranks": 1,
+       "order": "natural",
+       "part": "nnz",
+       "exchange": "neighbor",
+       "cg": "classic",
+       "diff": 6.420540497903146e-16,
+       "iters": 14,
+       "true_rel_res": 6.503617e-16,
+       "accuracy": 1.0,
+       "ok": true
+      },
+      {
+       "kind": "dense",
+       "ranks": 3,
+       "order": "natural",
+       "part": "rows",
+       "exchange": "neighbor",
+       "cg": "classic",
+       "diff": 0.6776649415313851,
+       "iters": 6,
+       "true_rel_res": 1.127437e-16,
+       "accuracy": 0.5,
+       "ok": false
+      },
+      {
+       "kind": "dense",
+       "ranks": 3,
+       "order": "natural",
+       "part": "nnz",
+       "exchange": "overlap",
+       "cg": "pipelined",
+       "diff": 0.6776649415313851,
+       "iters": 6,
+       "true_rel_res": 2.803176e-16,
+       "accuracy": 0.5,
+       "ok": false
+      },
+      {
+       "kind": "dense",
+       "ranks": 2,
+       "order": "bfs",
+       "part": "rows",
+       "exchange": "alltoallv",
+       "cg": "classic",
+       "diff": 0.5104850505528302,
+       "iters": 9,
+       "true_rel_res": 3.684807e-16,
+       "accuracy": 0.8,
+       "ok": false
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "cluster": "vanda",
+ "host": "GN-A40-075",
+ "mode": "qualify",
+ "qualified": true
+}

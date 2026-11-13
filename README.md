@@ -1,263 +1,171 @@
-# DSA5208 Project 3: conjugate gradient for the Poisson equation with MPI + OpenMP
+# DSA5208 Project 3: conjugate gradient for the Poisson equation with MPI and OpenMP
 
-Kushagra Bhatnagar (A0351591A) · Pratyush Sinha (A0352482A)
+Kushagra Bhatnagar (A0351591A) and Pratyush Sinha (A0352482A)
 
-`p3cg` solves −Δu = f on the unit square (2D) and the unit cube (3D) with zero boundary values. It uses the
-second-order 5-point (2D) or 7-point (3D) finite-difference stencil and the conjugate gradient (CG) method. The
-matrix is never stored: each CG iteration applies the stencil directly ("matrix-free").
+This repository holds the solver, the checks that guard it, the scripts that ran it on the NUS cluster Vanda, every
+run record those runs produced, and the report built from them (`report/DSA5208_Project3_Report.pdf`). The report
+gives the method and the results. This file explains how the pieces fit together and why they work the way they do,
+so that someone who opens the repository without context can rebuild the report, check where a number came from, and
+add the runs that are still outstanding.
 
-It is parallelised with MPI across processes ("ranks") and OpenMP threads inside each rank. The same loops can also
-be offloaded to a GPU with OpenMP `target` (a separate build). The parallel methods are switchable at run time so one
-binary produces every comparison:
+## What the program solves
 
-| Choice | Options | Flag |
-|---|---|---|
-| Domain decomposition | split the grid along 1, 2 or 3 directions (`MPI_Dims_create` + `MPI_Cart_create`) | `--decomp 1\|2\|3` |
-| Halo exchange | `blocking`: `MPI_Sendrecv` per direction, then the stencil. `overlap`: `MPI_Isend`/`MPI_Irecv`, stencil on interior points while messages travel, `MPI_Waitall`, then the boundary shell | `--halo blocking\|overlap` |
-| CG variant | `classic`: two blocking `MPI_Allreduce` per iteration. `pipelined` (Ghysels and Vanroose, 2014): one `MPI_Iallreduce` per iteration, overlapped with the halo exchange and stencil | `--cg classic\|pipelined` |
-| Threads per rank | OpenMP | `OMP_NUM_THREADS` |
+`bin/p3cg` solves the Poisson equation -Δu = f on the unit square and the unit cube with zero boundary values, using
+the 5-point stencil in 2D and the 7-point stencil in 3D and the conjugate gradient (CG) method. We never store the
+matrix, because the stencil describes it completely and storing it would only add memory traffic, so every CG
+iteration applies the stencil directly. The right-hand side comes from a chosen exact solution, so every run can
+measure its own error.
 
-Every run times its halo exchanges, global reductions and local computation separately with `MPI_Wtime`. Each
-timed run appends one CSV row (the "run record") that says where and how it ran.
+The work is split in two levels. MPI ranks each own a box of the grid (domain decomposition) and exchange the layer of
+values next to each shared face before every stencil application (the halo exchange). OpenMP threads inside a rank
+share the loops over that box. The same loops can also run on a GPU through OpenMP GPU offload, in a separate build.
+Three choices can be switched at run time, so that one program produces every comparison in the report: how many
+directions the grid is split along (`--decomp 1|2|3`), whether the halo exchange is blocking or non-blocking
+(`--halo blocking|overlap`), and whether CG is the classic form or the pipelined form, which overlaps its one
+reduction per iteration with the next stencil application (`--cg classic|pipelined`). `bin/p3cg --help` lists every
+option.
 
-## Test problem (synthetic data)
+`bin/p3graph` applies the same CG code to real graphs from the Stanford Large Network Dataset Collection (SNAP), to
+label communities by diffusion. Report Sections 1 and 2 describe the solver, and Section 8 the graph part.
 
-The exact solution is u(x) = ∏ᵢ xᵢ(1 − xᵢ)e^{xᵢ}, so f = Σᵢ xᵢ(xᵢ + 3)e^{xᵢ} ∏_{j≠i} xⱼ(1 − xⱼ)e^{xⱼ}. The right-hand
-side is computed from this formula at every grid point, and the error against the exact solution is reported. There
-are n interior points per direction, with spacing h = 1/(n+1): N = n^d unknowns and n^d + 2d(n−1)n^{d−1} nonzeros
-in the matrix the stencil represents.
+## Where things are
 
-`--problem sine` (u = ∏ sin(πxᵢ)) is kept only to show why it was not used. That u is an eigenvector of the
-discrete operator, so CG solves it in one iteration. This makes it useless both as a convergence test and as a
-timing workload.
-
-## Fixed iteration count for timing, tolerance for validation
-
-- **Timing runs** use a fixed number of iterations (`--iters 100`). Runs of different sizes and layouts then do the
-  same work per unknown, and cluster time stays bounded. CG needs O(n) iterations to reach a fixed tolerance, so
-  timing to a tolerance would mix the cost per iteration with the growth in iteration count.
-- **Each timed run is repeated 3 times** in one process (`--repeats 3`). Report the median.
-- **Validation runs** iterate to a tolerance (`--tol`).
-- The plan has one extra serial sweep to a tolerance (`serial-tol`). It shows the growth in iteration count separately.
-
-## Build
-
-Requirements: an MPI library with MPI-3, a C++17 compiler with OpenMP, and optionally CMake ≥ 3.16. The checks need
-Python ≥ 3.5 and only the standard library. The development plot needs matplotlib.
-
-```bash
-scripts/build.sh            # bin/p3cg (correct) and bin/p3cg_bug1, bin/p3cg_bug2 (planted halo bugs, for validation)
-scripts/build.sh offload    # bin/p3cg_offload* (OpenMP target offload; nvhpc on a Vanda GPU node)
-```
-
-`build.sh` uses CMake if it is installed. Otherwise it compiles with one `mpicxx` line per binary; set
-`P3_NO_CMAKE=1` to force that path.
-
-- **macOS (Apple clang)** needs Homebrew `libomp`; CMake finds it automatically. Run with
-  `mpirun --oversubscribe` beyond the core count.
-- **Linux** uses `P3_OMP_FLAGS` (default `-fopenmp`; nvhpc uses `-mp`).
-- **Offload** uses `P3_OFFLOAD_FLAGS` (default `-mp=gpu`).
-
-CMake options are `P3_OPENMP` (ON), `P3_OFFLOAD` (OFF), `P3_NATIVE` (OFF) and `PLANT_HALO_BUG` (0, 1 or 2).
-
-## Run
-
-```bash
-OMP_NUM_THREADS=2 mpirun -np 4 bin/p3cg --dim 3 --n 128 --decomp 3 --halo overlap --cg pipelined --iters 100 --repeats 3
-mpirun -np 1 bin/p3cg --dim 2 --n 127 --tol 1e-12      # to a tolerance; prints iterations, residuals and error
-bin/p3cg --help
-```
-
-Each run prints one `RUN ...` line per repeat and appends a row to `results/<cluster>/<job>.csv`. Pass
-`--record PATH` to choose the file, or `--no-record` to skip it.
-
-| Record columns | Meaning |
+| Folder | What it holds |
 |---|---|
-| `cluster` | `atlas` or `vanda` only inside a PBS job (`PBS_JOBID` set) whose `P3_CLUSTER` names that cluster; otherwise `local` |
-| `pbs_jobid`, `host`, `nodes`, `ranks`, `threads`, `gpus` | where it ran (nodes and GPUs counted by the program itself) |
-| `dim`, `n`, `unknowns`, `nonzeros`, `decomp`, `pdims`, `local_max`, `local_min` | the problem and how it was split |
-| `cg`, `halo`, `mode`, `iters`, `repeat` | the method |
-| `t_total` | wall time of the solve, slowest rank |
-| `t_halo`, `t_reduce`, `t_compute` | mean over ranks (the `_max` columns give the slowest rank) |
-| `t_other` | `t_total` minus the three means: timer gaps plus the spread between the slowest and the average rank |
-| `msgs_per_exch`, `doubles_per_exch_max`, `allreduces`, `exchanges` | communication counts, for the runtime model |
-| `rel_res`, `true_rel_res`, `err_max`, `err_l2`, `converged`, `breakdown` | accuracy |
-| `binary_sha256`, `git_sha`, `build` | the exact binary (its own SHA-256) and how it was built |
+| `src/` | the C++ solver (`p3cg`), the graph solver and converter (`p3graph`, `p3convert`) |
+| `checks/` | the validation tests, the check that a program has passed them, the plan tools and the report check |
+| `config/` | the plans: every configuration to be timed, per cluster, fixed before timing |
+| `cluster/` | the batch-job environment per cluster, the scripts that submit and fetch jobs, and the runbook |
+| `results/` | every run record, the validation records, the job ledger and the node descriptions |
+| `scripts/` | build, plan generation, SNAP download and conversion, figures and report generation |
+| `figures/` | the report's figures, each with a `.meta.json` file naming the records it was drawn from |
+| `report/` | the report source, the generated values and tables it reads, and the built PDF |
+| `.application/` | our working notes on the state of the project |
 
-## Checks
+## Why every number in the report is generated
 
-Each check prints a verdict and refuses the next step when it fails.
+Every run that is timed appends one row to a CSV file under `results/<cluster>/`. We call such a row a run record. It
+says where the run happened (job, node, ranks, threads), what it ran (problem size, method, iterations), how long each
+part took, and which program produced it, by the SHA-256 hash that the program computes of its own binary.
 
-| Check | What it does |
-|---|---|
-| `checks/validate.py` | Five named cases (below). `--qualify` must pass the correct build **and** refuse both planted-bug builds; only then is the binary's SHA-256 written to `results/validated_binaries.csv`. The output is kept in `results/validation/<cluster>/`. |
-| `checks/timing_gate.py --binary bin/p3cg` | Refuses timing with a binary that `validate.py` has not qualified on this cluster. |
-| `checks/run_record.py [--for-figures]` | Checks every record row. With `--for-figures` it refuses any row that is not from Atlas or Vanda, has no PBS job id, or comes from an unqualified binary. Figure scripts load data only through `figure_rows()`. `--selftest` qualifies the check on fixtures. |
-| `checks/run_plan.py` | `status`: graded cells filled/total, reruns, rows outside the plan, core-hours against the budget. `check`: the plan covers every graded requirement. `pbs`: writes a job script. `run`: runs a local-plan job. `selftest`: shows `check` refuses a plan without the ≥256-core weak cells. |
-| `checks/requirements_check.py` | Stub for the report stage; refuses until the report maps E1–E18. |
+The report contains no typed number. Every number, table and figure is computed from the run records by
+`scripts/report_macros.py` and `scripts/figures.py`, and the report source refers to each number by name (`\val{...}`).
+We chose this because a typed number cannot be traced back to the runs that support it, and it goes stale without
+warning when records are added or corrected. `checks/requirements_check.py` refuses the report if a digit is typed in
+its body. A number whose runs are still missing prints as a red "waiting for cluster data" mark, so the report can be
+built at any stage.
 
-### The validation cases (`checks/validate.py`)
+The consequence is a rule for editing. To change a number, change the records or the script that computes it, then
+run `scripts/make_report.sh`, and never edit the number in `report/DSA5208_Project3_Report.tex`. The wording around
+the numbers is edited in the `.tex` as usual. `report/generated/` holds the computed values and tables. It is tracked,
+although `make_report.sh` rebuilds it, because the tracked PDF depends on it and its diff shows exactly which numbers
+changed when new records arrived.
 
-| Case | Purpose | Pass rule and reason |
-|---|---|---|
-| V1 order-2d | the 2D serial solver converges, and its error against the exact solution falls as h² | observed order in [1.9, 2.1] for h = 1/32 → 1/64 → 1/128, solved to 1e-12 |
-| V2 order-3d | the same in 3D | h = 1/16 → 1/32 → 1/64 |
-| V3 agree-2d | 2D parallel runs equal the serial run to rounding | after 25 iterations, relative 2-norm difference ≤ 1e-10 for 1D and 2D splits, uneven blocks, both halo variants, 2 ranks × 2 threads. Only the order of the dot-product partial sums differs; the observed difference is ≤ 3e-14. |
-| V4 agree-3d | the same in 3D | 1D, 2D and 3D splits up to 8 ranks; observed ≤ 5e-13 |
-| V5 pipelined | pipelined CG reaches the same converged answer as classic CG (1 and 4 ranks, 2D and 3D) | ‖x_p − x_s‖/‖x_s‖ ≤ cond(A)(ρ_p + ρ_s)/(1 − cond(A)ρ_s), where ρ is the true relative residual and cond(A) = cot²(πh/2). The two methods use different recurrences, so only converged answers can be compared. |
+## Why the timed runs follow a plan fixed in advance
 
-The planted bugs (`-DPLANT_HALO_BUG=1` drops one received halo face; `=2` sends the wrong plane on one face) change
-the parallel answer by about 0.5 relative. V3, V4 and V5 refuse them. V1 and V2 still pass, because a 1-rank run
-has no halo between ranks; that is why the parallel cases exist.
+Before any timing we wrote down every configuration to be timed, that is every combination of problem, core count,
+threads and method, in a plan (`config/run_plan.vanda.json`, generated by `scripts/make_plan.py` and
+`scripts/make_graph_plan.py`). The plan also groups the configurations into batch jobs. It was frozen (`"frozen":
+true`) before the first timed job, and `cluster/ops/submit.sh`, the only route to the queue, refuses a job that is not
+in the plan or a timed job while the plan is not frozen.
 
-Pipelined CG is less stable than classic CG. At tolerance 1e-14 its recursive residual stalls near 1e-12 while the
-true residual b − Ax stays near 1e-9. Classic CG reaches 1e-14 (true residual 5e-13).
+The reason is that results chosen after they are seen can mislead, even without intent. Without a fixed plan a slow
+run could be quietly repeated, or a core count dropped because it scaled badly. With the plan, every run in the report
+belongs to a configuration that was decided beforehand. A job can be submitted a second time only after a reason has
+been written into the plan's `"reruns"` list, and a change to the plan after freezing is an amendment: a dated entry
+in the plan's `"amendments"` list that says what was added and why, written by one of the `scripts/amend_*.py`
+scripts. The amendments so far added configurations or moved some to a new job, and none removed one. The
+consequence for anyone adding runs is that they first
+add an amendment and only then submit.
 
-## Real data: community labelling on SNAP graphs (`bin/p3graph`)
+## Why a program is timed only after it passes the validation tests
 
-The same classic and pipelined CG (`src/cg_impl.hpp`, one template for both operators) solves (L + aI) x_c = b_c on
-SNAP graphs with ground-truth communities. L = D − A is the graph Laplacian, and b_c marks s seed vertices of
-community c. Each evaluated vertex is labelled argmax_c x_c, and the accuracy is compared with the majority and
-random baselines.
+A fast program that computes the wrong answer is worthless, and the errors a parallel solver can make, such as a halo
+face that is never received, do not show in a run on one rank. `checks/validate.py` therefore runs five validation
+tests, V1 to V5, which Section 3 of the report explains: two check that the error falls with the grid spacing as the
+discretisation predicts, two check that every parallel layout reproduces the one-rank result to rounding, and one
+checks that pipelined CG converges to the same answer as classic CG. The program is also built twice with a
+deliberately broken halo exchange (`bin/p3cg_bug1` and `bin/p3cg_bug2`), and with `--qualify` the check accepts a
+program only if it passes all five tests and both broken builds fail them. A test that cannot catch a known error
+proves nothing. The graph solver has its own tests, G1 and G2, in `checks/validate_graph.py`, with one broken build.
 
-```bash
-scripts/fetch_snap.sh email-Eu-core "$PWD/data"   # download, gzip -t, sha256 + URL into data/raw/SOURCES.tsv
-scripts/fetch_snap.sh com-amazon "$PWD/data"      # (clusters: ~/p3data, on a login node)
-scripts/build.sh graph                            # bin/p3graph, bin/p3graph_bug1 (planted ghost bug), bin/p3convert
-scripts/convert_snap.sh email-Eu-core "$PWD/data" # -> data/csr/email-Eu-core.{natural,bfs}.{csr,cmty}, .meta.json
-scripts/convert_snap.sh com-amazon "$PWD/data"
-python3 checks/validate_graph.py --qualify --binary bin/p3graph --bug-binary bin/p3graph_bug1
-mpirun -np 4 bin/p3graph --graph data/csr/com-amazon --a 1 --s 5 --K 10 --part nnz --exchange neighbor
-python3 checks/run_plan.py run --plan local --job local-graph   # every local graph cell (development rows)
-```
+The tests run on the cluster that does the timing, on a compute node, because a program built and tested elsewhere is
+a different binary with a different compiler and MPI library. When a program passes, its SHA-256 hash, the cluster and
+the time of the validation run go into `results/validated_binaries.csv`, and its results into
+`results/validation/<cluster>/` as a `.json` and a `.csv` file per run. A validation run is named by the UTC time at
+which it started, for example `20261112T063938Z`. Two checks then tie each timed row to a validated program.
+`checks/timing_gate.py`, which every batch job runs first, refuses to start timing with a program whose hash has not
+passed on that cluster. `checks/run_record.py`, through which the figures and the report read the records, refuses a
+row whose program hash has no validation on that cluster, and a row from a laptop. Section 11 of the report lists the
+hash of each program behind its results together with its validation run.
 
-- **Data.** `data/` is gitignored, and on the clusters the data are in `~/p3data`, outside the repository.
-- **Converter.** `p3convert` makes the graph undirected and simple: it symmetrises, drops self-loops and duplicate
-  edges, and numbers the vertices 0..V−1 by SNAP id. It writes a second, breadth-first (Cuthill–McKee) numbering,
-  and the communities in both numberings.
-- **Communities.** The K largest communities of `top5000` that overlap by at most θ = 0.1 are used. Seeds are
-  chosen by a hash of the SNAP id, so they are nested in s and the same in every vertex order and at every rank
-  count. The seed list's SHA-256 is in every row.
-- **Parallel design.** The rows are partitioned in 1D, either by equal rows or by equal nonzeros. Ghost lists are
-  built once, and every product exchanges ghosts by `MPI_Alltoallv`, `MPI_Neighbor_alltoallv` on a distributed
-  graph communicator, or `MPI_Ineighbor_alltoallv` overlapped with the interior rows. OpenMP threads split the rows
-  by nonzeros.
-- **Records.** Rows go to `*.graph.csv` (schema `p3graph-1`): edge cut, ghosts, neighbours, load imbalance,
-  t_halo, accuracy, unreached share and baselines.
+## Building and validating on your own machine
 
-| Case | Purpose | Pass rule and reason |
-|---|---|---|
-| G1 agree-email | parallel = serial on email-Eu-core | SpMV ≤ 1e-14 (bitwise in natural order), 10 CG iterations ≤ 1e-10 on 2–5 ranks, threads, both partitions, all exchanges, both orders, classic and pipelined; converged answers within the V5-style condition bound. Rounding differences grow ~1000× per 5 iterations past ~10 on this graph, so a longer fixed-iteration comparison would measure rounding. |
-| G2 dense-tiny | converter and solver on a hand-made graph | the converter's counts are as constructed (self-loops, duplicates, isolated vertex); x = dense solve to ≤ 1e-10 on 1–3 ranks; labels all correct |
-| G3 planted bug | the check refuses `PLANT_GHOST_BUG=1` (each rank's first neighbour's ghosts are never stored) | G1 and G2 must both refuse it |
-
-The timing gate opens graph jobs only for a binary qualified with cases G1 and G2 (`--require-cases G1,G2`).
-
-## Cluster runs (Atlas / Vanda)
-
-The plans are generated by `scripts/make_plan.py`:
-
-- `config/run_plan.vanda.json` is the primary plan: 72-core nodes, up to 288 cores, and the GPU job.
-- `config/run_plan.atlas.json` is the fallback if Vanda is down. It assumes 24 cores per node, which is unverified.
-- `config/run_plan.local.json` is development only.
-
-Each plan writes out its size arithmetic under `"arithmetic"`.
-
-1. **First login.** Fill in the plan's `pbs` block (queue and project, from `hpc cpu`, `hpc gpu`, `qstat -Qf`) and
-   `core_hour_budget`. Check the module names in `cluster/<cluster>/env.sh` (`module avail`), and that `python3`
-   exists on compute nodes.
-2. **Copy the repository** to the cluster and run `python3 checks/run_plan.py check --plan vanda`.
-3. **Generate and submit the validation job:**
-   `python3 checks/run_plan.py pbs --plan vanda --job vanda-validate`, then
-   `qsub cluster/generated/vanda/vanda-validate.pbs`. It builds on a compute node (Vanda's login nodes are VMs) and
-   qualifies the binary.
-4. **Freeze the plan** (`"frozen": true`), then generate and submit the timing jobs. Each job script refuses to
-   start if its job is not in the plan or its binary is not qualified. The GPU job builds the offload binary and
-   validates it on the GPU node itself.
-5. **Track progress** with `python3 checks/run_plan.py status --plan vanda`. A rerun or an extra job needs an entry
-   with a reason in the plan's `reruns` / `unplanned` lists.
-
-The first launch of each job prints the process bindings (`--report-bindings`). Check them in the first job's log;
-`p3_launch` in `env.sh` is written for Open MPI / HPC-X.
-
-## The report
+You need an MPI library (MPI 3), a C++17 compiler with OpenMP, Python 3 with only its standard library for the checks,
+matplotlib for the figures, and tectonic for the PDF. CMake is used if it is installed. On macOS the compiler also
+needs Homebrew's `libomp`.
 
 ```bash
-scripts/make_report.sh        # figures -> generated numbers/tables -> PDF (Tectonic) -> requirements check
-```
-
-- `scripts/figures.py` draws each figure from Atlas/Vanda run records only (through `checks/run_record.py`). It refuses
-  if a local row is among them. It draws a figure only when every planned run behind it is recorded, and writes
-  `figures/<name>.meta.json` with the axis scales, source CSVs, their SHA-256 and the binaries.
-- `scripts/report_macros.py` writes `report/generated/`: `values.tex` (every number in the text), `tab_*.tex`,
-  `slots.tex` and `status.json`. It also writes ASCII copies of the files listed in the appendix
-  (`report/generated/listing/`, with characters such as arrows and the less-or-equal sign spelled out), because the
-  listings package cannot print characters above 255 under XeTeX (tectonic). The hardware specifications the report
-  cites (Intel Xeon Platinum 8452Y, NVIDIA A40) are constants at the top of the script, with their sources. A number or table whose runs are missing renders as a red "waiting for cluster data"
-  mark, so the PDF can be built at any time.
-- `checks/requirements_check.py` maps E1–E18 to report sections and prints which rows are still waiting, and for
-  what. It refuses release when:
-  - a hand-typed number appears in the body;
-  - a filled figure has a linear time, size or core axis, or a changed source;
-  - a log file is in the package;
-  - an author, or the AI-use section, is missing;
-  - the PDF is stale.
-
-  Its `--selftest` shows the refusals on broken copies. The pass example will be the first full render the user
-  accepts.
-- `scripts/testdouble_render.sh` renders the whole report from **fabricated** cluster rows in `/tmp` (stamped TEST
-  DOUBLE). It shows that real rows fill every slot without hand editing; nothing it makes enters `results/`,
-  `figures/` or `report/`.
-- The orange "to write once the cluster runs are in" boxes are the interpretation paragraphs. They are written by
-  hand once the numbers exist; everything else fills automatically.
-
-**Provenance.** The report keeps its build machinery out of the text and states where its numbers come from in one
-sentence (Section 11). In full: every number, table and figure is generated by `scripts/report_macros.py` and
-`scripts/figures.py` from the run records in `results/<cluster>/` (one CSV per batch job, plus `env/*.json` with the
-node's processor, memory and compilers, and `calibration.json` with the effective bandwidths). The runs were planned
-in advance in `config/run_plan.vanda.json` (cells, groups and jobs; amendments are recorded in the plan with their
-reason), turned into batch jobs by `checks/run_plan.py`, and each job validated its binary with `checks/validate.py
---qualify` (or `checks/validate_graph.py --qualify`) before any timing. Every row names the SHA-256 of the binary
-that produced it, and `scripts/fetch_snap.sh` and `scripts/convert_snap.sh` record the SHA-256 of every SNAP input
-file and of the converter. `report/generated/status.json` lists every generated value, whether it is filled, and the
-validation records the report used (under `results/validation/`).
-
-## Operating the clusters
-
-`cluster/RUNBOOK.md` is the procedure: `cluster/ops/discover.sh`, `scripts/apply_discovery.py`, `cluster/ops/sync.sh`,
-`cluster/ops/submit.sh` (the only way a job is submitted), `cluster/ops/poll.sh`, `cluster/ops/fetch.sh`, and what to do
-when a job fails. `cluster/ops/test_fake_cluster.sh` runs all of them against a fake Vanda, and `cluster/ops/test_fake_atlas.sh` rehearses
-the Atlas sequence (queue rules, `/app1/ebenv`, the 96-core limit) on a fake Atlas.
-
-## Local development
-
-```bash
+scripts/build.sh                     # bin/p3cg and the two broken builds bin/p3cg_bug1, bin/p3cg_bug2
 python3 checks/validate.py --qualify --binary bin/p3cg --bug-binary bin/p3cg_bug1 --bug-binary bin/p3cg_bug2
-python3 checks/run_plan.py run --plan local --job local-smoke     # timing pipeline at 1-8 ranks, rows marked local
-python3 scripts/plot_dev.py                                       # figures/dev/local_strong.png (stamped as local data)
+OMP_NUM_THREADS=2 mpirun -np 4 bin/p3cg --dim 3 --n 128 --decomp 3 --halo overlap --cg pipelined --iters 100
+scripts/make_report.sh               # figures, generated values and tables, the PDF, then the requirements check
 ```
 
-Local rows are for development only: `run_record.py --for-figures` refuses them. On an Apple M5 laptop, memory
-bandwidth limits speedup to about 1.4× at 8 ranks, so local runs say nothing about cluster scaling.
+A run on a laptop is recorded with the cluster name `local`, and the report never uses such a row. Laptop timings
+share one memory system across all cores and say nothing about the cluster. For the graph solver, download and convert
+a SNAP graph first, which writes to `data/` (not tracked, because the files are large and can be downloaded again):
 
-## Source layout
+```bash
+scripts/fetch_snap.sh email-Eu-core "$PWD/data"
+scripts/build.sh graph               # bin/p3graph, its broken build bin/p3graph_bug1, and bin/p3convert
+scripts/convert_snap.sh email-Eu-core "$PWD/data"
+python3 checks/validate_graph.py --qualify --binary bin/p3graph --bug-binary bin/p3graph_bug1
+```
 
-| File | Contents |
-|---|---|
-| `src/grid.*` | process grid, local box, unknown/nonzero counts |
-| `src/halo.*` | halo exchange (blocking and overlapped), planted bugs |
-| `src/kernels.*` | stencil, vector updates, manufactured problem, device-mapped storage |
-| `src/cg.*` | operator with interior/shell split, classic and pipelined CG, timers |
-| `src/record.*` | run record, cluster detection, SHA-256 of the binary |
-| `src/par.hpp` | loop pragmas for the CPU-thread and GPU-offload builds |
-| `src/main.cpp` | options, setup, repeats, true residual and error, solution dump |
-| `src/cg_impl.hpp` | classic and pipelined CG as templates over the operator (stencil and graph) |
-| `src/graph/dcsr.*` | distributed CSR: partition, ghost lists, the three exchanges, the operator L + aI, planted ghost bug |
-| `src/graph/label.*` | community choice, seeds, evaluation set and majority baseline |
-| `src/graph/graph_main.cpp` | `p3graph`: options, K solves, argmax labels, accuracy, run record |
-| `src/graph/convert.cpp` | `p3convert`: SNAP text to binary CSR (natural and BFS order) and communities |
+## Running on Vanda
 
-The offload build (`P3_OFFLOAD`) was developed on a Mac, where it compiles and its target regions run on the host
-(host fallback) and pass `validate.py --qualify`. Its first run on a GPU was the Vanda GPU job, which built it with
-nvc++ on the GPU node and ran `validate.py --qualify` there before timing it: all five validation tests passed on the
-device and both broken builds failed them.
+The scripts in `cluster/ops/` do every step, and each one refuses when something is not in order.
+`cluster/RUNBOOK.md` gives the full procedure and what to do when a job fails. They reach the cluster through an SSH
+host alias named `vanda` in `~/.ssh/config`, with a key that works without a password, over the NUS VPN. The batch
+jobs are charged to the PBS project named in the plan's `"pbs"` block. Someone using a different account changes that
+entry, for example with `python3 scripts/apply_discovery.py`, which proposes the queue, project and module names from a
+read-only probe of the login node (`cluster/ops/discover.sh vanda`).
+
+```bash
+cluster/ops/sync.sh vanda                    # copy the committed tree to ~/p3 on Vanda (refuses uncommitted changes)
+cluster/ops/submit.sh vanda vanda-validate   # build on a compute node and run the validation tests there
+cluster/ops/poll.sh vanda                    # state of every submitted job, and flags for failed ones
+cluster/ops/fetch.sh vanda                   # bring back the records and merge them into results/vanda/
+cluster/ops/submit.sh vanda <job>            # a timed job from the plan, once the program has passed on Vanda
+python3 checks/run_plan.py status --plan vanda   # configurations recorded so far, reruns, core-hours used
+```
+
+`submit.sh` writes the PBS script from the plan into `cluster/generated/` and records the job in
+`results/vanda/jobs.csv`. The GPU jobs build and validate their own offload build on the GPU node before timing it.
+`cluster/ops/test_fake_cluster.sh` runs the whole sequence against a fake cluster on your machine, which is the way to
+test a change to these scripts without using cluster time.
+
+## Adding the remaining runs
+
+Some jobs of the plan, those with 256 cores or more, had not finished when this was written, and the report marks the
+values that wait for them. When they finish:
+
+```bash
+cluster/ops/poll.sh vanda          # confirm they finished without flags
+cluster/ops/fetch.sh vanda         # merge the new records into results/vanda/
+scripts/make_report.sh             # rebuild figures, values, tables and the PDF
+git add results figures report && git commit -m "Records of <jobs>, report rebuilt"
+```
+
+The requirements check at the end of `make_report.sh` lists what is still waiting and for which runs. When a group of
+runs is complete, its values fill in by themselves, but the orange boxes that read "To write once the cluster runs are
+in" mark paragraphs of interpretation that must be written by hand from the new tables, and the Summary is revised
+last. Commit the fetched records before the next `sync.sh`, which refuses to copy a tree with uncommitted changes.
+
+## Declaration of AI use
+
+We used Claude Code (Anthropic, Claude Opus 5.5) as a coordinating session and a delegated builder session to plan the
+work, write and test the C++ solver and its checks, run the experiments on the NUS HPC clusters, and draft and revise
+this report, including a paragraph-by-paragraph language revision done by the AI under our direction. We directed the
+work and are responsible for the content and quality of this submission.

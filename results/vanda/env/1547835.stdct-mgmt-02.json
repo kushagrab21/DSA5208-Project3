@@ -1,0 +1,14 @@
+{
+ "pbs_jobid": "1547835.stdct-mgmt-02",
+ "plan": "vanda",
+ "job": "vanda-gpu1",
+ "host": "GN-A40-032",
+ "os": "Linux-5.14.0-427.125.1.el9_4.x86_64-x86_64-with-glibc2.34",
+ "cpus_visible": 72,
+ "modules": "shared:apptainer/1.4.1:hpcx:nvhpc-hpcx-cuda12/26.1",
+ "cpu_model": "Intel(R) Xeon(R) Platinum 8452Y",
+ "sockets": 2,
+ "mem_total_gb": 503.4,
+ "mpirun": "mpirun (Open MPI) 4.1.9a1",
+ "cxx": "nvc++ 26.1-0 64-bit target on x86-64 Linux -tp sapphirerapids "
+}

@@ -1,0 +1,71 @@
+{
+ "figure": "fig_comm",
+ "script": "scripts/figures.py",
+ "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "plan": "vanda",
+ "cluster": "vanda",
+ "groups": [
+  "strong"
+ ],
+ "utc": "2026-11-13T06:58:17Z",
+ "status": "partial",
+ "axes": [
+  {
+   "panel": "2D",
+   "axis": "x",
+   "quantity": "cores",
+   "scale": "log"
+  },
+  {
+   "panel": "2D",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  },
+  {
+   "panel": "3D",
+   "axis": "x",
+   "quantity": "cores",
+   "scale": "log"
+  },
+  {
+   "panel": "3D",
+   "axis": "y",
+   "quantity": "time",
+   "scale": "log"
+  }
+ ],
+ "rows": 48,
+ "sources": [
+  {
+   "path": "results/vanda/1546581.stdct-mgmt-02.csv",
+   "sha256": "04c9491cf8768821cfb306900a39827494513166cfa78f60c79c9bed5d4e6251",
+   "rows_used": 6
+  },
+  {
+   "path": "results/vanda/1546584.stdct-mgmt-02.csv",
+   "sha256": "5f3d641c22c506ba61d8798cc422673010f709356a87c370db42e96dc8b9eb1a",
+   "rows_used": 30
+  },
+  {
+   "path": "results/vanda/1546586.stdct-mgmt-02.csv",
+   "sha256": "bb5b83bf00231f3d9f4d91c1a3c4f1719ab972b11bd7ae72fb3cd98cda392c19",
+   "rows_used": 6
+  },
+  {
+   "path": "results/vanda/1546587.stdct-mgmt-02.csv",
+   "sha256": "81280eb2d700d72434b78ab1e81c37d3dbe83a9ff628e5d8ddc2601f4bcb6f33",
+   "rows_used": 6
+  }
+ ],
+ "binaries": [
+  "a0006417c4285eacaa10928b4550493befee52e1c3babc09d946ba40cb448849"
+ ],
+ "clusters": [
+  "vanda"
+ ],
+ "image_sha256": "b6e7237160bfef8ca5c1a5e372c2d67d14995b396684b70ebe9713e32ae85188",
+ "waiting_for": [
+  "vanda strong: 32 of 40 runs recorded"
+ ]
+}
