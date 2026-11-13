@@ -334,7 +334,7 @@ describes, and the GPU version passed the same tests on the GPU node that timed 
 \label{tab:cases}
 \end{table}
 
-\emph{Error against the exact solution (V1, V2).} Halving $h$ should divide the discretisation error by four. We solve
+\emph{Error against the exact solution (V1, V2):} Halving $h$ should divide the discretisation error by four. We solve
 to a relative residual of \val{val.ordertol}, far below the discretisation error, so that the solver's own error does
 not blur the comparison, and we require the \term{observed order}, the base-two logarithm of the ratio of the errors on
 two successive grids, to lie between \val{val.order.lo} and \val{val.order.hi}. The observed orders are
@@ -348,7 +348,7 @@ and the iteration counts double with each halving of $h$, as the growth of $\sqr
 \label{tab:valorder}
 \end{table}
 
-\emph{Parallel against serial runs (V3, V4).} A parallel run should differ from the serial run only through
+\emph{Parallel against serial runs (V3, V4):} A parallel run should differ from the serial run only through
 rounding, because once the halos are right the stencil and the vector updates perform the same operations on the same
 numbers in any configuration, and only the order in which the partial sums of the inner products are added changes. We
 compare the iterate after \val{val.agree.iters} iterations, before convergence, because a wrong halo could hide behind a
@@ -363,7 +363,7 @@ that do not divide evenly among the ranks), both halo exchanges and ranks with t
 iterations.}\label{tab:valagree}
 \end{table}
 
-\emph{Pipelined CG (V5).} Pipelined and classic CG follow different recurrences, so their iterates agree only in exact
+\emph{Pipelined CG (V5):} Pipelined and classic CG follow different recurrences, so their iterates agree only in exact
 arithmetic and can be compared only once both have converged. For any $\mathbf{x}$ the relative error is at most
 $\kappa$ times the relative true residual $\rho=\|\mathbf{b}-A\mathbf{x}\|/\|\mathbf{b}\|$, and applying this to both
 answers bounds their difference by
@@ -382,7 +382,7 @@ the smallest bound, \val{val.pipe.minbound} (Table~\ref{tab:valpipe}).
 right-hand side of \eqref{eq:v5}.}\label{tab:valpipe}
 \end{table}
 
-\emph{Broken halo exchanges.} A validation test is useful only if it fails on a wrong program,
+\emph{Broken halo exchanges:} A validation test is useful only if it fails on a wrong program,
 so we built \val{val.bug.n} deliberately broken versions of the halo exchange and checked that the tests fail on them
 (Table~\ref{tab:valbugs}). In the first version a received face is dropped, and in the second a rank sends, on one
 face, the ghost layer it holds instead of its halo. Both change the parallel answer by a relative
@@ -395,7 +395,7 @@ has no halo between ranks, so a validation made only of serial checks would have
 error.}\label{tab:valbugs}
 \end{table}
 
-\emph{Accuracy of pipelined CG beyond the tests.} Outside the validation tests we asked both variants for a relative residual of
+\emph{Accuracy of pipelined CG beyond the tests:} Outside the validation tests we asked both variants for a relative residual of
 \val{val.floor.tol} on the 2D grid with $n=\val{val.floor.n}$ on \val{val.floor.ranks} ranks, allowing at most
 \val{val.floor.maxit} iterations. Classic CG \val{val.floor.classic.verdict}. Pipelined CG
 \val{val.floor.pipelined.verdict}.\val{val.floor.pipe.sent} The smallest true residual that a variant can reach in
@@ -408,7 +408,7 @@ requested.
 % ======================================================================================================
 \section{Hardware and measurement}\label{sec:env}\label{sec:timing}
 \req{E10}
-\emph{The nodes.} All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets,
+\emph{The nodes:} All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets,
 each an \val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory
 in total, divided between the two sockets. Intel's specification of this processor gives each socket
 \val{spec.cpu.channels} memory channels of type \val{spec.cpu.memtype} at up to \val{spec.cpu.mts} million transfers per
@@ -416,7 +416,7 @@ second, a peak of \val{spec.cpu.peak}\,GB/s per socket and \val{spec.node.peak}\
 \val{spec.cpu.cache}\,MB of cache shared by the cores of a socket. We did not record how the memory modules are fitted,
 which decides whether that peak rate applies, and Section~\ref{sec:mpi} compares it with the bandwidth we measured.
 
-\emph{Sockets and rank placement.} A core reads the memory of its own socket directly and that of the other socket through the
+\emph{Sockets and rank placement:} A core reads the memory of its own socket directly and that of the other socket through the
 link between the two. One core draws only a small part of a socket's bandwidth, so the first few cores of a socket add
 bandwidth almost in proportion: two cores run the 3D strong-scaling grid \val{pst.3.classic.2.S} times as fast as one,
 and four cores \val{pst.3.classic.4.S} times (Table~\ref{tab:strong}). Once the cores of a socket together saturate its
@@ -426,17 +426,17 @@ the first socket before the second: the binding report of a full-node run shows 
 first socket. A run with at most \val{node.cps} ranks on a node therefore uses one socket and only that socket's memory
 bandwidth.
 
-\emph{The GPU node.} A GPU node, named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus}
+\emph{The GPU node:} A GPU node, named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus}
 NVIDIA GPUs. Our jobs did not record the GPU model, which we take from the node name to be the NVIDIA
 \val{spec.gpu.name}. NVIDIA's specification of it gives \val{spec.gpu.mem}\,GB of memory and a memory bandwidth of
 \val{spec.gpu.bw}\,GB/s, against the \val{spec.node.peak}\,GB/s peak of the two sockets of a CPU node.
 
-\emph{Compilers.} The CPU runs were compiled with GCC \val{env.cxx} and run with Open MPI \val{env.mpi}, and the GPU
+\emph{Compilers:} The CPU runs were compiled with GCC \val{env.cxx} and run with Open MPI \val{env.mpi}, and the GPU
 runs were compiled with the NVIDIA HPC SDK compiler nvc++ \val{env.gpu.cxx} and run with the Open MPI
 \val{env.gpu.mpi} of its HPC-X package, each on a compute node of the type that ran it. A laptop was used only to
 develop the program and to run the validation tests during development, and none of its timings appear in this report.
 
-\emph{What is timed.} Each timed run of the Poisson solver performs exactly \val{iters} CG iterations, whatever the
+\emph{What is timed:} Each timed run of the Poisson solver performs exactly \val{iters} CG iterations, whatever the
 residual, so that runs of different sizes and layouts do the same work per unknown and the total cluster time stays
 bounded. The graph runs instead solve every system to a relative residual of \val{gr.tol}
 (Section~\ref{sec:graphmethod}) and report the time per system. The time of a solve is that of the slowest rank,
@@ -446,7 +446,7 @@ ranks, so the time a rank spends waiting inside a reduction for a slower rank co
 for the job, so no other job shared a node's memory bandwidth or network links during a
 measurement.\val{spread.except}\val{env.serialnote}
 
-\emph{Repeats.} Each run solves the problem \val{repeats} times in one launch of the program, and we report the median.
+\emph{Repeats:} Each run solves the problem \val{repeats} times in one launch of the program, and we report the median.
 Over the \val{rep.cells} distinct configurations solved \val{repeats} times (Table~\ref{tab:plan} counts a configuration
 that belongs to two experiments in each), the largest and the smallest of their times differ by a median of
 \val{rep.median} of the median time, and by more than \val{rep.thr} in \val{rep.nthr} of them. The largest differences
@@ -1126,7 +1126,7 @@ time.
 \interpslot{discussion}{State the conclusions: which decomposition, halo exchange, CG variant and rank-thread layout we
 would use at which scale, and what limited scaling in our runs, keeping to what the tables show.}
 
-\emph{Limitations.} The Poisson timings use a fixed number of iterations, so they describe the cost of one
+\emph{Limitations:} The Poisson timings use a fixed number of iterations, so they describe the cost of one
 iteration, and their total cost to a tolerance, which also grows with $n$ through the iteration count, was measured
 only in serial. The graph runs were timed to a tolerance. Reduction times include waiting for the slowest rank, and we
 did not time a reduction on its own, so they mix latency with load imbalance (Section~\ref{sec:mpi}). The OpenMP GPU
