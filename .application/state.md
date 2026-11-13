@@ -243,6 +243,26 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
 - Checks: 0 hand-typed numbers, 0 prose semicolons, selftests pass. Keys removed from the text: gr.acc.com-amazon,
   gr.acc.com-dblp, gw.com-dblp.deg, gw.com-youtube.deg (all in tables), rankcounts (replaced by st.counts + scale.where).
 
+## Turn 11 (13 Nov 2026): second cold-reader check resolved
+- Table 1: dims_create now follows Open MPI's MPI_Dims_create (2D 72 ranks = 12x6, not 9x8) and geometry() takes the real
+  rank with the most halo (3D 72: 59,772, not the hypothetical 60,112); matches pdims and halo of all 80 recorded runs.
+- Validation: Section 3 reports the CPU solver's run (20261112T063938Z, a0006417c428), not the latest (a GPU build);
+  Section 11 lists only the programs whose rows are used (CPU solver, graph solver 9da57b11ddd2, GPU ace45bed3220,
+  each validated on Vanda minutes before its first timed row); 2e0a5b22 (job 1547835) rows are superseded by 1546583.
+- Weak baseline: the one-rank weak runs (CN-007, job 1546584) cost 2.66/3.06 ns per unknown-iteration against
+  4.06/4.54 at two ranks (same job, node) and 3.57/3.92 for serial runs of half the size (CN-094); 67 MB of vectors per
+  rank ~ the 67.5 MB socket cache, unconfirmed; one-node weak efficiency now from two ranks (0.27/0.28 ~ strong 0.25/0.26).
+- Pipelined/classic: weak series (one job, one node) 0.94/1.00 at P=2/4 in 2D (1.04/1.10 3D), 1.37/1.41 at 36 ranks;
+  the strong one-core pair ran on two nodes (classic CN-094 serial job, pipelined CN-007).
+- Reductions: per iteration unchanged one node -> two (3D 0.79 ms); two ranks on one socket already 0.79/0.85 ms;
+  same size as the compute imbalance (max - mean). Stated as probable waiting; latency not timed.
+- GPU: reference is the fastest recorded one-node CPU run of the grid (3D 72x1 2D-decomp, Table 12; 2D 4x18, Table 13),
+  1.16/1.12; Table 13 shows the one-node column while the 4-node runs wait.
+- Also: attainable accuracy with the V5 point (1.1e-10 at 215 its, 1.5e-9 at 3,000); Poisson-only "100 iterations";
+  repeat-spread count reconciled with Table 7 (shared configurations); 6.4 causes from the time split; Lecture 9 Q&A
+  shortened; 8.8 recorded core counts; 8.9 per graph; 8.10 iterations follow d_max; Table 7 narrowed (all pages fit).
+- Not changed: the AI declaration wording (the user's text) although the cold reader called "coordinating session" jargon.
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.

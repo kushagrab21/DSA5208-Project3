@@ -41,7 +41,7 @@ SURFACE, INK, INK2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#8a8984", "#
 VARIANT = {("classic", "blocking"): ("#2a78d6", "classic CG, blocking halo exchange"),
            ("pipelined", "overlap"): ("#eb6834", "pipelined CG, non-blocking halo exchange")}
 DIMSTYLE = {2: ("--", "o", "2D (5-point)"), 3: ("-", "s", "3D (7-point)")}
-COMP = [("t_compute", "#1baf7a", "o", "computation (stencil and vectors)"), ("t_halo", "#6250d6", "s", "halo exchange"),
+COMP = [("t_compute", "#1baf7a", "o", "computation"), ("t_halo", "#6250d6", "s", "halo exchange"),
         ("t_reduce", "#e34948", "^", "reductions (MPI_Allreduce)")]
 NODES = ["#1baf7a", "#6250d6"]
 
@@ -446,7 +446,7 @@ def fig_graph_strong(D):
 def fig_graph_comm(D):
     fig, axes = new_fig(2)
     used, meta, ticks = [], [], []
-    comp = [("t_compute", "#1baf7a", "o", "local products and vector updates"), ("t_halo", "#6250d6", "s", "ghost exchange"),
+    comp = [("t_compute", "#1baf7a", "o", "products and vectors"), ("t_halo", "#6250d6", "s", "ghost exchange"),
             ("t_reduce", "#e34948", "^", "reductions (MPI_Allreduce)")]
     for ax, dset in zip(axes, GP.STRONG_DATASETS):
         cs, extra = split_place(_graph_series(D, "graph-strong", dset, "classic"))

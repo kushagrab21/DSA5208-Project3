@@ -19,6 +19,7 @@ import argparse
 import datetime
 import glob
 import collections
+import csv
 import json
 import math
 import os
@@ -57,6 +58,8 @@ SPEC = {"cpu.channels": 8, "cpu.memtype": "DDR5", "cpu.mts": 4800, "cpu.cache_mb
         "gpu.bw_gbs": 696}
 # validate.py, case V5: the pipelined run's true residual must be at most this many times the tolerance
 V5_TRUE_FACTOR = 10
+# cluster/ops/opslib.py cmd_calibrate: the one-core runs it uses have at least this many unknowns
+CAL_MIN_UNKNOWNS = 4000000
 # runs at least this long (minutes) are the evidence for the timing noise of the long runs solved only once
 LONG_RUN_MIN = 5
 # the spread between repeats above which a configuration is counted as noisy (per cent)
@@ -144,37 +147,45 @@ def table(out, name, header, rows, spec, reqs, filled=True, waiting="", partial=
 # geometry (MPI_Dims_create emulation, for the communication-volume table)
 # ---------------------------------------------------------------------------------------------------------------
 def dims_create(P, d):
-    best = None
-
-    def rec(rem, k, acc):
-        nonlocal best
-        if k == 1:
-            cand = sorted(acc + [rem], reverse=True)
-            key = (max(cand) - min(cand), cand)
-            if best is None or key < best:
-                best = key
-            return
-        for f in range(1, rem + 1):
-            if rem % f == 0:
-                rec(rem // f, k - 1, acc + [f])
-    rec(P, d, [])
-    return best[1]
+    """The process grid of Open MPI's MPI_Dims_create, as src/grid.cpp calls it: the prime factors of P, largest
+    first, each multiplied onto the direction with the smallest product so far; the result in non-increasing order.
+    (The records' pdims column agrees for every recorded run; cluster_values checks it.)"""
+    primes, m, f = [], P, 2
+    while m > 1:
+        while m % f == 0:
+            primes.append(f)
+            m //= f
+        f += 1
+    dims = [1] * d
+    for q in sorted(primes, reverse=True):
+        k = dims.index(min(dims))
+        dims[k] *= q
+    return sorted(dims, reverse=True)
 
 
 def geometry(n, d, P, split):
-    """Largest local box, halo values per exchange, messages per exchange for one interior rank."""
+    """The rank with the most halo values per exchange, from the program's own block distribution (src/grid.cpp: the
+    first n mod p ranks of a direction get one extra point; a face is exchanged only where a neighbour exists).
+    Returns the process grid, that rank's points, its halo values and its messages, and the largest box."""
+    import itertools
     pd = dims_create(P, split) + [1] * (d - split)
-    loc = [-(-n // p) for p in pd]
-    vol = 1
-    for x in loc:
-        vol *= x
-    halo, msgs = 0, 0
-    for a in range(d):
-        if pd[a] > 1:
-            face = vol // loc[a]
-            halo += 2 * face
-            msgs += 2
-    return pd, vol, halo, msgs
+    size = lambda a, c: n // pd[a] + (1 if c < n % pd[a] else 0)  # noqa: E731
+    best, maxvol = None, 0
+    for co in itertools.product(*[range(p) for p in pd]):
+        loc = [size(a, co[a]) for a in range(d)]
+        vol = 1
+        for x in loc:
+            vol *= x
+        maxvol = max(maxvol, vol)
+        halo, msgs = 0, 0
+        for a in range(d):
+            nb = (co[a] > 0) + (co[a] < pd[a] - 1)
+            halo += nb * (vol // loc[a])
+            msgs += nb
+        key = (halo, vol)
+        if best is None or key > best[0]:
+            best = (key, vol, halo, msgs)
+    return pd, best[1], best[2], best[3], maxvol
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -237,8 +248,9 @@ def design_values(out, results):
         put("scale.where", "They use up to %s whole nodes of %d cores, %d cores in all." % (tn, cpn0, counts[-1]))
     elif whole:
         wn, wp = max(c["nodes"] for c in whole), max(c["ranks"] for c in whole)
-        put("scale.where", "The experiments were designed for up to %d cores on %d whole nodes of %d cores, and on "
-            "whole nodes the recorded runs reach %d cores on %s." % (counts[-1], tn, cpn0, wp, nodes_phrase(wn)))
+        put("scale.where", "The experiments were designed for up to %d cores on %d whole nodes of %d cores. Of these, "
+            "the runs on whole nodes recorded here reach %d cores, on %s." % (counts[-1], tn, cpn0, wp,
+                                                                             nodes_phrase(wn)))
     else:
         put("scale.where", "The experiments were designed for up to %d cores on %d whole nodes of %d cores." %
             (counts[-1], tn, cpn0))
@@ -267,6 +279,11 @@ def design_values(out, results):
         put("strong.nnz%d" % d, grp(N + 2 * d * (n - 1) * n ** (d - 1)))
         put("weak.n%d" % d, grp(MP.WEAK_BASE[d]))
         put("weak.per%d" % d, grp(MP.WEAK_BASE[d] ** d))
+        put("weak.ws%d" % d, fx(4 * 8 * MP.WEAK_BASE[d] ** d / 1e6, 0))
+        # the distance in memory between a point and its farthest stencil neighbour on the strong-scaling grids:
+        # a line of the 2D grid, a plane of the 3D grid (one vector)
+        put("ser.line2", fx(MP.STRONG[2] * 8 / 1e3, 0))
+        put("ser.plane3", fx(MP.STRONG[3] ** 2 * 8 / 1e6, 2))
         put("weak.top.n%d" % d, grp(MP.weak_n(d, counts[-1])))
         put("weak.top.N%d" % d, sci(MP.weak_n(d, counts[-1]) ** d, 1))
         put("serial.list%d" % d, listing(MP.SERIAL[d]))
@@ -298,7 +315,7 @@ def design_values(out, results):
     for d in (2, 3):
         n = MP.STRONG[d]
         for split, Pn in sorted(set(((1, counts[-1]), (d, P["cores_per_node"]), (d, counts[-1])))):
-            pd, vol, halo, msgs = geometry(n, d, Pn, split)
+            pd, vol, halo, msgs, _ = geometry(n, d, Pn, split)
             rows.append(["%dD" % d, "%dD" % split, grp(Pn), "$" + "\\times".join(str(x) for x in pd) + "$",
                          grp(vol), str(msgs), grp(halo), fx(100.0 * halo / vol, 2) + "\\,\\%"])
             if d == 3 and split == 1:
@@ -337,7 +354,7 @@ def design_values(out, results):
             return "--"
         main = reps.most_common(1)[0][0]
         rest = sorted((r, n) for r, n in reps.items() if r != main)
-        return str(main) + "".join(" (%d for %d)" % (r, n) for r, n in rest)
+        return str(main) + "".join(", %d for %d" % (r, n) for r, n in rest)
     nm = lambda ds: listing([GP.DATASETS[d]["display"] for d in ds])  # noqa: E731
     exps = [
         ("serial, fixed iterations", "grid size", "2D $n=%s$--$%s$, 3D $n=%s$--$%s$" % (
@@ -350,27 +367,30 @@ def design_values(out, results):
         ("methods compared", "decomposition, halo exchange, CG variant", "strong-scaling grids", "variants"),
         ("ranks $\\times$ threads", "ranks and threads per node", "strong-scaling grids", "layout"),
         ("GPU", "number of GPUs", "strong-scaling grids", "gpu"),
-        ("graph, serial", "graph, vertex order", nm(GP.ORDER), "graph-serial"),
-        ("graph, strong scaling", "cores, CG variant", nm(GP.STRONG_DATASETS), "graph-strong"),
+        ("graph, serial", "graph, vertex order", "all six graphs", "graph-serial"),
+        ("graph, strong scaling", "cores, CG variant", "com-LiveJournal, com-Orkut", "graph-strong"),
         ("graph, methods compared", "partition, ghost exchange, CG variant, ranks $\\times$ threads",
-         nm(GP.STRONG_DATASETS), "graph-variants"),
-        ("graph, labelling", "shift $a$, seeds $s$, edges kept", nm(GP.ORDER), "graph-sweep")]
+         "com-LiveJournal, com-Orkut", "graph-variants"),
+        ("graph, labelling", "shift $a$, seeds $s$, edges kept", "all six graphs", "graph-sweep")]
     rows = []
     for name, varies, problem, g in exps:
         cores = cores_of(g) if g != "gpu" else "1 and 2 GPUs"
         rows.append([name, varies, problem, cores, count(g), repeats_of(g)])
-    table(out, "plan", ["experiment", "what varies", "problem", "cores", "configurations", "solves"], rows,
-          "lp{0.25\\linewidth}p{0.25\\linewidth}lrl", ["E2", "E3", "E4", "E6", "E7"])
+    table(out, "plan", ["experiment", "what varies", "problem", "cores", "configs.", "solves"], rows,
+          ">{\\raggedright\\arraybackslash}p{0.16\\linewidth}>{\\raggedright\\arraybackslash}p{0.21\\linewidth}"
+          ">{\\raggedright\\arraybackslash}p{0.21\\linewidth}lrl", ["E2", "E3", "E4", "E6", "E7"])
     put("plan.atlas.cells", len(A["cells"]))
 
 
 def validation_values(out):
-    """From the latest qualification JSON, preferring a cluster's over the local one."""
+    """From the latest qualification JSON of the CPU solver, preferring a cluster's over the local one."""
     best = None
     for cl in ("vanda", "atlas", "local"):
         js = sorted(glob.glob(os.path.join(REPO, "results", "validation", cl, "*.json")))
-        # the Poisson qualification only (validate_graph.py writes <stamp>-graph.json next to it)
-        js = [j for j in js if not j.endswith("-graph.json") and json.load(open(j)).get("qualified")]
+        # the Poisson qualification only (validate_graph.py writes <stamp>-graph.json next to it), of the CPU build
+        # (the GPU builds are validated on their GPU node and listed with the timed programs)
+        js = [j for j in js if not j.endswith("-graph.json") and json.load(open(j)).get("qualified") and
+              "offload=1" not in json.load(open(j))["correct"].get("build", "")]
         if js:
             best = (cl, js[-1])
             break
@@ -470,10 +490,21 @@ def validation_values(out):
                 verdict = ("reached it in %s iterations, with a true residual of %s" %
                            (grp(R["iters"]), sci(R["true_rel_res"], 1)))
             else:
-                verdict = ("did not reach it in %s iterations: its recursive residual stopped falling at %s while its "
-                           "true residual stayed at %s" % (grp(R["iters"]), sci(R["rel_res"], 1),
-                                                           sci(R["true_rel_res"], 1)))
+                verdict = ("did not reach it in %s iterations: its tracked residual had fallen only to %s, and its "
+                           "true residual was %s at the end" % (grp(R["iters"]), sci(R["rel_res"], 1),
+                                                                 sci(R["true_rel_res"], 1)))
             put("val.floor.%s.verdict" % cg, verdict, reqs)
+            if cg == "pipelined" and not R["converged"]:
+                v5 = [i for i in det["V5"]["items"] if i["dim"] == I["dim"] and i["n"] == I["n"] and
+                      i["ranks"] == I["ranks"]]
+                if v5:
+                    put("val.floor.pipe.sent", " In V5 the same case had reached a true residual of %s after %s "
+                        "iterations, so in the longer run the true residual rose while the tracked one kept "
+                        "falling." % (sci(v5[0]["rho_p"], 1), grp(v5[0]["iters_pipelined"])), reqs)
+                    put("val.floor.pipe.best", sci(v5[0]["rho_p"], 1), reqs)
+            if cg == "pipelined" and "val.floor.pipe.best" not in V:
+                put("val.floor.pipe.sent", "", reqs)
+                put("val.floor.pipe.best", sci(R["true_rel_res"], 1), reqs)
             put("val.floor.%s.iters" % cg, grp(I[cg]["iters"]), reqs)
             put("val.floor.%s.rec" % cg, sci(I[cg]["rel_res"], 1), reqs)
             put("val.floor.%s.true" % cg, sci(I[cg]["true_rel_res"], 1), reqs)
@@ -562,12 +593,49 @@ def cluster_values(out, results, figures):
     else:
         pend("env.jobs", reqs, why)
 
-    # ---- validation of the binaries that produced the cluster rows
-    shas = sorted(set(r["binary_sha256"] for d in chosen for r in d.rows))
-    if shas:
-        put("val.cl.sha", ", ".join(s[:12] for s in shas), ["E9"])
+    # ---- the programs behind the results (the rows the tables and figures use), and the validation run of each
+    used = {}
+    for d in chosen:
+        for cid, rs in d.cell_rows.items():
+            for r in rs:
+                used.setdefault(r["binary_sha256"], []).append(r)
+    vrows = list(csv.DictReader(open(os.path.join(results, "validated_binaries.csv")))) if os.path.exists(
+        os.path.join(results, "validated_binaries.csv")) else []
+    kinds = []
+    all_before = True
+    for sha, rs in used.items():
+        vs = sorted((v for v in vrows if v["binary_sha256"] == sha and v["verdict"] == "QUALIFIED"),
+                    key=lambda v: v["utc"])
+        build = vs[0]["build"] if vs else ""
+        kind = ("the GPU version" if "offload=1" in build else "the graph solver" if "graph=1" in build
+                else "the CPU solver")
+        first = min(r["utc"] for r in rs).replace("-", "").replace(":", "")
+        ok = bool(vs) and vs[0]["utc"] <= first
+        all_before = all_before and ok
+        if vs:
+            hosts = sorted(set(r["host"] for r in rs))
+            where = (" on the GPU node that then timed it" if "offload=1" in build and hosts == [vs[0]["host"]]
+                     else "")
+            tests = "G1 and G2" if "graph=1" in build else listing(vs[0]["cases"].split(";")[:1]) + "--" + \
+                vs[0]["cases"].split(";")[-1]
+            kinds.append((kind, "%s is \\code{%s}, validated with %s in run %s%s." %
+                          (kind[0].upper() + kind[1:], sha[:12], tests, vs[0]["utc"], where)))
+        else:
+            kinds.append((kind, "%s is \\code{%s}, with no validation run on record." % (kind[0].upper() + kind[1:],
+                                                                                         sha[:12])))
+    order = {"the CPU solver": 0, "the graph solver": 1, "the GPU version": 2}
+    kinds.sort(key=lambda k: order[k[0]])
+    if used:
+        put("val.cl.sha", ", ".join(sorted(x[:12] for x in used)), ["E9"])
+        put("val.programs", " ".join(k[1] for k in kinds), ["E9"])
+        put("val.timed.sent", ("Every program behind a timed result passed its validation tests on %s before its "
+                               "first timed run (Section~\\ref{sec:submit} lists the programs)." % name) if all_before
+            else ("Not every program behind a timed result has a validation run on %s before its first timed run "
+                  "(Section~\\ref{sec:submit} lists the programs)." % name), ["E9"])
+        put("rec.cells", sum(len(d.cell_rows) for d in [RD.data(results, name.lower())]), ["E9"])
     else:
-        pend("val.cl.sha", ["E9"], "the %s validation job (vanda-validate) and timed runs" % name)
+        for k in ("val.cl.sha", "val.programs", "val.timed.sent", "rec.cells"):
+            pend(k, ["E9"], "the %s validation job (vanda-validate) and timed runs" % name)
 
     # ---- serial (E2): from the cluster with the complete serial sweep
     D = Dser
@@ -919,19 +987,36 @@ def cluster_values(out, results, figures):
                 for tag in (["1"] if nn == 1 else []) + (["top"] if nn == nodes[-1] else []):
                     put("lay.%d.%s.best" % (d, tag), "%d$\\times$%d" % (ts[0][1], ts[0][2]), reqs)
                     put("lay.%d.%s.spread" % (d, tag), fx(ts[-1][0] / ts[0][0], 2), reqs)
-        put("lay.top.sent", "; on %s they are %s and %s" % (nodes_phrase(nodes[-1]), V["lay.3.top.best"],
-                                                            V["lay.2.top.best"]) if nodes[-1] > 1 else "", reqs)
+        put("lay.top.sent", (" On %s the fastest layouts are %s in 3D and %s in 2D, and the slowest takes %s and %s "
+                             "times as long." % (nodes_phrase(nodes[-1]), V["lay.3.top.best"], V["lay.2.top.best"],
+                                                 V["lay.3.top.spread"], V["lay.2.top.spread"]))
+            if nodes[-1] > 1 else "", reqs)
         hd = ["ranks $\\times$ threads per node"] + ["%dD, %d node%s" % (d, nn, "s" if nn > 1 else "")
                                                      for d in (2, 3) for nn in nodes]
         table(out, "layout", hd, rows, "l" + "r" * (len(hd) - 1), reqs)
     else:
         w = wait("layout")
+        one = [(cid, c) for cid, c in D.cells("layout") if c["nodes"] == 1]
+        one_ok = bool(one) and all(cid in D.cell_rows for cid, c in one)
         for d in (2, 3):
             for tag in ("1", "top"):
+                if tag == "1" and one_ok:
+                    ts = sorted((D.med(cid), c["ranks"], c["threads"]) for cid, c in one if c["dim"] == d)
+                    put("lay.%d.1.best" % d, "%d$\\times$%d" % (ts[0][1], ts[0][2]), reqs)
+                    put("lay.%d.1.spread" % d, fx(ts[-1][0] / ts[0][0], 2), reqs)
+                    continue
                 pend("lay.%d.%s.best" % (d, tag), reqs, w)
                 pend("lay.%d.%s.spread" % (d, tag), reqs, w)
         pend("lay.top.sent", reqs, w)
-        table(out, "layout", ["ranks $\\times$ threads per node", "time (s)"], [], "lr", reqs, False, w)
+        if one_ok:
+            lays = sorted(set((c["ranks"], c["threads"]) for cid, c in one))
+            rows = [["%d$\\times$%d" % (rk, th)] + [sig(D.med([cid for cid, c in one if c["dim"] == d and
+                                                               c["ranks"] == rk and c["threads"] == th][0]), 3)
+                                                     for d in (2, 3)] for rk, th in lays]
+            table(out, "layout", ["ranks $\\times$ threads per node", "2D, 1 node", "3D, 1 node"], rows, "lrr", reqs,
+                  False, w, partial=True)
+        else:
+            table(out, "layout", ["ranks $\\times$ threads per node", "time (s)"], [], "lr", reqs, False, w)
 
     # ---- GPU (E7): the 1-GPU cells (job vanda-gpu1) are enough for E7; the 2-GPU cells (vanda-gpu, which needs a
     # whole GPU node) are shown when they exist and do not hold E7 back (amendment gpu-split-2026-11-12)
@@ -940,11 +1025,30 @@ def cluster_values(out, results, figures):
     lay1 = [cid for cid, c in D.cells("layout") if c["nodes"] == 1]
     one_done = bool(one) and all(cid in G.cell_rows for cid, c in one)
     lay1_done = bool(lay1) and all(cid in D.cell_rows for cid in lay1)
-    hd = ["grid", "GPUs", "GPU time (s)", "best 1-node CPU time (s)", "CPU node / GPU"]
+    hd = ["grid", "GPUs", "GPU time (s)", "fastest 1-node CPU time (s)", "CPU node / GPU"]
+    Dc = RD.data(results, D.cluster)
+    tabs = {"strong": "tab:strong", "variants": "tab:variants", "layout": "tab:layout"}
+
+    def cpu_ref(d):
+        best = None
+        for g in ("strong", "variants", "layout"):
+            for cid, c in Dc.cells(g, dim=d):
+                if c["nodes"] == 1 and c["ranks"] * c["threads"] == Dc.plan["cores_per_node"] and \
+                        cid in Dc.cell_rows and not c.get("placement"):
+                    t = Dc.med(cid)
+                    if best is None or t < best[0]:
+                        best = (t, c, g)
+        return best
+    lay1_done = all(cpu_ref(d) for d in (2, 3))
     if one_done and lay1_done:
         rows = []
         for d in (2, 3):
-            cpu_best = min(D.med(cid) for cid, c in D.cells("layout", dim=d, nodes=1))
+            cpu_best, cc, cg_ = cpu_ref(d)
+            put("gpu.%d.cpu.what" % d, "%d ranks $\\times$ %d thread%s, the %dD decomposition, %s CG and the %s halo "
+                "exchange" % (cc["ranks"], cc["threads"], "" if cc["threads"] == 1 else "s", cc["decomp"], cc["cg"],
+                              HALO_WORD[cc["halo"]]), reqs)
+            put("gpu.%d.cpu.tab" % d, "Table~\\ref{%s}" % tabs[cg_], reqs)
+            put("gpu.%d.cpu.t" % d, sig(cpu_best, 3), reqs)
             for cid, c in sorted(G.cells("gpu", dim=d), key=lambda t: t[1]["gpus"]):
                 if cid not in G.cell_rows:  # a 2-GPU cell still waiting: say so in its row
                     rows.append("%dD & %d & \\multicolumn{3}{l}{\\pendingrow{a whole GPU node (job vanda-gpu)}}" %
@@ -962,6 +1066,8 @@ def cluster_values(out, results, figures):
         for d in (2, 3):
             pend("gpu.%d.t" % d, reqs, w)
             pend("gpu.%d.vsnode" % d, reqs, w)
+            for k in ("t", "tab", "what"):
+                pend("gpu.%d.cpu.%s" % (d, k), reqs, w)
         table(out, "gpu", hd, [], "lrrrr", reqs, False, w)
 
     # ---- figure slots
@@ -1028,7 +1134,12 @@ def graph_values(out, results):
     put("gr.plan.coreh", grp(round(ch, -1)), ["E10"])
     counts = sorted(set(c["ranks"] for c in gcells if c["dataset"] == "com-orkut" and c["threads"] == 1 and
                         any(c is vplan["cells"][x] for x in vplan["groups"]["graph-strong"]["cells"])))
-    put("gr.strong.counts", listing([str(x) for x in counts]), ["E3"])
+    put("gr.strong.counts.plan", listing([str(x) for x in counts]), ["E3"])
+    # the core counts with recorded graph strong-scaling runs (the plan's list until rows exist)
+    Dgs = RD.data(results, vplan["cluster"])
+    rc = sorted(set(c["ranks"] for cid, c in Dgs.cells("graph-strong", dataset="com-orkut", threads=1)
+                    if cid in Dgs.cell_rows))
+    put("gr.strong.counts", listing([str(x) for x in rc]) if rc else listing([str(x) for x in counts]), ["E3"])
     vc = sorted(set(c["ranks"] * c["threads"] for cid, c in vplan["cells"].items()
                     if cid in vplan["groups"]["graph-variants"]["cells"]))
     put("gr.var.cores", listing([str(x) for x in vc]), ["E8"])
@@ -1301,6 +1412,10 @@ def partial_values(out, results):
     need("node.cpu", ["E10"], w, lambda: cpu[0].replace("(R)", "").replace("(TM)", "") if len(cpu) == 1 else None)
     calp = os.path.join(results, D.cluster, "calibration.json")
     cal = json.load(open(calp)) if os.path.exists(calp) else {}
+    calc = cal.get("from_cells", [])
+    put("cal.core.n", sum(1 for c in calc if "-r1x1-" in c) if calc else "--", ["E5"])
+    put("cal.node.n", sum(1 for c in calc if "-r1x1-" not in c) if calc else "--", ["E5"])
+    put("cal.minN", sci(CAL_MIN_UNKNOWNS, 0), ["E5"])
     w = "%s calibration (results/%s/calibration.json)" % (NM[D.cluster], D.cluster)
     need("cal.core", ["E5"], w, lambda: fx(cal["bw_core_gbs"], 1))
     need("cal.node", ["E5"], w, lambda: grp(round(cal["bw_node_gbs"])))
@@ -1369,9 +1484,19 @@ def partial_values(out, results):
             # pipelined / classic time ratio at one node, and the gain from one socket's worth of ranks to a node
             cl = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg="classic", halo="blocking"))
             pi = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg="pipelined", halo="overlap"))
-            for P in (1, cpn, 2 * cpn):
-                need("%s.%d.pratio.%s" % (tag, d, role[P]), reqs, "; ".join(D.waiting(group)),
-                     lambda: fx(med(D, pi[P]) / med(D, cl[P]), 2))
+            for P in sorted(set(cl) & set(pi) | {1, cpn, 2 * cpn}):
+                for nm in names(P):
+                    need("%s.%d.pratio.%s" % (tag, d, nm), reqs, "; ".join(D.waiting(group)),
+                         lambda: fx(med(D, pi[P]) / med(D, cl[P]), 2))
+            # cost per core, unknown and iteration of classic CG at one and two ranks; weak efficiency from two ranks
+            for P in (1, 2):
+                need("%s.%d.classic.%s.ns" % (tag, d, role.get(P, str(P))), reqs, "; ".join(D.waiting(group)),
+                     lambda: fx(1e9 * med(D, cl[P]) * P / (int(D.row0(cl[P])["iters"]) *
+                                                           int(D.row0(cl[P])["unknowns"])), 2))
+            if group == "weak":
+                for P in (cpn, 2 * cpn):
+                    need("pwk.%d.classic.%s.E2" % (d, role[P]), reqs, "; ".join(D.waiting(group)),
+                         lambda: fx(med(D, cl[2]) / med(D, cl[P]), 2))
             if group == "strong":
                 for a, b in ((cpn // 4, cpn // 2), (cpn // 2, cpn), (cpn, 2 * cpn)):
                     need("pst.%d.classic.gain.%s.%s" % (d, role[a], role[b]), reqs, "; ".join(D.waiting(group)),
@@ -1379,6 +1504,37 @@ def partial_values(out, results):
             else:
                 need("pwk.%d.classic.ratio.2node.node" % d, reqs, "; ".join(D.waiting(group)),
                      lambda: fx(med(D, cl[2 * cpn]) / med(D, cl[cpn]), 2))
+    # reduction time per iteration against the imbalance of the computation (slowest rank's computation minus the
+    # mean over ranks), strong classic runs
+    for d in (2, 3):
+        cs = dict((c["ranks"], cid) for cid, c in D.cells("strong", dim=d, cg="classic", halo="blocking"))
+        for P in (2, cpn, 2 * cpn):
+            nm = role.get(P, str(P))
+            ms = lambda col: 1e3 * med(D, cs[P], col) / int(D.row0(cs[P])["iters"])  # noqa: E731
+            need("pcm.%d.classic.%s.redms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
+                 lambda: fx(ms("t_reduce"), 2))
+            need("pcm.%d.classic.%s.imbms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
+                 lambda: fx(ms("t_compute_max") - ms("t_compute"), 2))
+    # one-node method comparison: where the time of the 3D decompositions goes (classic CG, blocking exchange)
+    for dc in (1, 2, 3):
+        cs = [cid for cid, c in D.cells("variants", dim=3, decomp=dc, cg="classic", halo="blocking", ranks=cpn)]
+        for col, nm in (("t_halo", "halo"), ("t_reduce", "red"), ("t_compute", "comp")):
+            need("var.3.node.d%d.%s" % (dc, nm), ["E8"], "; ".join(D.waiting("variants")),
+                 lambda: fx(1e3 * med(D, cs[0], col) / int(D.row0(cs[0])["iters"]), 2))
+    vt = {}
+    for cid, c in D.cells("variants", ranks=cpn):
+        if cid in D.cell_rows:
+            vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = med(D, cid)
+    need("var.3.node.slab", ["E8"], "variants", lambda: fx(vt[(3, 1, "classic", "blocking")] /
+                                                           vt[(3, 2, "classic", "blocking")], 2))
+    need("var.3.node.blocks", ["E8"], "variants", lambda: fx(vt[(3, 3, "classic", "blocking")] /
+                                                             vt[(3, 2, "classic", "blocking")], 3))
+    gains = [vt[(d, dc, cg, "blocking")] / vt[(d, dc, cg, "overlap")] - 1 for (d, dc, cg, h) in vt
+             if h == "overlap" and (d, dc, cg, "blocking") in vt]
+    need("var.node.ovl.gain", ["E8"], "variants", lambda: fx(100 * max(gains), 1) + "\\,\\%" if gains else None)
+    c2 = [t for k, t in vt.items() if k[0] == 2 and k[2] == "classic"]
+    need("var.2.node.classic.spread", ["E8"], "variants", lambda: fx(100 * (max(c2) / min(c2) - 1), 1) + "\\,\\%"
+         if len(c2) == 4 else None)
     # communication shares at one and two nodes (strong runs), both variants
     for d in (2, 3):
         for cg, halo in (("classic", "blocking"), ("pipelined", "overlap")):
