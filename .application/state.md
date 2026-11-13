@@ -263,6 +263,24 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   shortened; 8.8 recorded core counts; 8.9 per graph; 8.10 iterations follow d_max; Table 7 narrowed (all pages fit).
 - Not changed: the AI declaration wording (the user's text) although the cold reader called "coordinating session" jargon.
 
+## Turn 12 (13 Nov 2026): visual structure (report_visual_markers drill, recommendations 1, 2, 3, 5, 6)
+- 1: \parskip 3pt -> 0.5\baselineskip (no indent); lists, algorithm boxes and captions checked on rendered pages.
+- 2: displayed kappa (1.2), the V5 bound (numbered (1), used by Table 5's caption and G1), row v of eq. (2) and the
+  condition-number bound (numbered (3), used by G1 and 8.10), and the Krylov span (8.2). S and E stay inline.
+- 3: labels (italic, sentence case, full stop, run-in), only in Sections 3 and 4. Section 3: "Error against the exact
+  solution (V1, V2).", "Parallel against serial runs (V3, V4).", "Pipelined CG (V5).", "Broken halo exchanges.",
+  "Accuracy of pipelined CG beyond the tests." Section 4 split into six blocks: "The nodes.", "Sockets and rank
+  placement.", "The GPU node.", "Compilers.", "What is timed.", "Repeats." (timers paragraph merged into "What is timed").
+- 5: Section 7 has Lecture 9's questions as (1)-(4) items (question, then full-sentence answer); Section 9 paragraph 1
+  has the three parts as plain items. No bold heads.
+- 6: every figure and table is referenced (Figs 3, 4, 5, 7, 10, 11; Tables 18, 19 added).
+- Long paragraphs split between their two steps (2.2, 5, 6.1, 6.2, 6.3, 8.3, 8.5, 8.6, 8.7, 8.9, 8.10, 11).
+  Paragraph length (pp. 1-25, the drill's script): median 6 -> 5 lines, p90 10 -> 8, max 18 -> 9.
+- Part-empty pages (p7, p10, p22 before; p10, p12, p22, p23 after the reflow) cured by [htbp] on Figures 3, 5, 11, 12
+  (\figslotfloat) and Tables 9, 10, 20; each float stays within a page of its first mention. References still on p25,
+  appendix on p26, 84 pages. requirements_check knows \figslotfloat.
+- Not done (deferred by the parent): recommendation 4 (margins) until the cluster data are in.
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.

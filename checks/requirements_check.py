@@ -145,7 +145,7 @@ def hand_typed_numbers(tex):
     b = re.sub(r"\\begin\{thebibliography\}.*?\\end\{thebibliography\}", " ", b, flags=re.S)
     for name, n in (("val", 1), ("req", 1), ("label", 1), ("ref", 1), ("eqref", 1), ("cite", 1), ("input", 1),
                     ("includegraphics", 1), ("lstinputlisting", 1), ("hspace", 1), ("vspace", 1), ("setlength", 2),
-                    ("algotitle", 1), ("figslot", 2), ("interpslot", 1), ("src", 1), ("pending", 1),
+                    ("algotitle", 1), ("figslot", 2), ("figslotfloat", 2), ("interpslot", 1), ("src", 1), ("pending", 1),
                     ("draftreview", 1), ("revised", 1),
                     ("texorpdfstring", 0)):
         b = remove_cmd(b, name, n)
@@ -240,7 +240,7 @@ def terms_report(tex):
     b = strip_comments(body_of(tex))
     b = b.split("\\appendix")[0]
     b = b[b.find("\\end{center}"):] if "\\end{center}" in b else b  # the title is not a use
-    b = re.sub(r"\\(?:val|ref|label|req|figslot|interpslot|input|revised)\{[^}]*\}", " ", b)  # macro keys are not uses
+    b = re.sub(r"\\(?:val|ref|label|req|figslot|figslotfloat|interpslot|input|revised)\{[^}]*\}", " ", b)  # macro keys are not uses
     out = []
     for t in TERMS:
         dm = re.search(r"\\term\{%s\}" % re.escape(t), b, re.I)
@@ -266,7 +266,7 @@ def run(tex_path, no_pdf=False, quiet=False):
     # what the text actually uses
     used_vals = set(re.findall(r"\\val\{([^}]*)\}", body))
     used_tabs = set(re.findall(r"\\input\{generated/tab_([^}]*)\.tex\}", body))
-    used_figs = set(re.findall(r"\\figslot\{([^}]*)\}", body))
+    used_figs = set(re.findall(r"\\figslot(?:float)?\{([^}]*)\}", body))
     undefined = sorted(v for v in used_vals if v not in status["values"])
     if undefined:
         problems.append("%d \\val keys not generated: %s" % (len(undefined), undefined[:6]))

@@ -18,7 +18,7 @@
 \titlespacing*{\subsection}{0pt}{1.1ex plus .3ex}{0.5ex}
 \setlist{itemsep=1pt,topsep=2pt,parsep=0pt}
 \captionsetup{font=small,labelfont={bf,sf},skip=4pt}
-\setlength{\parskip}{3pt}\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5\baselineskip}\setlength{\parindent}{0pt}
 \renewcommand{\arraystretch}{1.1}
 \graphicspath{{../figures/}}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -31,6 +31,13 @@
 \newcommand{\setslot}[3]{\expandafter\def\csname sf@#1\endcsname{#2}\expandafter\def\csname sm@#1\endcsname{#3}}
 \newcommand{\slotfilled}[1]{\ifcsname sf@#1\endcsname\csname sf@#1\endcsname\else 0\fi}
 \newcommand{\figslot}[3]{\begin{figure}[H]\centering
+  \ifnum\slotfilled{#1}=0 \fcolorbox{red!60!black}{red!4}{\parbox[c][3.6cm][c]{#2}{\centering\sffamily\small
+  Figure waiting for cluster data\\[3pt]\footnotesize\csname sm@#1\endcsname}}%
+  \else\includegraphics[width=#2]{#1.pdf}\fi
+  \ifnum\slotfilled{#1}=2 \\[2pt]\pendingrow{partial figure, still waiting for \csname sm@#1\endcsname}\fi
+  \caption{#3}\label{fig:#1}\end{figure}}
+% the same, as a float that may move to the top of the next page (used where [H] would leave a part-empty page)
+\newcommand{\figslotfloat}[3]{\begin{figure}[htbp]\centering
   \ifnum\slotfilled{#1}=0 \fcolorbox{red!60!black}{red!4}{\parbox[c][3.6cm][c]{#2}{\centering\sffamily\small
   Figure waiting for cluster data\\[3pt]\footnotesize\csname sm@#1\endcsname}}%
   \else\includegraphics[width=#2]{#1.pdf}\fi
@@ -62,7 +69,7 @@ DSA5208 Project 3\\[3pt]
 Kushagra Bhatnagar (A0351591A) \quad$\cdot$\quad Pratyush Sinha (A0352482A)
 \end{center}
 
-\textbf{Summary.} We solve the Poisson equation $-\Delta u = f$ on the unit square and the unit cube with the
+\textbf{Summary:} We solve the Poisson equation $-\Delta u = f$ on the unit square and the unit cube with the
 \term{conjugate gradient} (CG) method, an iterative solver for symmetric positive definite linear systems, without
 ever storing the matrix. It is parallelised with MPI across processes and with OpenMP \term{threads} (workers that
 share one process's memory) inside each process, and the same loops can also run on a GPU through OpenMP GPU offload.
@@ -135,8 +142,11 @@ $\mathbf{p}\leftarrow\mathbf{r}+(\gamma'/\gamma)\,\mathbf{p}$, \ $\gamma\leftarr
 \end{minipage}}
 \end{figure}
 
-The number of iterations is governed by the condition number of $A$, here $\kappa=\cot^2(\pi h/2)\approx
-\big(2(n+1)/\pi\big)^2$. The error shrinks by a fixed factor about every $\sqrt{\kappa}$ iterations, so reaching a fixed
+The number of iterations is governed by the condition number of $A$, which here is
+\begin{equation*}
+\kappa=\cot^2\Big(\frac{\pi h}{2}\Big)\approx\Big(\frac{2(n+1)}{\pi}\Big)^2.
+\end{equation*}
+The error shrinks by a fixed factor about every $\sqrt{\kappa}$ iterations, so reaching a fixed
 tolerance takes a number of iterations proportional to $n$, and because one iteration costs work proportional to $N$,
 the serial time to a fixed tolerance grows like $N^{1+1/d}$, that is like $N^{3/2}$ in 2D and $N^{4/3}$ in 3D.
 Parallelisation changes the cost of one iteration but not the number of iterations, which is a property of the method.
@@ -211,7 +221,9 @@ while it waits. The \term{non-blocking halo exchange} instead starts all receive
 \code{MPI\_Isend}, applies the stencil to the interior points, whose neighbours are all local, waits with
 \code{MPI\_Waitall}, and then applies the stencil to the outer shell of points that need ghost values. Only the points
 next to a face shared with another rank are computed after the wait, so a box on the edge of the domain has a shell on
-fewer sides. The aim is to hide the
+fewer sides.
+
+The aim is to hide the
 message time behind computation, but whether it is hidden depends on the MPI library, because many implementations move
 a large message forward only while the program is inside an MPI call, which here happens only at the final wait. We
 therefore measure the overlap rather than assume it (Section~\ref{sec:mpi}). Both exchanges use two-sided messages, and
@@ -336,7 +348,7 @@ and the iteration counts double with each halving of $h$, as the growth of $\sqr
 \label{tab:valorder}
 \end{table}
 
-\emph{Parallel runs equal the serial run (V3, V4).} A parallel run should differ from the serial run only through
+\emph{Parallel against serial runs (V3, V4).} A parallel run should differ from the serial run only through
 rounding, because once the halos are right the stencil and the vector updates perform the same operations on the same
 numbers in any configuration, and only the order in which the partial sums of the inner products are added changes. We
 compare the iterate after \val{val.agree.iters} iterations, before convergence, because a wrong halo could hide behind a
@@ -354,8 +366,11 @@ iterations.}\label{tab:valagree}
 \emph{Pipelined CG (V5).} Pipelined and classic CG follow different recurrences, so their iterates agree only in exact
 arithmetic and can be compared only once both have converged. For any $\mathbf{x}$ the relative error is at most
 $\kappa$ times the relative true residual $\rho=\|\mathbf{b}-A\mathbf{x}\|/\|\mathbf{b}\|$, and applying this to both
-answers bounds their difference by $\|\mathbf{x}_p-\mathbf{x}_s\|/\|\mathbf{x}_s\|\le\kappa(\rho_p+\rho_s)/(1-\kappa
-\rho_s)$, where the subscript $p$ marks the pipelined and $s$ the standard, classic variant. Both variants stop when the
+answers bounds their difference by
+\begin{equation}
+\frac{\|\mathbf{x}_p-\mathbf{x}_s\|}{\|\mathbf{x}_s\|}\ \le\ \frac{\kappa(\rho_p+\rho_s)}{1-\kappa\rho_s},\label{eq:v5}
+\end{equation}
+where the subscript $p$ marks the pipelined and $s$ the standard, classic variant. Both variants stop when the
 residual that they track falls below \val{val.pipetol} of $\|\mathbf{b}\|$, and the true residual of the pipelined
 answer must also be at most \val{val.pipe.truetol}, a looser limit because its tracked residual can drift
 (Section~\ref{sec:design}). Pipelined CG took \val{val.pipe.iters}, and the largest difference, \val{val.pipe.maxdiff}, lies far inside
@@ -363,11 +378,11 @@ the smallest bound, \val{val.pipe.minbound} (Table~\ref{tab:valpipe}).
 
 \begin{table}[H]\centering\footnotesize
 \input{generated/tab_valpipe.tex}
-\caption{V5: pipelined CG against classic CG, both converged. $\rho$ is the relative true residual and the bound is
-$\kappa(\rho_p+\rho_s)/(1-\kappa\rho_s)$.}\label{tab:valpipe}
+\caption{V5: pipelined CG against classic CG, both converged. $\rho$ is the relative true residual and the bound is the
+right-hand side of \eqref{eq:v5}.}\label{tab:valpipe}
 \end{table}
 
-\emph{The tests detect errors in the halo exchange.} A validation test is useful only if it fails on a wrong program,
+\emph{Broken halo exchanges.} A validation test is useful only if it fails on a wrong program,
 so we built \val{val.bug.n} deliberately broken versions of the halo exchange and checked that the tests fail on them
 (Table~\ref{tab:valbugs}). In the first version a received face is dropped, and in the second a rank sends, on one
 face, the ghost layer it holds instead of its halo. Both change the parallel answer by a relative
@@ -380,7 +395,7 @@ has no halo between ranks, so a validation made only of serial checks would have
 error.}\label{tab:valbugs}
 \end{table}
 
-\emph{How accurate pipelined CG can be.} Outside the validation tests we asked both variants for a relative residual of
+\emph{Accuracy of pipelined CG beyond the tests.} Outside the validation tests we asked both variants for a relative residual of
 \val{val.floor.tol} on the 2D grid with $n=\val{val.floor.n}$ on \val{val.floor.ranks} ranks, allowing at most
 \val{val.floor.maxit} iterations. Classic CG \val{val.floor.classic.verdict}. Pipelined CG
 \val{val.floor.pipelined.verdict}.\val{val.floor.pipe.sent} The smallest true residual that a variant can reach in
@@ -393,53 +408,54 @@ requested.
 % ======================================================================================================
 \section{Hardware and measurement}\label{sec:env}\label{sec:timing}
 \req{E10}
-All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets, each an
-\val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory in
-total, divided between the two sockets. Intel's specification of this processor gives each socket
-\val{spec.cpu.channels} memory channels of type \val{spec.cpu.memtype} at up to \val{spec.cpu.mts} million transfers per second, a peak of
-\val{spec.cpu.peak}\,GB/s per socket and \val{spec.node.peak}\,GB/s per node, and \val{spec.cpu.cache}\,MB of cache
-shared by the cores of a socket. We did not record how the memory modules are fitted, which decides whether that peak
-rate applies, and Section~\ref{sec:mpi} compares it with the bandwidth we measured. A core reads the memory of its own
-socket directly and that of the other socket through the link between the two. One core draws only a small part of a
-socket's bandwidth, so the first few cores of a socket add bandwidth almost in proportion: two cores run the 3D
-strong-scaling grid \val{pst.3.classic.2.S} times as fast as one, and four cores \val{pst.3.classic.4.S} times
-(Table~\ref{tab:strong}). Once the cores of a socket together saturate its memory channels, the bandwidth available to a
-run grows with the number of sockets it uses, not with its number of cores. The launcher
-places the ranks of a node on consecutive cores and binds each rank to its cores, so the ranks fill the first socket
-before the second: the binding report of a full-node run shows the first \val{node.cps} ranks on the first socket. A run
-with at most \val{node.cps} ranks on a node therefore uses one socket and only that socket's memory bandwidth. A GPU node,
-named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus} NVIDIA GPUs. Our jobs did not record
-the GPU model, which we take from the node name to be the NVIDIA \val{spec.gpu.name}. NVIDIA's specification of it gives
-\val{spec.gpu.mem}\,GB of memory and a memory bandwidth of \val{spec.gpu.bw}\,GB/s, against the \val{spec.node.peak}\,GB/s
-peak of the two sockets of a CPU node.
+\emph{The nodes.} All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets,
+each an \val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory
+in total, divided between the two sockets. Intel's specification of this processor gives each socket
+\val{spec.cpu.channels} memory channels of type \val{spec.cpu.memtype} at up to \val{spec.cpu.mts} million transfers per
+second, a peak of \val{spec.cpu.peak}\,GB/s per socket and \val{spec.node.peak}\,GB/s per node, and
+\val{spec.cpu.cache}\,MB of cache shared by the cores of a socket. We did not record how the memory modules are fitted,
+which decides whether that peak rate applies, and Section~\ref{sec:mpi} compares it with the bandwidth we measured.
 
-The CPU runs were compiled with GCC \val{env.cxx} and run with Open MPI \val{env.mpi}, and the GPU runs were compiled
-with the NVIDIA HPC SDK compiler nvc++ \val{env.gpu.cxx} and run with the Open MPI \val{env.gpu.mpi} of its HPC-X
-package, each on a compute node of the type that ran it. A laptop was used only to develop the program and to run the
-validation tests during development, and none of its timings appear in this report.
+\emph{Sockets and rank placement.} A core reads the memory of its own socket directly and that of the other socket through the
+link between the two. One core draws only a small part of a socket's bandwidth, so the first few cores of a socket add
+bandwidth almost in proportion: two cores run the 3D strong-scaling grid \val{pst.3.classic.2.S} times as fast as one,
+and four cores \val{pst.3.classic.4.S} times (Table~\ref{tab:strong}). Once the cores of a socket together saturate its
+memory channels, the bandwidth available to a run grows with the number of sockets it uses, not with its number of
+cores. The launcher places the ranks of a node on consecutive cores and binds each rank to its cores, so the ranks fill
+the first socket before the second: the binding report of a full-node run shows the first \val{node.cps} ranks on the
+first socket. A run with at most \val{node.cps} ranks on a node therefore uses one socket and only that socket's memory
+bandwidth.
 
-Each timed run of the Poisson solver performs exactly \val{iters} CG iterations, whatever the residual, so that runs of
-different sizes and layouts do the same work per unknown and the total cluster time stays bounded. The graph runs
-instead solve every system to a relative residual of \val{gr.tol} (Section~\ref{sec:graphmethod}) and report the time
-per system. The time of a solve is that of the
-slowest rank, measured with \code{MPI\_Wtime} from a barrier at its start.
+\emph{The GPU node.} A GPU node, named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus}
+NVIDIA GPUs. Our jobs did not record the GPU model, which we take from the node name to be the NVIDIA
+\val{spec.gpu.name}. NVIDIA's specification of it gives \val{spec.gpu.mem}\,GB of memory and a memory bandwidth of
+\val{spec.gpu.bw}\,GB/s, against the \val{spec.node.peak}\,GB/s peak of the two sockets of a CPU node.
 
-Each run solves the problem
-\val{repeats} times in one launch of the program, and we report the median. Over the \val{rep.cells} distinct
-configurations solved \val{repeats} times (Table~\ref{tab:plan} counts a configuration that belongs to two experiments in
-each), the largest and the smallest of their times differ by a median of \val{rep.median} of
-the median time, and by more than \val{rep.thr} in \val{rep.nthr} of them. The largest differences are in one-core
-runs, up to \val{rep.serial.max1s} for runs longer than a second, and the median keeps a single outlying repeat out of
-the reported time. The runs to a tolerance (Section~\ref{sec:serial}) and the labelling runs of
-Section~\ref{sec:graph}, which measure iteration counts and accuracy, are solved once, as are the one-core graph runs
-on com-Orkut, which take about \val{gr.longrep} minutes per solve. The \val{rep.long.n} repeated runs of more than
-\val{rep.long.min} minutes differ by at most \val{rep.long.max} between repeats.
+\emph{Compilers.} The CPU runs were compiled with GCC \val{env.cxx} and run with Open MPI \val{env.mpi}, and the GPU
+runs were compiled with the NVIDIA HPC SDK compiler nvc++ \val{env.gpu.cxx} and run with the Open MPI
+\val{env.gpu.mpi} of its HPC-X package, each on a compute node of the type that ran it. A laptop was used only to
+develop the program and to run the validation tests during development, and none of its timings appear in this report.
 
-The halo, reduction and computation times are averaged over ranks,
-so the time a rank spends waiting inside a reduction for a slower rank counts as reduction time, and this
+\emph{What is timed.} Each timed run of the Poisson solver performs exactly \val{iters} CG iterations, whatever the
+residual, so that runs of different sizes and layouts do the same work per unknown and the total cluster time stays
+bounded. The graph runs instead solve every system to a relative residual of \val{gr.tol}
+(Section~\ref{sec:graphmethod}) and report the time per system. The time of a solve is that of the slowest rank,
+measured with \code{MPI\_Wtime} from a barrier at its start. The halo, reduction and computation times are averaged over
+ranks, so the time a rank spends waiting inside a reduction for a slower rank counts as reduction time, and this
 \term{load imbalance} is part of what we report as the cost of communication. Parallel runs used whole nodes reserved
 for the job, so no other job shared a node's memory bandwidth or network links during a
-measurement.\val{spread.except}\val{env.serialnote} Table~\ref{tab:plan} lists the experiments.
+measurement.\val{spread.except}\val{env.serialnote}
+
+\emph{Repeats.} Each run solves the problem \val{repeats} times in one launch of the program, and we report the median.
+Over the \val{rep.cells} distinct configurations solved \val{repeats} times (Table~\ref{tab:plan} counts a configuration
+that belongs to two experiments in each), the largest and the smallest of their times differ by a median of
+\val{rep.median} of the median time, and by more than \val{rep.thr} in \val{rep.nthr} of them. The largest differences
+are in one-core runs, up to \val{rep.serial.max1s} for runs longer than a second, and the median keeps a single outlying
+repeat out of the reported time. The runs to a tolerance (Section~\ref{sec:serial}) and the labelling runs of
+Section~\ref{sec:graph}, which measure iteration counts and accuracy, are solved once, as are the one-core graph runs
+on com-Orkut, which take about \val{gr.longrep} minutes per solve. The \val{rep.long.n} repeated runs of more than
+\val{rep.long.min} minutes differ by at most \val{rep.long.max} between repeats. Table~\ref{tab:plan} lists the
+experiments.
 
 \begin{table}[H]\centering\small
 \input{generated/tab_plan.tex}
@@ -477,7 +493,9 @@ vectors that an iteration touches take \val{ser.ws.2.n512}\,MB or more, a 2D ite
 runs the cost does not fall at $N=\val{ser.2.n1024.N}$, whose vectors take \val{ser.ws.2.n1024}\,MB and would fit in the
 \val{spec.cpu.cache}\,MB cache of a socket (Section~\ref{sec:env}). The one-rank weak-scaling runs, made on another node,
 did run faster than this with \val{weak.ws2}\,MB of vectors (Section~\ref{sec:weak}), so how much that cache helps a
-single core differs between our runs, for a reason we did not establish. The two smallest grids depart from this in opposite directions. The smallest costs \val{ser.2.n64.ns}\,ns per
+single core differs between our runs, for a reason we did not establish.
+
+The two smallest grids depart from this in opposite directions. The smallest costs \val{ser.2.n64.ns}\,ns per
 unknown in 2D, because with only \val{ser.2.n64.N} unknowns the fixed cost of starting each loop is no longer small next
 to the work, while the next one costs only \val{ser.2.n128.ns}\,ns, because its vectors, \val{ser.ws.2.n128}\,MB, fit
 in the cache close to the core and the iteration does not wait for main memory. The serial repeats spread more than most
@@ -521,17 +539,19 @@ The strong-scaling grids have \val{strong.N2} unknowns in 2D ($n=\val{strong.n2}
 ($n=\val{strong.n3}$), so 2D and 3D have about the same number of unknowns, while the 3D matrix has seven nonzeros per
 row against five and a 3D rank has more halo. They fit in one node's memory, at most \val{strong.mem3}\,GB for pipelined CG, and \val{iters} iterations of classic CG
 take \val{pst.2.classic.one.T}\,s in 2D and \val{pst.3.classic.one.T}\,s in 3D on one core. We ran \val{st.counts}
-ranks. With classic CG the efficiency at \val{meas.top} cores\val{meas.where} is \val{st.2.classic.Etop} in 2D and
+ranks. Figure~\ref{fig:fig_strong} plots the time against the cores, and Table~\ref{tab:strong} gives the speedups and
+efficiencies. With classic CG
+the efficiency at \val{meas.top} cores\val{meas.where} is \val{st.2.classic.Etop} in 2D and
 \val{st.3.classic.Etop} in 3D, from speedups of \val{st.2.classic.Stop} and \val{st.3.classic.Stop} against the ideal
 \val{meas.top}. With pipelined CG and
 the non-blocking halo exchange the efficiency at \val{meas.top} cores is \val{st.2.pipelined.Etop} in 2D and
 \val{st.3.pipelined.Etop} in 3D.\val{meas.both}
 
-\figslot{fig_strong}{0.98\linewidth}{Strong scaling on \val{cl.strong}: time for \val{iters} iterations on the fixed 2D
+\figslotfloat{fig_strong}{0.98\linewidth}{Strong scaling on \val{cl.strong}: time for \val{iters} iterations on the fixed 2D
 (left) and 3D (right) grids against cores, for classic CG with blocking halo exchange and pipelined CG with non-blocking
 halo exchange. The dotted line is perfect scaling from the classic one-core time.\val{spread.cap}}
 
-\begin{table}[H]\centering\small
+\begin{table}[htbp]\centering\small
 \input{generated/tab_strong2.tex}\\[4pt]
 \input{generated/tab_strong3.tex}
 \caption{Strong scaling on \val{cl.strong}, 2D (top) and 3D (bottom): median time $T$ for \val{iters} iterations,
@@ -544,7 +564,9 @@ the \val{node.cpn} cores of one node run \val{pst.3.classic.node.S} times as fas
 times in 2D), where perfect scaling would give \val{node.cpn}, so the efficiency on one node is
 \val{pst.3.classic.node.E}. Going from one node to two divides the time by \val{pst.3.classic.gain.node.2node}, close to
 the ideal factor of two, so the efficiency on \val{node.cpn2} cores stays at \val{pst.3.classic.2node.E}. This is the
-memory regime of the cost model (Section~\ref{sec:model}). We express it as an effective bandwidth, the unknowns times
+memory regime of the cost model (Section~\ref{sec:model}).
+
+We express this memory limit as an effective bandwidth, the unknowns times
 the bytes moved per unknown and iteration of Section~\ref{sec:model} times the iterations, divided by the measured time.
 Its median is \val{cal.core}\,GB/s over the \val{cal.core.n} one-core runs with at least \val{cal.minN} unknowns,
 classic and pipelined, and \val{cal.node}\,GB/s over the \val{cal.node.n} full-node runs of all the experiments, which
@@ -567,12 +589,14 @@ Weak scaling keeps about \val{weak.per2} unknowns per rank in 2D (base $n=\val{w
 and $n=\val{wk.top.n3}$ in 3D. The number of iterations is fixed, so this measures the cost of one iteration, while to a
 fixed tolerance the iteration count would also grow with $n$ (Section~\ref{sec:serial}). With classic CG the efficiency
 at \val{meas.top} cores\val{meas.where} is \val{wk.2.classic.Etop} in 2D and \val{wk.3.classic.Etop} in 3D, measured
-from the one-rank time.
+from the one-rank time, and Figure~\ref{fig:fig_efficiency} plots the efficiencies of both scaling experiments.
 
-With the work per rank fixed, the 3D time rises from \val{pwk.3.classic.one.T}\,s on one rank to
+With the work per rank fixed, the 3D time rises (Figure~\ref{fig:fig_weak}) from \val{pwk.3.classic.one.T}\,s on one rank to
 \val{pwk.3.classic.half.T}\,s with \val{node.half} ranks sharing one socket, stays at \val{pwk.3.classic.node.T}\,s on
 the full node, where each socket carries the same load, and grows by a factor of only
-\val{pwk.3.classic.ratio.2node.node} on two nodes. The one-rank runs are anomalously fast. They cost
+\val{pwk.3.classic.ratio.2node.node} on two nodes.
+
+The one-rank runs are anomalously fast. They cost
 \val{pwk.2.classic.one.ns}\,ns per unknown and iteration in 2D and \val{pwk.3.classic.one.ns}\,ns in 3D, against
 \val{pwk.2.classic.2.ns} and \val{pwk.3.classic.2.ns}\,ns per rank for the two-rank runs of the same job on the same node
 and \val{ser.2.n1024.ns} and \val{ser.3.n101.ns}\,ns for the serial runs with half as many unknowns (Table~\ref{tab:serial}).
@@ -587,14 +611,14 @@ communication between nodes costs little next to that limit.
 \figslot{fig_weak}{0.98\linewidth}{Weak scaling on \val{cl.strong}: time for \val{iters} iterations with the work per
 core held fixed, 2D (left) and 3D (right). A flat line is perfect scaling.\val{spread.cap}}
 
-\begin{table}[H]\centering\small
+\begin{table}[htbp]\centering\small
 \input{generated/tab_weak2.tex}\\[4pt]
 \input{generated/tab_weak3.tex}
 \caption{Weak scaling on \val{cl.strong}, 2D (top) and 3D (bottom): median time for \val{iters} iterations and
 efficiency against the one-rank time, which is anomalously low (Section~\ref{sec:weak}).\val{spread.tabnote}}\label{tab:weak}
 \end{table}
 
-\figslot{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments and both CG
+\figslotfloat{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments and both CG
 variants on \val{cl.strong}. The dotted line is perfect efficiency. Points up to \val{cpn} cores are inside one
 node\val{scale.beyond}.\val{spread.cap}}
 
@@ -618,7 +642,9 @@ in 3D. We did not time a reduction on its own, which would separate its latency 
 
 Pipelined CG cuts the share of the reductions on two nodes to \val{pcm.3.pipelined.2node.red}, but up to
 \val{node.cpn2} cores it is slower at every core count, taking \val{pst.3.pratio.node} times the classic time on one node
-and \val{pst.3.pratio.2node} times on two (\val{pst.2.pratio.node} and \val{pst.2.pratio.2node} in 2D). The traffic ratio of
+and \val{pst.3.pratio.2node} times on two (\val{pst.2.pratio.node} and \val{pst.2.pratio.2node} in 2D).
+
+The traffic ratio of
 the memory model (Section~\ref{sec:model}) predicts the time ratio only where memory bandwidth sets the time. The
 weak-scaling runs, which all ran in one job on one node, show this. Their time ratio is \val{pwk.2.pratio.2} at $P=2$
 and \val{pwk.2.pratio.4} at $P=4$ in 2D (\val{pwk.3.pratio.2} and \val{pwk.3.pratio.4} in 3D), where the cores leave
@@ -672,16 +698,21 @@ decomposition behaves at \val{topcores} ranks (Table~\ref{tab:geometry}).}
 \section{MPI with OpenMP threads, and the GPU}\label{sec:mpix}
 \req{E6}\req{E7}
 Lecture~9 asks four questions of an MPI+OpenMP program, and the design of Section~\ref{sec:design} already answers the
-first three for our solver. Across ranks we parallelise the grid itself: each rank owns a box and takes part in the halo
-exchange and the reductions, while the threads of a rank share every loop over its box. Ranks and threads synchronise
-at the implicit barrier at the end of each threaded loop, after which the master thread alone calls MPI, so one barrier
-per loop and no locks are needed. The threads do not interact with MPI windows, because the program uses none.
-
-The fourth question, which split of a \val{lay.cpn}-core node into ranks and threads is fastest, needs measurement. We
-timed \val{plan.layouts} ranks $\times$ threads per node, on \val{lay.nodes} of \val{cl.layout}, with the
+first three for our solver.
+\begin{enumerate}[label=(\arabic*)]
+\item What is parallelised across ranks, and what across threads? Across ranks we parallelise the grid itself: each rank
+owns a box and takes part in the halo exchange and the reductions, while the threads of a rank share every loop over
+its box.
+\item How do ranks and threads synchronise, and how much? They synchronise at the implicit barrier at the end of each
+threaded loop, after which the master thread alone calls MPI, so one barrier per loop and no locks are needed.
+\item How do threads interact with MPI windows? They do not, because the program uses no windows.
+\item Which split of a \val{lay.cpn}-core node into ranks and threads is fastest? This needs measurement, and the rest of
+this section gives it.
+\end{enumerate}
+We timed \val{plan.layouts} ranks $\times$ threads per node, on \val{lay.nodes} of \val{cl.layout}, with the
 strong-scaling grids, and Section~\ref{sec:design} gives what fewer ranks gain and what more threads cost. On one node
 the fastest layout is \val{lay.3.1.best} in 3D and \val{lay.2.1.best} in 2D, and the slowest takes
-\val{lay.3.1.spread} and \val{lay.2.1.spread} times as long (Table~\ref{tab:layout}).\val{lay.top.sent}
+\val{lay.3.1.spread} and \val{lay.2.1.spread} times as long (Table~\ref{tab:layout} and Figure~\ref{fig:fig_layout}).\val{lay.top.sent}
 
 \figslot{fig_layout}{0.98\linewidth}{Time for \val{iters} iterations for each split of a node's \val{cpn} cores into
 ranks and threads, on \val{lay.nodes} of \val{cl.layout}. The right end of each line is pure MPI.}
@@ -756,19 +787,30 @@ solve
 (L+aI)\,x_c=b_c,\qquad (b_c)_v=\begin{cases}1 & v\in S_c\\ 0 & \text{otherwise,}\end{cases}\label{eq:graph}
 \end{equation}
 then label every evaluated vertex $v$ with the community $c$ whose $(x_c)_v$ is largest. Row $v$ of \eqref{eq:graph}
-reads $(x_c)_v=\big((b_c)_v+\sum_{u\sim v}(x_c)_u\big)/(d_v+a)$: away from the seeds each value is the sum of its
-neighbours' values divided by $d_v+a$, so $x_c$ is a diffusion from the seeds damped by a factor of about $d_v/(d_v+a)$
+reads
+\begin{equation*}
+(x_c)_v=\frac{(b_c)_v+\sum_{u\sim v}(x_c)_u}{d_v+a}:
+\end{equation*}
+away from the seeds each value is the sum of its neighbours' values divided by $d_v+a$, so $x_c$ is a diffusion from the seeds damped by a factor of about $d_v/(d_v+a)$
 per step, and a shift that is small against the degrees lets the labels travel far while a large one keeps them near
 the seeds. Since $L$ is symmetric positive semidefinite and $a>0$, the matrix $L+aI$ is symmetric positive definite with
 eigenvalues in $[a,\lambda_{\max}+a]$, where $\lambda_{\max}\le 2d_{\max}$ by Gershgorin's theorem, so its condition
-number is at most $(2d_{\max}+a)/a$ and CG needs more iterations, roughly as $a^{-1/2}$, as $a$ shrinks. The seeds of
-each community are its $s$ exclusive members with the smallest hash of their SNAP id, so they are the same for every
+number is bounded by
+\begin{equation}
+\kappa(L+aI)\ \le\ \frac{2d_{\max}+a}{a},\label{eq:graphkappa}
+\end{equation}
+and CG needs more iterations, roughly as $a^{-1/2}$, as $a$ shrinks.
+
+The seeds of each community are its $s$ exclusive members with the smallest hash of their SNAP id, so they are the same for every
 vertex order and rank count, the seeds for a smaller $s$ are the first of those for a larger one, and the seed lists are
 recorded with the runs.
 
 A vertex whose $x_c$ is zero for every $c$ is \term{unreached} and counted as wrong. This happens when no seed lies in
 its connected component, and also because of a property of CG: after $k$ iterations $x_c$ lies in
-$\mathrm{span}\{b_c,(L+aI)b_c,\dots,(L+aI)^{k-1}b_c\}$, which is zero beyond graph distance $k-1$ from the seeds. A
+\begin{equation*}
+\mathrm{span}\{b_c,\ (L+aI)\,b_c,\ \dots,\ (L+aI)^{k-1}b_c\},
+\end{equation*}
+which is zero beyond graph distance $k-1$ from the seeds. A
 vertex is therefore labelled only if CG ran for more iterations than its distance from the nearest seed, so a large
 $a$, which needs few iterations, also limits the reach. The accuracy is the share of evaluated vertices labelled
 with their own community, and we compare it with two baselines, \emph{majority}, which always answers the largest
@@ -778,7 +820,9 @@ use $a=\val{gr.a}$ and $s=\val{gr.s}$, and every system is solved to a relative 
 \subsection{Parallel design for graphs}
 The graph solver reuses the CG code of the Poisson problem unchanged and replaces only the operator. Both CG variants
 are written once for any operator, and the stencil and the graph each supply a product $y=Ax$ that also returns the
-local part of $x\cdot y$. The matrix $L+aI$ is stored in compressed sparse rows and partitioned in one dimension, each
+local part of $x\cdot y$.
+
+The matrix $L+aI$ is stored in compressed sparse rows and partitioned in one dimension, each
 rank owning a contiguous range of vertex numbers. The ranges are chosen in one of two ways, equal rows (\emph{rows})
 giving each rank the same number of vertices, and equal nonzeros (\emph{nnz}) giving each rank the same number of
 nonzeros of $L+aI$, which is the degree plus one per row. The degrees are heavy-tailed: a few vertices, which we call
@@ -819,7 +863,8 @@ this graph. They grow in the same way between one and two threads on one rank, w
 comparison would measure rounding rather than correctness. The growth that we measured during development
 is listed with G1 in the validation program (Appendix~\ref{app:code}). Run to convergence, the answers of the parallel
 runs, classic and pipelined, differ from the one-rank classic answer by at most \val{gr.val.conv}, below the smallest of
-their condition-number bounds, \val{gr.val.bound}, computed as in V5.
+their condition-number bounds, \val{gr.val.bound}, computed as in \eqref{eq:v5} with the condition number bounded by
+\eqref{eq:graphkappa}.
 \item \textbf{G2} builds a small graph by hand: two cliques of five vertices, a bridge, a tail, a self-loop, a repeated
 edge and a vertex whose only edge is a self-loop. The conversion must report what was built, \val{gr.val.tinyV} vertices
 and \val{gr.val.tinyE} edges, and on one to three ranks $x$ must match a dense solve of the same system to
@@ -846,7 +891,9 @@ With \val{gr.s} seeds per community every graph is labelled far better than both
 The accuracy lies between \val{gr.acc.lo} and \val{gr.acc.hi}, against majority shares between \val{gr.maj.com-orkut}
 and \val{gr.maj.com-youtube} and an expected \val{gr.rand} for a random guess. com-LiveJournal reaches
 \val{gr.acc.com-lj}, com-Youtube \val{gr.acc.com-youtube} and com-Orkut \val{gr.acc.com-orkut}, and email-Eu-core, at
-\val{gr.acc.email-Eu-core}, is the second hardest after com-DBLP. Diffusion labels a vertex correctly when more of its
+\val{gr.acc.email-Eu-core}, is the second hardest after com-DBLP.
+
+Diffusion labels a vertex correctly when more of its
 paths lead to the seeds of its own community than to those of others, so the accuracy depends on how many of a
 community's edges stay inside it, which we did not measure. How the communities were chosen gives one hint: those of
 the com- graphs are SNAP's selection of the communities with the best structural scores (Section~\ref{sec:snapdata}),
@@ -884,7 +931,9 @@ below one, the average degree under which an Erd\H{o}s--R\'enyi random graph no 
 holds a fixed share of all vertices, although com-Youtube still reaches most of its evaluated vertices, so the
 threshold is only a rough guide for these graphs. On these three sparse graphs most of the accuracy lost is unreached
 vertices: com-Amazon loses \val{gr.keep.com-amazon.loss}, com-DBLP \val{gr.keep.com-dblp.loss} and com-Youtube
-\val{gr.keep.com-youtube.loss}. The same thinning lowers the average degree of com-Orkut from \val{gw.com-orkut.deg} to
+\val{gr.keep.com-youtube.loss}.
+
+The same thinning lowers the average degree of com-Orkut from \val{gw.com-orkut.deg} to
 \val{gr.keep.com-orkut.deg}, leaves only \val{gr.keep.com-orkut.unr} of its evaluated vertices unreached and costs it
 \val{gr.keep.com-orkut.loss} of accuracy, down to \val{gr.keep.com-orkut.acc}, so on this dense graph most of the smaller loss is wrong labels on reached
 vertices. A sparser graph is also cheaper to solve: CG
@@ -922,7 +971,9 @@ per iteration grows with the nonzeros with a fitted exponent of \val{gr.ser.slop
 \val{gr.ser.slopebfs} in the breadth-first order, against the value of one for a constant cost per nonzero. On
 com-Orkut, the largest graph, one iteration costs \val{gr.ser.ns.natural}\,ns per nonzero in the natural order and
 \val{gr.ser.ns.bfs}\,ns in the breadth-first order, which is \val{gs.vsgrid} times the \val{ser.nsnnz2}\,ns of the 2D
-stencil, although per nonzero the graph streams fewer bytes. The operator stores no matrix values, because every
+stencil, although per nonzero the graph streams fewer bytes.
+
+The operator stores no matrix values, because every
 off-diagonal entry of $L+aI$ is $-1$, only a column index of \val{gs.bytes.nnz} bytes per entry and \val{gs.bytes.row}
 bytes per row for the row pointer and the degree. With the CG vectors an iteration on com-Orkut therefore streams about
 \val{gs.com-orkut.bpnnz} bytes per nonzero, against \val{ser.bpnnz2} for the 2D stencil, and at the rate that one core
@@ -951,7 +1002,8 @@ line is perfect scaling from one core.\val{spread.cap}}
 
 The two largest graphs, \val{gr.strongdata}, were run on \val{gr.strong.counts} cores, of a design that reaches
 \val{topcores} cores, one rank per core, with equal
-nonzeros, the neighbourhood collective and the natural order. At \val{gr.st.top} cores classic CG reaches a speedup of
+nonzeros, the neighbourhood collective and the natural order. Figure~\ref{fig:fig_graph_strong} plots the time per system against the cores, and
+Table~\ref{tab:graphstrong} gives the speedups. At \val{gr.st.top} cores classic CG reaches a speedup of
 \val{gr.st.com-lj.classic.S} on com-LiveJournal and \val{gr.st.com-orkut.classic.S} on com-Orkut, efficiencies of
 \val{gr.st.com-lj.classic.E} and \val{gr.st.com-orkut.classic.E}, and on one full node the efficiencies are
 \val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}. The one-core runs on com-Orkut were solved
@@ -963,10 +1015,11 @@ once (Section~\ref{sec:timing}).
 speedup $S$ and efficiency $E$.}\label{tab:graphstrong}
 \end{table}
 
-\figslot{fig_graph_comm}{0.98\linewidth}{Time per iteration of graph CG on \val{cl.gr.strong} in local products and
+\figslotfloat{fig_graph_comm}{0.98\linewidth}{Time per iteration of graph CG on \val{cl.gr.strong} in local products and
 vector updates, ghost exchange and reductions, classic CG.\val{spread.cap}}
 
-At the largest core count the ghost exchange takes \val{gr.comm.com-lj.halo} of the time on com-LiveJournal and
+Figure~\ref{fig:fig_graph_comm} splits the time per iteration into its parts. At the largest core count the ghost
+exchange takes \val{gr.comm.com-lj.halo} of the time on com-LiveJournal and
 \val{gr.comm.com-orkut.halo} on com-Orkut, and the reductions \val{gr.comm.com-lj.red} and \val{gr.comm.com-orkut.red}.
 A rank there exchanges with up to \val{gr.comm.com-orkut.nbrs} others on com-Orkut and holds up to
 \val{gr.comm.com-orkut.ghosts} ghosts, because a graph with hubs connects almost every rank to almost every other.
@@ -988,7 +1041,7 @@ edges cut, ghosts and neighbours of the rank with the most, nonzero imbalance, a
 neighbourhood collective and classic CG.}\label{tab:graphpart}
 \end{table}
 
-\begin{table}[H]\centering\footnotesize
+\begin{table}[htbp]\centering\footnotesize
 \input{generated/tab_graphpart72.tex}
 \caption{The partitions and the ranks $\times$ threads layouts on one node (\val{node.cpn} cores) of
 \val{cl.gr.variants}: share of edges cut, ghosts and neighbours of the rank with the most, nonzero imbalance and time per
@@ -996,7 +1049,7 @@ system, with the neighbourhood collective and classic CG. The hybrid layouts use
 nonzeros.}\label{tab:graphpart72}
 \end{table}
 
-\figslot{fig_graph_variants}{0.98\linewidth}{Time per system for every partition, ghost exchange and CG variant at
+\figslotfloat{fig_graph_variants}{0.98\linewidth}{Time per system for every partition, ghost exchange and CG variant at
 \val{gr.var.cores} cores on \val{cl.gr.variants}, with the ranks $\times$ threads layouts in the bottom rows. In the
 row labels, rows and nnz are the partitions by equal rows and equal nonzeros, bfs is the breadth-first order, and
 alltoallv, neighbor and overlap are the all-to-all exchange, the neighbourhood collective and its non-blocking form.}
@@ -1005,7 +1058,8 @@ On com-Orkut at \val{gr.var.com-orkut.top} cores the fastest combination is \val
 takes \val{gr.var.com-orkut.spread} times as long, and on com-LiveJournal the fastest is \val{gr.var.com-lj.best} and the
 slowest takes \val{gr.var.com-lj.spread} times as long. The natural order cuts \val{gr.cut.com-orkut.natural.nnz} of com-Orkut's edges
 and the breadth-first order \val{gr.cut.com-orkut.bfs.nnz}, and equal rows leave a nonzero imbalance of
-\val{gr.imb.com-orkut.natural.rows} against \val{gr.imb.com-orkut.natural.nnz} for equal nonzeros.
+\val{gr.imb.com-orkut.natural.rows} against \val{gr.imb.com-orkut.natural.nnz} for equal nonzeros
+(Table~\ref{tab:graphpart}).
 
 \revised{graph-parallel}%
 On one node the partition and the layout both matter, and which matters more depends on the graph
@@ -1014,7 +1068,9 @@ On one node the partition and the layout both matter, and which matters more dep
 solve then takes \val{gv.com-lj.node.rows} times as long as with equal nonzeros (\val{gv.com-orkut.node.rows} on
 com-Orkut). The breadth-first numbering does not help these two dense graphs: it cuts \val{gv.com-lj.node.cut.bfs} of
 com-LiveJournal's edges against \val{gv.com-lj.node.cut.nat} for the natural order, and the solve takes
-\val{gv.com-lj.node.bfs} times as long. With \val{node.cpn} ranks almost every rank exchanges with every other, up to
+\val{gv.com-lj.node.bfs} times as long.
+
+With \val{node.cpn} ranks almost every rank exchanges with every other, up to
 \val{gv.com-orkut.node.nbrs.nat} neighbours on com-Orkut, and most edges are cut whatever the order, because these graphs
 have no narrow cut along any one-dimensional order. Among the exchanges the neighbourhood collective is the fastest. On
 com-LiveJournal, with the natural order, equal nonzeros and classic CG, the all-to-all over every rank takes
@@ -1036,12 +1092,14 @@ scaling at \val{topcores} cores, and which method we would use there.}
 In most of these networks a few labelled members identify a community: with \val{gr.s} seeds per community,
 com-Amazon, com-LiveJournal, com-Youtube and com-Orkut are labelled \val{gr.lift.range} times as accurately as the
 majority baseline (Table~\ref{tab:graphacc}). The communities of com-DBLP and email-Eu-core are the hardest to recover
-from the links, and more seeds help on most graphs (Section~\ref{sec:graphacc}). How sparse a network is decides how
+from the links, and more seeds help on most graphs (Section~\ref{sec:graphacc}).
+
+How sparse a network is decides how
 robust the labelling is. The three sparse com- graphs, com-Amazon, com-DBLP and com-Youtube (Table~\ref{tab:graphdata}),
 depend on few paths and lose most of their accuracy to unreached vertices when thinned, while the densest, com-Orkut,
 loses much less and mostly to wrong labels, so for labelling by diffusion a missing edge matters most in a network that
 has few. The cost of the method follows the hubs rather than the average degree. The iterations per system grow roughly
-with the square root of the largest degree, as the condition-number bound of Section~\ref{sec:graphmethod} predicts,
+with the square root of the largest degree, as the condition-number bound \eqref{eq:graphkappa} predicts,
 from \val{gw.com-amazon.it} on com-Amazon, whose largest degree is \val{gw.com-amazon.dmax}, to \val{gw.com-youtube.it}
 on the sparse com-Youtube, with \val{gw.com-youtube.dmax}, and \val{gw.com-orkut.it} on com-Orkut, with
 \val{gw.com-orkut.dmax}.
@@ -1049,13 +1107,15 @@ on the sparse com-Youtube, with \val{gw.com-youtube.dmax}, and \val{gw.com-orkut
 % ======================================================================================================
 \section{Discussion}\label{sec:discussion}
 \req{E8}
-The parts of the solver are parallelised with different techniques because they have different dependences. The
-stencil and the vector updates touch each point independently, so they are split by domain decomposition across ranks
-and by loop sharing across threads, and they need no communication except the halo exchange. The inner products need
-every point, so each rank sums its own part with its threads and the ranks then combine the partial sums in a
-reduction, blocking in classic CG and non-blocking in pipelined CG. The halo exchange is point-to-point between
-neighbouring ranks only, and its volume depends on the decomposition. On a GPU the same loops run as device kernels, and
-the halo also travels between device and host.
+The parts of the solver are parallelised with different techniques because they have different dependences.
+\begin{itemize}
+\item The stencil and the vector updates touch each point independently, so they are split by domain decomposition
+across ranks and by loop sharing across threads, and they need no communication except the halo exchange.
+\item The inner products need every point, so each rank sums its own part with its threads and the ranks then combine
+the partial sums in a reduction, blocking in classic CG and non-blocking in pipelined CG.
+\item The halo exchange is point-to-point between neighbouring ranks only, and its volume depends on the decomposition.
+\end{itemize}
+On a GPU the same loops run as device kernels, and the halo also travels between device and host.
 
 Which part needs the most communication depends on what is counted. By volume it is the halo exchange, whose
 thousands of values per exchange (Table~\ref{tab:geometry}) compare with the one or two numbers of a reduction. By the number of
@@ -1087,7 +1147,9 @@ are responsible for the content and quality of this submission.
 The source code is listed in full in Appendix~\ref{app:code}, together with the README, which explains how to build,
 validate and run it. The program builds with CMake or with one \code{mpicxx} line per binary (\code{scripts/build.sh}),
 \code{p3cg -{}-help} lists its options, and \code{checks/validate.py} runs the validation tests of
-Section~\ref{sec:validation}. Every table and figure was generated on \val{generated_at} by scripts in the code package
+Section~\ref{sec:validation}.
+
+Every table and figure was generated on \val{generated_at} by scripts in the code package
 from the records of \val{env.jobs} batch jobs, which ran \val{rec.cells} of the \val{plan.vanda.cells} configurations
 planned in advance. The records identify each program by the start of its SHA-256 hash, and a validation run is named
 by the time, in UTC, at which it started. \val{val.programs} The SNAP files are downloaded on the
