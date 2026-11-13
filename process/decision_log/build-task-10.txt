@@ -1,0 +1,190 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions. The watcher may write results/ and cluster/logs/; commit only your paths.
+
+CONTEXT
+- The parent accepted your language pass (ba36c74). It then made one fix (commit after ba36c74): the hardware section no longer
+  claims ~252 GB per socket, because only the node total, 503.4 GB, is recorded (env.mempersock dropped).
+- A COLD-READER CHECK followed: a fresh agent with no context read pp. 1-24 as the grader would. Its full findings are pasted
+  below, VERBATIM. Many are not wording problems: they are internal contradictions or claims that do not follow from the
+  report's own numbers. A careful grader would catch these.
+
+TASK: fix every item below, by hand, under the same binding rules
+(/Users/kushagra/Desktop/final_assignment/assumption_drill/report_language_pass/ASSUMPTIONS.md and 03_DRILL.md).
+For each item:
+- verify against the data, the code or the run records before changing text;
+- fix the claim, not just its words;
+- edit the generator where the text comes from report_macros.py or figures.py.
+Rules:
+- Add NO unmeasured facts. Where a reference value is missing (peak/STREAM bandwidth, cache sizes, GPU memory bandwidth),
+  either reword the claim so it needs no such value, or cite a public specification with its source (e.g. the Intel and
+  NVIDIA product pages for the Xeon Platinum 8452Y and the A40), labelled as a specification and not a measurement.
+- Measurable facts from our own records (fit ranges, spread across repeats, per-kernel byte counts from the code, whether
+  seeds are excluded from evaluation in label.cpp) must be checked and stated.
+- Keep 0 hand-typed numbers. Where a needed number is new, add it as a generated value.
+The most important ones:
+1. Reconcile the scaling thesis (1.4, 2.3, 2.5) with the measurements in Section 6. Within a node, memory bandwidth limits
+   scaling. The cost model gets a bandwidth-ceiling term (bytes ÷ (sockets × bandwidth per socket)). Reductions grow with P
+   and matter beyond that, and dominate for the graphs at 144 cores. State the thesis once, in the measured range, and
+   point to it.
+2. The 96/128 bytes-per-point derivation: count reads and writes per kernel from the code. Fix the "so", and reconcile the
+   measured one-core ratio (1.07-1.10) with the model's 1.33. Make 6.3's "close" claim honest.
+3. Attainable accuracy: say which variant's floor is higher and give both numbers.
+4. Section 8.6's conclusion: it holds for the sparse graphs, not com-Orkut.
+5. Section 5: the 2D/3D pairing holds N fixed. Fix "separates dimension from nonzeros".
+6. Section 8.7: correct "As on the grid".
+7. Node counts and placement wording: Section 6 intro "up to 2 nodes"; Section 4 "whole nodes reserved" against the
+   shared-node captions. Make the wording read correctly whether the 288 whole-node rows, the 256 shared-node rows, both or
+   neither exist.
+Then all the remaining items and notes. Also fix the appendix listings dropping non-ASCII characters (arrows, the less-or-equal
+sign) under tectonic: use listings' literate replacements that actually work under XeTeX, or replace those characters in
+the printed copies only.
+
+AFTER: rebuild, run requirements_check (0 hand-typed), and diff the \val keys. Report, per item number: fixed how, or not fixed
+and why. Commit. Keep state.md current.
+
+=== COLD-READER FINDINGS (verbatim) ===
+Verdicts per section (one pass?):
+- 1: Yes; dense but clear. The 1.4 thesis (reductions limit scaling) is contradicted later by Section 6.
+- 2: Mostly. The 96/128 bytes per point are not derived. The cost model omits the per-socket bandwidth ceiling that
+  Sections 4/6 rely on. Algorithm 2 reuses n.
+- 3: Yes. Two stalls: subscript s in V5 is undefined; the attainable-accuracy sentence says the opposite of its numbers.
+- 4: Yes, but references are missing (peak or STREAM bandwidth, cache sizes, GPU model), and it contradicts Section 6 on
+  node count and node sharing.
+- 5: Mostly. The claim that the 2D/3D pairing "separates dimension from nonzeros" is wrong; the fit ranges are not given.
+- 8.1: Yes. The .top5000 statement does not fit email-Eu-core; the greedy theta rule is heavy.
+- 8.2: Yes, dense. The k vs k-1 reach is inconsistent with 8.6; it is unstated whether seeds are counted in evaluation.
+- 8.3: Yes, except the metrics list (the definitions read as extra metrics).
+- 8.4: Mostly. It says "two tests" and then gives three bullets. The G1 rounding-growth sentence is long and unsupported.
+- 8.5: Yes. The numbers are repeated, and the "hard graphs" explanation also fits com-Amazon.
+- 8.6: Yes, but the headline conclusion ("mostly unreached") is contradicted by its own com-Orkut numbers.
+- 8.7: Yes, but it contradicts Section 5 ("as on the grid ... per nonzero"), and "two social networks" leaves out
+  com-Youtube.
+- 6, 7, 8.8-8.9, 9, Summary (waiting): see items 3, 13, 14, 15 and the notes.
+
+Flagged sentences, most important first:
+1. 2.5 | "With the problem fixed and P growing, the first part falls like 1/P" / "The model therefore predicts that
+   communication takes a growing share of each iteration and that the reductions, which do not shrink at all, eventually
+   dominate." | g, c | Add the bandwidth ceiling (time >= bytes / (sockets x per-socket bandwidth)). Section 4 says
+   bandwidth grows with sockets not cores, and 6.1 finds nearly all efficiency lost inside one node, yet 6.1 says "the
+   cost model explains this".
+2. 1.4 | "Neither dependence can be removed without changing the method, and a solve repeats both thousands of times, so
+   their cost, not the arithmetic, decides how far the method scales." | g, f | Contradicted by 6.1/6.3 (memory bandwidth
+   limits up to 144 cores; communication 2.6-17%). Reword as "beyond the memory limit of a node". The claim is repeated
+   in 2.3 and twice in 2.5; state it once.
+3. 6 (intro) | "All runs in this section were made on Vanda, on up to 2 nodes of 72 cores, with one thread per rank." | g |
+   Conflicts with "We ran ... 256 and 288 ranks" (4 nodes), Table 1, Table 7 (1-288), and "four-node runs" in 6.4 and 7.
+   Fix the node count.
+4. 2.3 (also 2.5) | "It carries 8 vectors instead of 5, so each iteration moves about 128 bytes per grid point instead of
+   96, and on a memory-bound problem an iteration therefore takes longer whenever there is no reduction latency to hide." |
+   c, g | 8/5 = 1.6 but 128/96 = 1.33, so the "so" does not follow. Show the per-kernel read/write count behind 96 and 128.
+   The measured one-core ratio (Table 9) is 1.07-1.10, not 1.33, while 6.3 calls 1.33 "close".
+5. 3 | "The smallest true residual that a variant can reach in floating point is called its attainable accuracy, and it is
+   lower for pipelined CG, ..." | g | Literally this says pipelined's floor is lower, the reverse of 2.6e-9 vs 5.1e-13.
+   Say "worse (a higher floor) for pipelined CG" and give both numbers.
+6. 8.6 | "The accuracy lost on thinned graphs is therefore mostly the unreached vertices, not wrong labels on reached
+   ones." | g | com-Orkut loses 0.110 accuracy with only 0.014 unreached, so most of its loss is wrong labels. Restrict the
+   claim to the sparse graphs.
+7. 8.1 | "A vertex that belongs to exactly one of the K communities we call exclusive, and only exclusive vertices serve as
+   seeds or are evaluated." | a, c | State whether seeds are excluded from the evaluated set. If not, s = 20 on
+   email-Eu-core makes 200 of 538 evaluated vertices seeds.
+8. 4 | "A core reads the memory of its own socket directly and that of the other socket through the link between the two,
+   so the memory bandwidth available to a run grows with the number of sockets it uses, not with its number of cores." |
+   c, g | Give per-socket bandwidth (peak or STREAM) as the reference for 26.3 and 438 GB/s. Qualify with "once a few cores
+   saturate it", since Table 9 shows S = 2.0 on 2 cores.
+9. 5 | "...at the same matrix dimension the 3D matrix has seven nonzeros per row against five, so each pair separates the
+   effect of the dimension from that of the nonzeros." | g | Within a pair, dimension and nonzeros per row change together.
+   The pair holds N fixed, so it separates unknowns from nonzeros.
+10. 8.7 | "As on the grid, an iteration costs a roughly fixed time per nonzero once the graph no longer fits in cache." | g |
+    Section 5 concluded grid time follows unknowns, not nonzeros. Start with "Unlike the grid ...".
+11. 2.5 | "The program times the three parts separately on every rank with MPI_Wtime, which lets Section 6 check this
+    prediction against measurement." | g | The timers are compute/halo/reduction, while the model is compute/volume-over-
+    bandwidth/latency, and the halo timer mixes the last two. Say which timer tests which term.
+12. 2.5 | "This differs from the textbook picture in which the matrix-vector product is the costly step, because our product
+    is a matrix-free stencil whose cost falls like 1/P, so the reductions, not the product, set the limit of scaling." | a,
+    c | "Textbook picture" is unidentified. Any distributed SpMV's local work falls like 1/P; the real reason is that the
+    halo is a small surface.
+13. 6.1 | "so 2D and 3D do the same work and differ only in the stencil and in how much halo each rank has." | g | 3D has 40%
+    more nonzeros and takes 28.4 s serially vs 24.1 s. Say "the same number of unknowns".
+14. 4 | "Parallel runs used whole nodes reserved for the job, so no other job shared a node's memory bandwidth or network
+    links during a measurement." | g | Every figure note in 6-8 says a point "may come from whole nodes or from shared
+    nodes". Settle which.
+15. 9 (Limitations) | "...so the Vanda GPU runs, made after it had passed the validation tests on a GPU node, were its first
+    execution on a GPU." | g | Passing the validation tests on a GPU node was itself an execution on a GPU. Say "first
+    timed runs".
+16. 8.5 | "A likely reason is that their communities are defined by something other than the links, a department or a
+    publication venue whose authors also publish elsewhere, ..." | g, c | Product categories and user groups are also
+    defined outside the links, yet com-Amazon reaches 1.000. Name a separating property.
+17. 8.1 | "For every graph SNAP also lists the communities of highest quality in a separate file (.top5000.cmty), and we use
+    that file." | g, c | email-Eu-core's communities are departments, from a labels file, not .top5000. Define "highest
+    quality".
+18. 8.6 (also 8.10) | "The same thinning leaves com-Orkut, at 76.3 edges per vertex, nearly intact" | g | 76.3 is the average
+    degree 2E/V (about 38 edges per vertex). Say "average degree", as Table 15 does.
+19. 8.7 | "On these two social networks a breadth-first search reaches a large share of the graph within a few steps, so the
+    order cannot put a vertex's neighbours close to it, ..." | g, c | com-Youtube is also a friendship network and gained
+    most from BFS (1.75). Name the structural property instead of "social".
+20. 8.7 | "The stencil finds its neighbours at fixed offsets, mostly in cache, whereas the graph stores a column index for
+    every nonzero and reads each neighbour's value at an address that only the index decides, so many of those reads go to
+    main memory." | c | Add that CSR also streams about 12 B per nonzero (value plus index), which the matrix-free stencil
+    never reads. Quantify both causes.
+21. 3 (V5) | "||xp - xs||/||xs|| <= kappa(rho_p + rho_s)/(1 - kappa rho_s)" and "Both variants are run to a relative
+    residual of 1e-10 and must also converge in their true residual." | a, g | Subscript s is undefined. Table 5 shows
+    rho_p = 1.1e-10 > 1e-10; state the true-residual criterion exactly.
+22. 8.2 vs 8.6 | "A vertex is therefore labelled only if CG ran for at least as many iterations as it is far from the nearest
+    seed" / 8.6 "after k iterations the solution is non-zero only within k steps of a seed (Section 8.2)" | g | 8.2 says x
+    is zero beyond distance k-1, so the requirement is k >= distance + 1. Use one statement in both places.
+23. 8.5 | "Table 16: Labelling with a = 1 and s = 5 on Vanda: ... CG iterations per system and time per system." | c | No
+    core count is given. Table 17 implies ~0.58 s per iteration on one core for com-Orkut, so 1,024 iterations would be
+    ~590 s, not 27.4 s.
+24. 2.3 (Algorithm 2) | "n = Aw" | a, g | n already means grid points per direction. Rename the vector (e.g. m).
+25. 2.4 | "We chose OpenMP offload over CUDA so that the CPU and GPU versions run the same arithmetic and the CPU analysis does
+    not depend on a GPU node, at the price of the extra copies of the halos." | a, c | "CPU analysis does not depend on a
+    GPU node" is unclear. CUDA without GPU-aware MPI would make the same halo copies, so they are not the price of OpenMP.
+26. 4 | "Each run solves the problem 3 times in one process, and we report the median." | a, c | "In one process" presumably
+    means one launch. Report the spread across repeats.
+27. 4 | "A GPU node, named GN-A40 in the cluster, has the same processors and 2 NVIDIA GPUs." | c | Name the GPU model and its
+    memory bandwidth, the reference the 1.17x result needs.
+28. 8.4 (G1) | "The fixed-iteration comparison stops early because on this graph the rounding differences grow by about three
+    orders of magnitude every five iterations once CG has found the large eigenvalues of the hub vertices, ..." | b, c, g |
+    "Hub" is undefined. Eigenvalues belong to the matrix, not vertices. The growth rate is asserted. Split and point to
+    evidence.
+29. 8.4 (G1) | "Converged answers differ by 4.6e-11, within the condition-number bound of 1.4e-9 used in V5." | a | Say which
+    answers: parallel vs one-rank, or classic vs pipelined.
+30. 8.3 | "Every run records the edge cut, the share of edges whose two ends are owned by different ranks, the ghosts and
+    neighbours per rank, the nonzero imbalance, the largest number of nonzeros per rank over the mean, and the time spent
+    exchanging ghosts, ..." | a, d | The definitions read as list items; parenthesise them.
+31. 8.5 | "The accuracy is 0.651 on com-DBLP at worst and 1.000 on com-Amazon at best, ... and the graphs fall into three
+    groups." | f, e | The next two sentences repeat 1.000 and 0.651, and 8.10 repeats all six. Give each once; drop the
+    "three groups" teaser.
+32. 3 | "In the second a rank sends the plane next to its boundary layer instead of the boundary layer itself." | b |
+    "Boundary layer" is undefined (Section 2 calls it the halo / outermost owned layer). Use that term.
+33. 1.1 | "Each point does only a few additions for every value it reads, so the arithmetic intensity is low in the sense of
+    Lecture 12, ..." | a, c | Give the number (flops per byte, about 0.1) instead of the lecture pointer.
+34. 5 | "The fitted slopes are 0.98 in 2D and 0.98 in 3D, against the predicted value of one, ..." | c | State the fit range
+    and the cache sizes behind "no longer fits in a core's cache".
+35. 5 | "...so the serial time to the tolerance of 1e-8 grows like N^{1+1/d}, as derived in Section 1." | c | This is inferred
+    from the iteration exponent only. Report the fitted time exponent from Fig. 2 (right).
+36. 8.6 | "0.928 of its evaluated vertices are no longer connected to any seed of their own community and are left
+    unreached" | g | 8.2 defines unreached as zero for every community; "of their own community" is a different set.
+37. 8.6 | "com-DBLP and com-Youtube behave alike, with average degrees of 0.8 and 0.7 after thinning, below the average degree
+    of one under which a random graph no longer has a component that spans most of it." | c | Give their accuracy and
+    unreached shares, and name the random-graph model (Erdos-Renyi giant component).
+38. 8.6 | "Thinning a graph removes paths, and its effect depends on how many paths there were." | e | Cut it; open with the
+    com-Amazon vs com-Orkut contrast.
+39. 2.2 | "Only the faces that touch another rank are held back, so a box on the edge of the domain has a thinner shell." | a
+    | "held back" -> "computed after the wait"; "thinner" -> "a shell on fewer sides".
+40. 2.3 | "In exact arithmetic it produces the same iterates as classic CG, and its costs follow from the extra recurrences."
+    | e | Keep the first clause; let the next sentences state the costs.
+
+Notes (sections still waiting for data):
+- Semicolons: the only two in prose are in the Summary ("inside each process; the same loops ..." and "in 2D; with the
+  work per core fixed ..."). The Summary's "it refuses two deliberately broken versions" should become "it fails on".
+- 8.6: "There are two exceptions." followed by "And at the largest shift ..." is choppy.
+- 8.9: "Pipelined CG takes 1.14 times as long on one node (1.05 on com-Orkut), as it does on the grid." conflicts with the
+  grid's 1.44.
+- 8.8: "Runs whose single repetition would last more than 10 minutes were run once instead of 3 times" conflicts with
+  Section 4 and Table 7 ("each solved 3 times"); "noise far below one per cent" has no evidence.
+- 3: Vanda is used before Section 4 defines it ("The results below were obtained on a Vanda compute node.").
+- 8.4: says "its own two validation tests" and then lists G1-G3.
+- G1 vs G2 both report exactly 2.3e-15; worth checking.
+=== END ===

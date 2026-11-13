@@ -1,0 +1,54 @@
+ROLE (unchanged)
+Delegated builder (child), DSA5208 Project 3, continuing your own session. Same workspace (build/, write only there), same
+exclusions: no real cluster contact (no ssh/scp/rsync-over-ssh/qsub), no remotes, no messages, no Canvas. Report blockers to the
+parent.
+
+PARENT'S ACCEPTANCE OF TURN 3
+I re-ran test_fake_cluster.sh: exit 0, 516 lines, every refusal and acceptance reproduced, real dirs untouched. Accepted, with your
+changes (calibration job, single ledger, <commit>-synced builds, most-filled cluster, worst-case budget rule).
+
+WHAT THE FIRST REAL SESSION FOUND (12 Nov ~00:05 IST). Read the real file: results/atlas/env/discover-20261111T183351Z.txt
+(the parent ran discover.sh atlas8 for real).
+1. Atlas key login works (host atlas8-c01, Python 3.6.8, cmake /usr/bin/cmake, rsync present).
+2. Atlas queues usable by this user:
+   - parallel: enabled; resources_min.ncpus=12; resources_max.ncpus=96; max_run_res.ncpus per user=96; max_run 4 per
+     user; default_chunk.node_pool=par12; max mem 540gb; walltime up to 720h;
+   - serial: 1 cpu, 2-15gb, max_run 40 per user.
+   hpc6a (192 cores) is ACL-restricted to named users, so NOT usable. normal (route) is disabled.
+   => Atlas can never run >=256 cores. The 256-core strong and weak cells are Vanda-only. Read pbsnodes in the discovery
+   file for the actual cores per node in the par12 pool.
+3. Bugs found in your tools:
+   (a) apply_discovery.py proposed hpc6a. It must skip queues whose acl_user_enable=True unless the user is in acl_users,
+       skip disabled or unstarted queues and from_route_only ones, and respect resources_min.ncpus and the per-user
+       max_run_res limits.
+   (b) discover.sh listed only the old centos6.3 modules, and the PATH mpicxx is mvapich2-1.9 (2013). Lecture 8 says that
+       on Atlas you must `source /app1/ebenv` before `module avail`/`module load`. discover.sh and cluster/atlas/env.sh
+       must do that, and discovery must list the EasyBuild OpenMPI/GCC/foss/CMake modules. Until the parent re-runs it,
+       write env.sh to pick a recent foss/OpenMPI by pattern and print what it loaded.
+4. Vanda: the new account has not reached Vanda yet. The portal says "NUS HPC account not found", and SSH rejects the NUS
+   password. The parent routes vanda through atlas8 (ProxyJump in ~/.ssh/config), because Vanda refused the Mac's VPN
+   address after failed logins. Your scripts use the alias, so nothing changes for you. Expect Vanda later today (SGT).
+
+THIS TURN
+A. Fix 3(a) and 3(b), with tests: a fake qstat -Qf containing an ACL queue and a min-ncpus queue must be refused or handled.
+B. Regenerate the Atlas plan for the real limits:
+   - jobs within 96 cores and >=12 cores in parallel (serial runs in the serial queue);
+   - par12 node size from pbsnodes;
+   - validation and calibration jobs that fit;
+   - serial sweep (E2);
+   - strong and weak to 96 cores;
+   - variants at 96;
+   - rank x thread layouts on one Atlas node.
+   It is a fallback and an early start, not a replacement. Keep the >=256 cells Vanda-only; run_plan check atlas should
+   say plainly that the 256-core requirement is NOT met on Atlas. Rule: every speedup or efficiency uses a 1-core
+   baseline from the same cluster and build.
+C. Report: let figures and tables take E2 (serial) from whichever cluster has the complete serial sweep, label the
+   cluster in every caption, and never mix clusters inside one speedup curve. If Vanda never arrives, the report must say
+   honestly that E3/E4 reached only 96 cores (Atlas), and requirements_check must keep E3/E4 WAITING (or FAILED with that
+   reason), not FILLED.
+D. Give the parent the exact Atlas command sequence for tonight: discover (re-run with ebenv), apply the diff, check,
+   commit, sync, submit atlas-validate, then atlas-calibrate.
+
+RETURN
+Fix evidence (test output). The new Atlas plan summary (cells, jobs, core counts). The diff apply_discovery would now produce
+from the REAL discovery file. The command sequence. Keep build/.application/state.md current.

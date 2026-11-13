@@ -1,0 +1,58 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions: no cluster contact, no remotes, no messages, no Canvas. The parent creates the GitHub repo and pushes.
+
+CONTEXT
+The user asked to "put everything done till now in git", using the same approach as Projects 1 and 2 to make it
+first-principled and in human language, and then "transfer the reasons and dont copy structure superficially". The parent
+worked out which reasons from P1/P2 hold here:
+  /Users/kushagra/Desktop/final_assignment/.application/repo_transfer.md   (read it first; it is binding)
+In short:
+- The repo will be PRIVATE, kept as an archive and updated after the remaining runs.
+- Full history stays.
+- The run records must go in.
+- Logs, data and secrets stay out.
+- The README is rewritten for a reader with no context. It is the place the report sends provenance to.
+
+TASK
+1. .gitignore: track results/ (every run record and validation record), figures/*.pdf (the report's figures) and
+   report/DSA5208_Project3_Report.pdf. Keep these ignored, giving the reason in the .gitignore comment:
+   - bin/, _build/, __pycache__/, .venv/, data/ (SNAP downloads, re-fetchable with scripts/fetch_snap.sh);
+   - cluster/logs/ (PBS terminal output: the grader's "no log files", and the run records carry the results);
+   - figures/dev/;
+   - report/*.log.
+   Decide report/generated/ and say why: it is rebuilt by scripts/make_report.sh, but the PDF depends on it.
+   Make sure nothing secret or large is tracked:
+   - grep the tracked set for private keys, tokens and "password";
+   - report any file over 5 MB.
+2. README.md: rewrite it by hand under the language rules
+   (../assumption_drill/report_language_pass/ASSUMPTIONS.md and 03_DRILL.md) and P2's rule: each part states a decision,
+   its reason and its consequence.
+   - Reader: someone who opens the repo with no context (a groupmate, us next week, possibly the grader).
+   - Do NOT copy the P1/P2 README section layout. Write the sections this project needs, for these reasons:
+     (a) what the program solves and how it is split across ranks and threads, briefly, pointing to the report for the
+         rest;
+     (b) why every report number is generated and never typed, and the consequence: to change a number, rerun
+         scripts/make_report.sh and never edit the .tex;
+     (c) why the timed runs follow a plan fixed before timing, with rerun reasons and amendments recorded, and what that
+         protects against;
+     (d) why a program is timed only after it passes the validation tests on the same cluster, and how the records tie
+         each timed row to a validated program (by hash);
+     (e) how to build and validate locally, and how to run on Vanda: the steps a groupmate would actually type, with no
+         personal account details beyond what the scripts need;
+     (f) how to add the remaining >=256-core runs when they finish (fetch, then rebuild the report), since the user will
+         "wait for the other results and then update";
+     (g) what each top-level folder holds, in one line each, as a short table, because a reader needs a map;
+     (h) the declaration of AI use, in the same wording as the report's Section 10.
+   - Define each non-standard word once or replace it (run record, run plan, cell, amendment, qualification -> "passed
+     the validation tests").
+   - No semicolons, no slogans, no unexplained E-codes.
+   - Generated numbers: the README is not generated, so state no measured result in it. Point to the report for
+     results. Counts of files or jobs may be stated only if read from the repo itself when you write them.
+3. Commit with a message in plain words.
+
+RETURN
+- The tracked-file summary: count and size by top-level folder.
+- The secrets and large-file check result.
+- The README outline: section titles, each with its one-line reason.
+- Keep state.md current. Commit.

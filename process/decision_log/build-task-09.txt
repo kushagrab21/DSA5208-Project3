@@ -1,0 +1,100 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build
+(main). Same exclusions: no cluster contact, no remotes, no messages, no Canvas. The parent's watcher may write results/ and
+cluster/logs/; commit only your own paths.
+
+TASK: the LANGUAGE PASS on the report, by hand.
+The user asked for a pass because the text has "small sentences, sentences [that] are not first principled, semicolon
+sentences, not understandable without prior context". An assumption drill settled how to do it. These files are BINDING, so
+read all of them first, in full:
+  /Users/kushagra/Desktop/final_assignment/assumption_drill/report_language_pass/ASSUMPTIONS.md   (8 assumptions; the user's
+      answers are under "Settled by you")
+  /Users/kushagra/Desktop/final_assignment/assumption_drill/report_language_pass/03_DRILL.md      (rules L1-L9, presentation
+      P1-P8, the vocabulary table in Part E, the before/after sample in L2, the pre-mortem in Part B)
+  /Users/kushagra/Desktop/final_assignment/assumption_drill/report_language_pass/04_QUESTIONS.md  (the assistant's defaults to
+      apply, and how the "calibration" bandwidth is computed)
+User decisions: "first-principled" = assumption 1 ("Yes, that reading"). "By hand" = you rewrite paragraph by paragraph with
+judgement, never find-and-replace except checked term renames, with no read-aloud by the students. In its place the parent runs
+a cold-reader check afterwards.
+
+ORDER (three passes, as in the drill L1)
+1. Placement: take the build machinery out of the body and captions, and out of the GENERATOR strings in
+   scripts/report_macros.py and scripts/figures.py too. That means:
+   - "Made by scripts/...";
+   - E-codes;
+   - hashes and run IDs;
+   - "run plan", "run record", "qualification", "insurance run", "calibration", "program file", "refuse", "planted bug",
+     "the defaults", "dataset ladder";
+   - the Atlas column (no Atlas timings exist);
+   - the Table 8 module chain;
+   - the title-block script line.
+   Keep three facts as plain sentences:
+   - the timed programs passed the validation tests;
+   - how each time is measured (fixed iteration count, median of repeats);
+   - the machine and compilers.
+   Put provenance (scripts, records, hashes) in ONE sentence in Section 11 and in the README. Turn Table 2 into a plain
+   overview of the experiments.
+   Fix the stale code comment that calls the offload build "UNTESTED": it ran and passed validation on a Vanda GPU node. Scan
+   all printed comments for stale claims.
+2. Paragraph logic (drill L2 and assumptions 1, 3, 7):
+   - add the node structure to the hardware section before the results that use it: two sockets, cores per socket, memory
+     per socket, and where the launcher puts ranks (ppr:R:node fills socket 0 first);
+   - merge each generated-results paragraph and its drafted interpretation into ONE paragraph per finding: measured →
+     observation with its reference → mechanism (ownership, what is communicated, which cost term grows) → consequence;
+   - each number once in prose, with its reference; full sets in tables;
+   - say why the reductions, not the matrix product, limit scaling here;
+   - hedges say what was not measured and what would settle it;
+   - the calibration becomes one plain sentence: effective bandwidth = bytes moved per iteration (96 B per unknown classic,
+     128 pipelined, from the memory model) × iterations ÷ measured time, median over runs, and it restates the speedup
+     rather than confirming it independently;
+   - the graph part opens by saying why it is there.
+3. Sentence rules (L3-L8):
+   - no semicolons in prose: write the connective that names the relation;
+   - short compressed steps joined to the claim they support;
+   - aphorisms and teasers ("That shape held a surprise", "A check that cannot fail proves nothing") replaced by the plain
+     claim;
+   - terms in three classes: his terms bare, with no glosses on rank, thread, halo, speedup, etc.; non-standard terms
+     defined once by description then name, in a main clause; build words removed;
+   - his vocabulary: "reduction (MPI_Allreduce)", "halo exchange", "domain decomposition", "validation tests", "synthetic
+     test problem", "OpenMP GPU offload", "Stanford Large Network Dataset Collection" once, then SNAP;
+   - bare section pointers become the fact plus the pointer;
+   - plain "we", active voice, consistent British spelling.
+   Section 7 answers his four Lecture 9 MPI+OpenMP questions in his order.
+
+SCOPE NOW
+- Sections whose numbers are final: title block (except the Summary), 1, 2, 3, the hardware and measurement section, 5, and
+  8.1-8.7, plus the captions and the generator templates everywhere.
+- For sections 6, 7, 8.8-8.9 and 9 do placement and sentence rules now, but scope any claim the coming 256+-core data could
+  overturn ("up to 144 cores"). Do not polish their final interpretation.
+- The Summary waits for the data.
+- Generator templates must read correctly for any value, including "waiting".
+- Remove the DRAFT-FOR-USER-REVIEW markers from the paragraphs you rewrite under these rules. The user approved the rules,
+  not each paragraph, so the requirements check should report them as revised, not as drafts.
+
+AI DECLARATION (Section 10), the user's decision: keep the Project 2 wording and add that the text was revised by the AI under
+the students' direction. Proposed: "We used Claude Code (Anthropic, Claude Opus 5.5) as a coordinating session and a delegated
+builder session to plan the work, write and test the C++ solver and its checks, run the experiments on the NUS HPC clusters,
+and draft and revise this report, including a paragraph-by-paragraph language revision done by the AI under our direction. We
+directed the work and are responsible for the content and quality of this submission."
+
+RULES THAT DO NOT CHANGE
+- Never retype a number; every \val{} key stays somewhere, in prose or in a table.
+- No claim is lost; a reasoning step may only use facts already in the report, otherwise flag it.
+- Log axes stay.
+- requirements_check must still show 0 hand-typed numbers.
+
+PROCEDURE PER SECTION (drill L9)
+For each paragraph: write its claim in one line; list its facts and \val keys; sort its terms; rewrite as the chain;
+compare with the old version (no claim lost).
+After each section:
+- diff the set of \val keys (none may disappear unless it moved to a table);
+- grep for semicolons in prose, "Made by", hashes and E-codes;
+- rebuild with scripts/make_report.sh.
+
+RETURN
+- The PDF path and page count.
+- Per section, three before/after sample sentences.
+- The \val-key diff result.
+- The semicolon count before and after.
+- Anything flagged (a new fact needed, a claim you could not keep).
+- Keep state.md current, and commit.

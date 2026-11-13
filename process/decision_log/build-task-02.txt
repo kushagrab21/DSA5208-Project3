@@ -1,0 +1,62 @@
+ROLE (unchanged)
+You are the delegated builder (child) for DSA5208 Project 3, continuing your own session. Same skill, same workspace
+(/Users/kushagra/Desktop/final_assignment/build, write only there), same exclusions: no ssh/scp/qsub, no GitHub or any remote,
+no messages, no Canvas. Return blockers to the parent; do not ask the user.
+
+PARENT'S ACCEPTANCE OF TURN 1 (re-run by the parent, not taken from your report)
+- validate.py --qualify (scratch P3_RESULTS): correct build PASS 5/5, bug1 and bug2 REFUSED by V3-V5, same three sha256s.
+- run_record.py --for-figures on results/local: REFUSED 66 of 66 rows.
+- run_plan.py check vanda: PASS; without the >=256-core weak cells: REFUSED; selftest QUALIFIED.
+- figures/dev/local_strong.png viewed: log-log, stamped local.
+Accepted. Your changes to the brief are accepted with their evidence: the polynomial-exponential exact solution (the sine
+product is a discrete eigenvector, so CG converges in 1 iteration); pipelined CG's measured accuracy floor and slowdown on the M5;
+t_reduce including wait time; requalifying after every rebuild; overlap measured, not assumed.
+
+STATE OF THE CLUSTER ROUTE (parent-owned)
+The user is in India. The NUS VPN (Cisco Secure Client) is installed. The user is connecting (NUS login, MFA). After that,
+the parent installs the SSH key, reads the queues, modules, GPU node shape and core-hour budget, and fills your open items. No
+cluster data exists yet. Do not wait for it: everything below works without it, and anything that needs cluster rows must show
+up as an unfilled row, not as a placeholder number.
+
+THIS TURN: the report and its checks, built so that cluster rows drop in without hand editing
+1. REPORT in LaTeX, built with Tectonic (installed), the same method as Projects 1 and 2:
+   /Users/kushagra/Desktop/final_assignment/prior_circuits/project2_rainfall_spark/DSA5208_Project2_Report.pdf shows the result,
+   and ~/Desktop/Project_2/DSA5208-Project2/report/ shows the mechanism (\val{} macros generated from results, \req{E#} markers).
+   Every number in the body comes from a generated macro or table, never typed. Section order follows the brief and the L12
+   grading (circuit/CIRCUIT.md section 3, E1-E18):
+   - title with Kushagra Bhatnagar (A0351591A) and Pratyush Sinha (A0352482A);
+   - algorithm (E1, E12: CG, the 5/7-point operator, 2D and 3D, the manufactured solution and why the sine one was rejected,
+     how the synthetic problem is generated for any n: E11);
+   - design decisions (E8: decompositions, halo variants, classic vs pipelined CG, OpenMP inside ranks, the offload path,
+     where communication happens and why, using L12's runtime model);
+   - validation (E9: the five cases with their purposes and tolerances, the planted bugs and which cases catch them; numbers from
+     results/validation; local now, the vanda-validate job later);
+   - serial scaling (E2), MPI strong and weak scaling with speedup, efficiency and the halo/reduce/compute split (E3-E5),
+     MPI+OpenMP layouts and the GPU run (E6-E7). Write the prose frames and figure/table slots now; they fill from cluster rows;
+   - discussion (E8);
+   - AI declaration (E15). Use this wording (from Project 2, adapted; the user may edit it): "We used Claude Code (Anthropic,
+     Claude Opus 5.5) as a coordinating session and a delegated builder session to plan the work, write and test the C++ solver
+     and its checks, run the experiments on the NUS HPC clusters, and draft this report. We directed the work and are responsible
+     for the content and quality of this submission.";
+   - code appendix (E16): the source listings included in the PDF. That route needs no publishing. A GitHub link is the user's
+     decision later. No log files or terminal output (L12).
+   Language rules: /Users/kushagra/Desktop/final_assignment/prior_circuits/project2_rainfall_spark/report_language_ASSUMPTIONS.md.
+   Each paragraph states a decision, its reason and its consequence. No self-praise. Reasoning in prose, lists only for
+   inventories. Captions say what to notice. Plus L12: define every non-standard term at first use (halo, ghost cell, strong and
+   weak scaling, efficiency, pipelined CG, rank, ...).
+2. FIGURE SCRIPTS that read cluster rows only, through run_record's loader. They refuse local rows. Log axes for time, size and
+   core count (L12). Each script writes a small metadata file (axis scales, source rows and their sha256, binary hash) for the
+   requirements check. Test them in a selftest on a scratch directory. Any fabricated rows used for that test never reach figures/
+   or report/.
+3. requirements_check.py, full version. It maps E1-E18 to report sections via \req markers; counts hand-typed numbers in the body
+   (0 required); checks that figure metadata has log axes on time/size/cores; checks that the package has no log files; checks
+   authors (2) and the AI section; and prints TERMS (flagged terms used vs defined: printed, not binding). It refuses release
+   while any row is unfilled. Qualify it by refusing deliberately broken copies (a linear core axis, a hand-typed number, a
+   missing AI section). Its pass example will be the first full render the user accepts, so say so in the output; do not invent
+   one.
+4. Build the PDF now, with the cluster-dependent slots showing as unfilled. The requirements check should then list exactly which
+   E rows are waiting for cluster data.
+
+RETURN
+The PDF path and page count. requirements_check output verbatim, with its qualification refusals. The list of E rows waiting for
+cluster data. Anything that changes a decision, with evidence. Keep build/.application/state.md current.

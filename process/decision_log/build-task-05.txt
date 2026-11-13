@@ -1,0 +1,53 @@
+ROLE (unchanged)
+Delegated builder (child), DSA5208 Project 3, continuing your own session. Same workspace (build/, write only there), same
+exclusions: no real cluster contact, no remotes, no messages, no Canvas. Report blockers to the parent.
+
+WHAT HAPPENED ON THE REAL CLUSTERS SINCE TURN 4 (parent ran these; read the files)
+ATLAS (results/atlas/, cluster/logs/atlas/):
+- discover with ebenv: foss/2025b (GCC 14.3.0, OpenMPI 5.0.8); par12 = 29 nodes x 96 cores. The diff was applied, commit 38a8577.
+- atlas-validate, three failures before it passed. The parent fixed cluster/atlas/env.sh each time (commits 8a08fc6, 9c63f16,
+  3023a29):
+  1) 1040043 exit 127: compute nodes have no python3. Fix: load Python/3.13.5-GCCcore-14.3.0 and refuse if python3 is absent.
+  2) 1040044 exit 2: "/opt/amazon/efa/lib64/libfabric.so.1: version FABRIC_1.7 not found (required by libmpi.so.40)".
+  3) 1040045, same error after stripping /opt/amazon/efa from LD_LIBRARY_PATH. Root cause, from the 1040046 log: the
+     compute-node environment sets LD_PRELOAD=/opt/amazon/efa/lib64/libfabric.so.1 /lib64/libefa.so.1. Fix: prepend
+     $EBROOTLIBFABRIC/lib/libfabric.so.1 to LD_PRELOAD.
+  1040046 PASSED: correct build 5/5 (27 runs), both bugs REFUSED; qualified fb1627e7... (cluster=atlas).
+  The comment in env.sh still says /etc/ld.so.preload; correct it to LD_PRELOAD from the node environment.
+- atlas-calibrate 1040047 has been QUEUED for 10+ hours ("requesting an exclusive node and node is in use"; parallel queue
+  265 queued). Leave it.
+VANDA (results/vanda/env/discover-20261112T055509Z.txt):
+- Key login works (via ProxyJump atlas8): stdct-login-01, python3 3.9 on the login node.
+- Project: personal-bhatnagar.kushagra.m with 10000 CPU-hours and 1000 GPU-hours (from `hpc project` after amgr login).
+- Queues:
+  - with `#PBS -P <project>` (no -q; default routing `auto`): batch_cpu up to 720 cores per job, 6 running per user, 240 h;
+    batch_gpu up to 2 GPUs.
+  - Without a project, `-q auto_free`: cpu_serial (1 core), cpu_parallel (2-160 cores), gpu (<=36 cores, <=2 GPUs).
+  - 72-core CPU nodes with 211 GB. The GPU sample script uses `select=1:ncpus=36:mpiprocs=1:ompthreads=36:ngpus=1` and a
+    `module load msingularity` example; GPU nodes are named gn-a40-*.
+  - Modules: nvhpc-hpcx-cuda12/26.1 is present (L12's recommendation); EasyBuild via /app1/ebenv.
+- apply_discovery said "no usable multi-core queue" because it ignores routing queues. It also found no budget, because the
+  budget needs `amgr login` (interactive, NUS password), which discover cannot do.
+
+THIS TURN: make Vanda runnable on the first submit, using every Atlas lesson
+1. apply_discovery.py: understand routing queues (route_destinations) and the project route (-P). Propose:
+   - pbs.project = personal-bhatnagar.kushagra.m;
+   - queue_cpu = "" (default auto via -P);
+   - queue_gpu = "" with ngpus;
+   - core_hour_budget 10000 and gpu_hour_budget 1000, with budget_source "hpc project after amgr login, 12 Nov".
+   Allow the budget to be given on the command line (--budget-cpu/--budget-gpu) when hpc project can't be read
+   non-interactively. Test it on a fake qstat -Qf containing routing queues.
+2. cluster/vanda/env.sh: CPU jobs use the EasyBuild foss toolchain (same family as Atlas, for comparable numbers) unless you
+   find a reason not to. Load a matching Python module, or verify python3 exists on compute nodes; refuse if it is missing.
+   Apply the LD_PRELOAD/libfabric defence if the nodes inject an old libfabric, and log the resolution as on Atlas. GPU jobs
+   use nvhpc-hpcx-cuda12/26.1 (CUDA-aware MPI, OpenMP offload with nvc++ -mp=gpu), built in a separate binary. The offload
+   binary needs its own qualification on a GPU node (validate.py on the offload build, run inside the GPU job before timing).
+3. PBS headers for Vanda: -P project, select with mpiprocs/ompthreads, place=excl for timed CPU jobs, ngpus for the GPU
+   job, -j oe. Mem within 211 GB/node.
+4. Regenerate config/run_plan.vanda.json if needed (72-core nodes; 288 cores = 4 nodes). Check that the plan fits batch_cpu,
+   and that budget checks use 10000 CPU-h and 1000 GPU-h.
+5. Fake-cluster test updated for Vanda's routing and project, then run_plan check vanda and the selftests.
+6. Give the parent the exact first Vanda sequence: apply, commit, sync, submit vanda-validate, then vanda-calibrate, freeze,
+   and the rest in fill-soonest order. Include the GPU validation and timing job.
+
+RETURN: test evidence, the diff from the REAL vanda discovery file, the sequence. Keep build/.application/state.md current.

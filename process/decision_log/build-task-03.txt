@@ -1,0 +1,71 @@
+ROLE (unchanged)
+You are the delegated builder (child) for DSA5208 Project 3, continuing your own session. Same skill, same workspace
+(/Users/kushagra/Desktop/final_assignment/build, write only there), same exclusions: NO ssh/scp/rsync-over-ssh/qsub or any real
+cluster contact, no GitHub or any remote, no messages, no Canvas. Return blockers to the parent; do not ask the user.
+
+PARENT'S ACCEPTANCE OF TURN 2 (re-run by the parent)
+requirements_check: hand-typed 0, authors 2, AI section present, no logs; REFUSED (incomplete) with E2-E10 and E14 waiting for
+cluster data. Selftest QUALIFIED on refusals. PDF 40 pages. Binary 50211edd... unchanged. Accepted, including your changes
+(neutral wording before data; env JSON written at job start; validation JSON summary; generated files untracked).
+
+CLUSTER ACCESS STATE (parent-owned; facts for your scripts)
+- The user's NUS-ID (the cluster username) is bhatnagar.kushagra.m. The user is in India, so the NUS VPN is needed while the
+  cluster is contacted, but not while jobs run.
+- ~/.ssh/config has Host aliases atlas8 and vanda: key ~/.ssh/id_ed25519_nus, ControlMaster (8 h).
+- The HPC account did not exist (both clusters said "Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password)").
+  The parent submitted the NUS HPC registration on 11 Nov at about 23:00 IST. Approval is expected on Thu 12 Nov, Singapore
+  working hours. After that the user installs the key once, and the parent runs everything below.
+- Deadline 17 Nov 23:59 SGT. Vanda has had downtime, and core-hours are limited. Atlas is CPU-only, slower, and unlimited.
+
+THIS TURN: the cluster-operations procedure, as scripts the PARENT will run (Lecture 13 Demo 2 step 2, prepared ahead).
+Put them under cluster/ops/. Each takes the cluster alias (atlas8 or vanda) and is idempotent where it can be:
+1. discover.sh <cluster>: read-only probes on the login node, saved to results/<cluster>/env/discover-<utc>.txt:
+   - hostname, uname, lscpu/nproc;
+   - qstat -Qf (queue limits: max cores/nodes/walltime per queue);
+   - gstat if present;
+   - hpc project / hpc quota / hpc space;
+   - module avail, filtered to compilers, MPI, nvhpc, cmake, python;
+   - on Vanda, hpc cpu and hpc gpu sample scripts.
+   Plus scripts/apply_discovery.py, which proposes the plan's pbs block (queues, select/ncpus/mpiprocs syntax, project code),
+   the module names in cluster/*/env.sh and the core_hour_budget as a DIFF for the parent to accept. It never writes silently.
+2. sync.sh <cluster>: copies the source tree (src, CMakeLists, scripts, checks, cluster, config; not results/ or report/) to
+   ~/p3 on the cluster, records the git commit on both sides, refuses on a dirty tree.
+3. submit.sh <cluster> <job>: the ONLY way a job is submitted.
+   - Generates the PBS script via run_plan.py pbs.
+   - Refuses a job not in the plan.
+   - Refuses any timed job until the <cluster>-validate job has qualified a cluster-built binary (its hash in
+     results/validated_binaries.csv with cluster=<cluster>).
+   - Refuses while "frozen" is false for timed jobs.
+   - Records the PBS job id append-only in results/<cluster>/jobs.csv: job, plan cells, commit, submit time, requested
+     resources and core-hour estimate.
+   - Prints the remaining budget after this job.
+4. poll.sh <cluster>: qstat for recorded job ids. Prints running/queued/finished, and for finished jobs the exit status,
+   walltime used and core-hours used (from qstat -xf or the job's own record). Flags failures: nonzero exit, walltime
+   exceeded, missing records.
+5. fetch.sh <cluster>: copies results/<cluster>/ back. Then runs run_record.py on the new rows and run_plan.py status, so
+   the parent sees cells filled and core-hours used. Recalibrates the cost model from the first finished job and prints the
+   new estimate for the remaining jobs.
+6. cluster/RUNBOOK.md: the procedure in order, written so it can become a reusable skill. First session:
+   - discover;
+   - apply the diff;
+   - sync;
+   - submit <cluster>-validate plus one small calibration job;
+   - poll, fetch;
+   - freeze the plan;
+   - submit the rest in the order that fills the graded cells soonest. 256-core cells come early, so that Vanda downtime
+     late in the week costs the least.
+   Then the failure handling: a job killed by walltime, a module missing, the queue rejecting the select syntax, Vanda down
+   (which jobs move to Atlas, using the atlas plan), and VPN dropped (jobs keep running; reconnect, then poll and fetch).
+TESTING (no real cluster): make the transport replaceable (e.g. P3_SSH and P3_RSYNC environment variables). Test every script
+against a local fake cluster: a temp directory as "home" plus a stub qsub/qstat that writes job ids and fake finished
+states. Show that submit.sh refuses:
+- an unplanned job;
+- a timed job before cluster validation;
+- an unfrozen plan;
+and that it accepts the validate job. Show poll and fetch handling a fake failed job. Fabricated rows from this test never
+reach results/ or figures/ (use P3_RESULTS scratch).
+
+RETURN
+For each script: what it does, and the verbatim output of its fake-cluster test, including the refusals. The exact command
+sequence the parent will run in the first real session, from "key works" to "first jobs queued". Anything that changes a
+decision, with evidence. Keep build/.application/state.md current.

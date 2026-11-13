@@ -1,0 +1,64 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions (no cluster contact, no remotes, no messages, no Canvas). The parent's watcher may write results/ and
+cluster/logs/; commit only your paths.
+
+CONTEXT
+- Turn 11 accepted (97c8eb8). The parent then made ONE edit in report/DSA5208_Project3_Report.tex at the user's request:
+  "\textbf{Summary.}" -> "\textbf{Summary:}". It is uncommitted; keep it and commit it with your changes.
+- The user finds the report "very dense" and asked for visual markers. The parent offered bold lead-in sentences, a
+  key-results box and per-section takeaway boxes; the user REJECTED all three: "no that would look ai like". Underlining is
+  out too.
+- A focused assumption drill then compared rendered pages of the grader's two papers, a Sandia report and four human
+  student HPC reports with our pp. 1-25:
+    /Users/kushagra/Desktop/final_assignment/assumption_drill/report_visual_markers/01_FRAME.md
+    /Users/kushagra/Desktop/final_assignment/assumption_drill/report_visual_markers/03_DRILL.md   (read both in full)
+  Finding: the density is STRUCTURE, not missing emphasis. None of the human documents bolds or boxes results or numbers.
+  They differ from ours in:
+  - visible paragraph breaks;
+  - smaller blocks;
+  - displayed formulas;
+  - entry points in long sections;
+  - figures referenced from the text.
+- The user then chose: "Yes, topic labels" (short italic labels that NAME THE TOPIC, never the result).
+
+TASK: apply the drill's recommendations 1, 2, 3, 5 and 6, by hand, under the same binding rules
+(../assumption_drill/report_language_pass/ASSUMPTIONS.md and 03_DRILL.md). Do NOT apply 4 (margins): it is deferred until
+the cluster data are in.
+1. Paragraph breaks.
+   - Make them visible: \parskip about 0.5\baselineskip (the drill's first option).
+   - Check that lists, the algorithm blocks, tables and captions do not gain ugly gaps, and fix locally if they do.
+2. Display the long inline formulas the drill names: the kappa estimate (1.2), the V5 bound (3), row v of eq. (1) and the
+   condition-number bound (8.2), and the Krylov span (8.2). S and E on the MPI page stay inline. Number a displayed
+   formula only if the text refers to it.
+3. Topic labels.
+   - Section 4: split it into short blocks at its topic changes, each opening with a short italic noun-phrase label
+     (for example "The nodes.", "Where the ranks go.", "The GPU node.", "Compilers and timing."). Choose the labels from
+     the actual content.
+   - Section 3: the five italic heads become topic labels. "Parallel runs equal the serial run", "The tests detect errors",
+     "How accurate pipelined CG can be" and the like become noun phrases naming the test or topic. The claims stay in
+     the paragraph text.
+   - Use one consistent label style wherever labels appear (italic, sentence case, full stop, run-in).
+   - Use labels ONLY where a section has several topics in a row and no subsections. Do not add them to every paragraph:
+     that would be the rejected lead-in device in another font.
+5. Section 7: number Lecture 9's four questions (1)-(4) as plain numbered items, with the answer text kept as full
+   sentences. Section 9, paragraph 1: set the parts and their techniques as three plain items (stencil and vector updates,
+   inner products, halo exchange). No bold heads in any list.
+6. Refer to every figure and table from the paragraph that discusses it. The parent verified that fig_strong, fig_weak,
+   fig_efficiency, fig_layout, fig_graph_strong and fig_graph_comm have no \ref, and the drill adds Tables 18 and 19. Use
+   the grader's form ("Figure N plots ..." or "(Figure N)" on the observation it shows). The references must read correctly
+   whether or not a slot is still waiting for data.
+Also:
+- Where a paragraph runs past about 10 lines, see whether its logic has two steps. If so, break it between them. Never
+  break it into short sentences or one-sentence paragraphs.
+- Check the drill's "not settled" note about part-empty pages caused by [H] floats (pp. 7, 10, 22). Fix them only if a
+  small move or [htbp] cures it without separating a float from its discussion by more than a page.
+- No new claims or numbers. Every \val stays. 0 hand-typed numbers.
+
+RETURN
+- PDF path and page count (report pages / appendix start).
+- For each of 1, 2, 3, 5 and 6, what changed, with the page.
+- The labels you chose.
+- Paragraph-length median and 90th percentile before and after (in lines, pp. 1-25, measured the same way as the drill).
+- The requirements_check result.
+- Keep state.md current. Commit.

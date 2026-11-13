@@ -1,0 +1,74 @@
+ROLE (changed workspace for this turn)
+Delegated builder (child), DSA5208 Project 3, continuing your own session. Same exclusions: no real cluster contact, no
+remotes, no messages, no Canvas. Report blockers to the parent.
+WORKSPACE THIS TURN: the parent is running the real Vanda and Atlas jobs from build/ right now. sync.sh needs a clean tree,
+and freezing the plan needs commits there. So do NOT edit build/'s working tree. Create a git worktree and work only there:
+  cd /Users/kushagra/Desktop/final_assignment/build && git worktree add -b graph-extension ../build-graph HEAD
+Then write only inside /Users/kushagra/Desktop/final_assignment/build-graph, and commit on branch graph-extension. The
+parent merges it later (expect the parent's commits on main: plan freeze, rerun reasons, results ledgers; keep your changes
+mergeable, and do not edit config/run_plan.*.json's existing jobs, only add graph groups and jobs).
+
+DECISION (user + parent, 12 Nov)
+The user: "ok continur and add the data science extension". The parent settled which one with the circuit (circuit/CIRCUIT.md
+section 10, d7 in p3_circuit.py): the brief and lectures do not separate a graph extension from ridge regression, so the
+choice rests on reasons outside the gates (keep the validated CG; ground truth available; L12's graph rule; a second
+communication pattern). Chosen:
+
+  REAL-DATA EXTENSION: semi-supervised community labelling on SNAP networks with ground-truth communities, solved with the
+  existing distributed CG.
+  - Graph G (undirected, simple) with Laplacian L = D - A. For each of K chosen communities c, solve (L + a I) x_c = b_c,
+    where b_c is the indicator of s seed vertices drawn from community c (fixed seed list, recorded). Label each evaluated
+    vertex by argmax_c x_c. Evaluate on vertices that belong to exactly one of the K communities, excluding seeds.
+    Accuracy vs ground truth, against simple baselines (majority class; random). Report how accuracy and CG iterations
+    depend on a, s and graph sparsity (average degree), and what that says about the data. This is the "conclusions about
+    the data" row.
+  - L + aI is SPD, so classic CG and pipelined CG are reused unchanged; only the operator changes, from stencil to a
+    distributed sparse matrix-vector product (CSR). K right-hand sides: solve them one after another, or as a block if
+    that is simple. Time per solve is the unit.
+  - Datasets (SNAP, "Networks with ground-truth communities"; the parent checked they are reachable from Vanda):
+    email-Eu-core (1,005 / 25,571, department labels), com-Amazon (334,863 / 925,872), com-DBLP (317,080 / 1,049,866),
+    com-Youtube (1,134,890 / 2,987,624), com-LiveJournal (3,997,962 / 34,681,189), com-Orkut (3,072,441 / 117,185,083).
+    Files: <name>.ungraph.txt.gz plus the .top5000.cmty.txt.gz / .all.cmty.txt.gz community files (check the exact names
+    on the SNAP pages). Use the largest K communities in top5000 that are disjoint enough. Explain the choice.
+
+PARALLEL DESIGN TO BUILD AND COMPARE (the grader wants methods compared, communication explained, >=256 cores)
+- Distributed CSR, 1D partition of vertices (rows). Compare two partitionings: (a) contiguous blocks of vertex ids with equal
+  rows; (b) contiguous blocks with equal nonzeros (degree-balanced). Optionally (c) a cheap reordering (e.g. BFS or
+  degree order) to cut ghost count, if time allows. Report the edge cut, ghost-vertex counts and load imbalance per rank.
+- Ghost exchange: build send/receive lists once; exchange per SpMV with MPI_Neighbor_alltoallv on a distributed graph
+  communicator (MPI-3), or Alltoallv. Time it as t_halo, the same column as the stencil halo, so E5 covers both patterns.
+  Optionally overlap the local part of SpMV with the exchange, as for the stencil.
+- OpenMP threads in the local SpMV and vector kernels, as now. The GPU offload path is NOT required for graphs.
+- Serial scaling (E2 for graphs): the dataset ladder varies vertices and edges together (L12's wording). Plot time per CG
+  iteration vs edges and vs vertices, log axes.
+- Strong scaling: com-LiveJournal and com-Orkut, 1..288 ranks on Vanda (and up to 96 on Atlas), classic and pipelined.
+  Weak scaling stays on synthetic Poisson; say why in the report (a fixed real graph has no size knob; L12: synthetic
+  data is the easy way to weak scaling).
+
+DATA HANDLING
+- scripts/fetch_snap.sh <name>: downloads on the cluster login node (the parent runs it), checks gzip integrity, and
+  records the sha256 and the source URL. Data lives outside git (~/p3data on each cluster), never in the package.
+- A converter (C++ or Python 3.6+ standard library, so it runs on Atlas's login Python 3.6 and on Vanda) from the edge
+  list to a binary CSR: symmetrise, drop self-loops and duplicate edges, relabel ids to 0..V-1, record the counts. Plus the
+  community files in the same id space.
+- Locally, test end to end on email-Eu-core and com-Amazon. You may download those two from SNAP onto the Mac yourself
+  for development; they are small, public and on the lecture's list. Keep them in data/ and gitignore it.
+
+VALIDATION (same rule as D4: binding only after passing an accepted case and refusing a planted bug; few, explained cases)
+- G1: parallel SpMV and CG on email-Eu-core equal the serial ones to rounding, across rank counts and both partitionings.
+- G2: on a tiny hand-made graph with a known answer (a path or a two-cluster graph), x matches a dense solve.
+- G3: a planted ghost-exchange bug (e.g. one neighbour's ghosts skipped) is REFUSED.
+Extend validate.py, or add a sibling that the timing gate also requires. Requalify on the Mac.
+
+PLAN, REPORT, CHECKS
+- run_plan: new groups graph-serial, graph-strong and graph-variants (partitioning x exchange x CG variant at 72 and 288),
+  with core-hour estimates, Vanda and Atlas versions. Keep every rule: frozen plan, reruns with reasons, budget.
+- Report: a new section "Real data: community labelling on SNAP graphs", with dataset table, method, accuracy vs baselines,
+  sparsity discussion, and conclusions about the data. Its figures come from cluster rows only. requirements_check:
+  E11 (conclusions) and E12 (graph sparsity) become required rows. Every number generated.
+- Keep the Poisson part unchanged and still passing.
+
+RETURN
+Validation output, both ways. The local end-to-end result on email-Eu-core and com-Amazon: accuracy vs baselines, iterations,
+times (local, labelled dev). The new plan cells and core-hours. The exact cluster commands for the parent (fetch, convert,
+sync, submit). Anything that changes a decision. Keep build/.application/state.md current.

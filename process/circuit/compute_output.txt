@@ -1,0 +1,355 @@
+====================================================================================================
+D0 HPC access from India
+== D0 HPC access from India @before any cluster run (now)   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: Q[you: install Cisco Secure Client and connect (NUS Student profile, MFA)]
+    rules: 3   assumes: asks Q[you: install Cisco Secure Client and connect (NUS Student profile, MFA)]
+    who resolves: you: install Cisco Secure Client and connect (NUS Student profile, MFA)
+    at risk: your manual work is the minimum (reaches the decision only as a note)
+  computed: Q[you: your NUSNET ID]
+    rules: 3   assumes: asks Q[you: your NUSNET ID]
+    who resolves: you: your NUSNET ID
+    at risk: your manual work is the minimum (reaches the decision only as a note)
+  why the other options lost:
+    E[parent: key, ssh config, first-login script, installer downloaded and verified]: open, but the path starts with Q[you: install Cisco Secure Client and connect (NUS Student profile, MFA)] (rule 3)
+    E[parent: ssh -o BatchMode=yes to atlas8 and vanda; then qstat -Qf, hpc project]: closed by off campus: VPN required (rule 1): "atlas8.nus.edu.sg DNS: (none) port22: closed/unreachable; vanda.nus.edu.sg likewise; no VPN client in /Applications" this Mac, 2026-11-11
+    Q[you: type your NUSNET password once in the script window]: no gate requires it, so rule 4 puts it last
+    R: refused by the environment: password-free login verified ("Step 1: Prepare the tool (SSH) for the agent by setting up the password-free login to the NUS HPC cluster." Lecture_13.pdf, 'Demo 2: HPC projects' (Cai Zhenning, Anthony Chen))
+  open (returned as branches): Q[you: install Cisco Secure Client and connect (NUS Student profile, MFA)], Q[you: your NUSNET ID] each meet what VPN login is yours, NUSNET ID unknown requires; no rule says which the turn ends on
+  weak links: password-free login verified rests on predicted evidence (.application/hpc_first_login.sh, then ssh -o BatchMode=yes by the parent)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  password-free login verified
+  CHANGES    off campus: VPN required
+  CHANGES    VPN login is yours
+  CHANGES    NUSNET ID unknown
+  no change  password is yours
+  no change  minimum manual work
+====================================================================================================
+D1 where it builds and runs
+== D1 where it builds and runs @before any code is written   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: Q[you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use]
+    rules: 3   assumes: 'no Atlas/Vanda login has been seen from this Mac' fires now; rule 3 wins
+    who resolves: you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use
+    at risk: nothing you judge
+  computed: E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks] ×n until it clears or you interrupt → Q[you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use]
+    rules: 5 then 3   assumes: 'no Atlas/Vanda login has been seen from this Mac' fires now; rule 5 wins
+    note on E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks]: proxy: it changes what is printed, not 'the report describes the machine the numbers came from'
+    who resolves: you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use; the loop stops only when the check clears or you interrupt
+    at risk: the report describes the machine the numbers came from (its check was cleared by a proxy)
+  computed: E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks] ×n until it clears or you interrupt → R
+    rules: 5 then 4   assumes: 'no Atlas/Vanda login has been seen from this Mac' does not hold
+    note on E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks]: proxy: it changes what is printed, not 'the report describes the machine the numbers came from'
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: every runtime figure comes from Atlas or Vanda (reported while 'runtime figures from Atlas or Vanda' still fails), the report describes the machine the numbers came from (its check was cleared by a proxy)
+  why the other options lost:
+    E[build and run on Atlas/Vanda through PBS jobs]: open, but the path starts with Q[you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use] (rule 3)
+    F[report runtimes measured on the Mac]: closed by runtime figures from Atlas or Vanda (rule 1): "Runtime figures from Atlas or Vanda" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)
+    R: refused by the environment: run record written by the run ("Runtime figures from Atlas or Vanda" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)); taken later on a computed path
+  open (returned as branches): rule 3 (a required question) against rule 5 (clear the blocker) is open; arm D of the frozen P21 test settles it; whether 'no Atlas/Vanda login has been seen from this Mac' (HPC login unconfirmed) holds here is not settled
+  unsettled but changes no move: whether 'the login is not confirmed' (cluster jobs need your login) holds here is not settled
+  weak links: run record written by the run rests on predicted evidence (src: the solver writes its own record; checks/run_record.py refuses a figure without one); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  runtime figures from Atlas or Vanda
+  no change  no MPI on this Mac
+  CHANGES    HPC login unconfirmed
+  no change  cluster jobs need your login
+  CHANGES    run record written by the run
+  no change  Atlas slow, Vanda limited and unreliable
+====================================================================================================
+D2 which algorithm
+== D2 which algorithm @after D1's local toolchain works   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: Q[you: the group's algorithm, and whether a progress report already named one]
+    rules: 3   assumes: rule 3 wins
+    who resolves: you: the group's algorithm, and whether a progress report already named one
+    at risk: nothing you judge
+  computed: E[conjugate gradient for the Poisson equation, 2D and 3D, matrix-free stencil] → Q[you: the group's algorithm, and whether a progress report already named one]
+    rules: 5 then 3   assumes: rule 5 wins
+    who resolves: you: the group's algorithm, and whether a progress report already named one
+    at risk: nothing you judge
+  why the other options lost:
+    E[a graph algorithm (BFS or PageRank) on SNAP graphs]: open, but the path starts with Q[you: the group's algorithm, and whether a progress report already named one] (rule 3)
+    R: closed by not embarrassingly parallel (rule 2): "the parallelization of the algorithm should present some challenges (i.e., not embarrassingly parallel)." Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)
+  open (returned as branches): rule 3 (a required question) against rule 5 (clear the blocker) is open; arm D of the frozen P21 test settles it
+  weak links: rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  CHANGES    not embarrassingly parallel
+  CHANGES    the algorithm is the group's choice
+  no change  structure must vary in the serial runs
+  no change  topic-specific asks
+  no change  synthetic data eases weak scaling
+  no change  six days left
+====================================================================================================
+D2' which algorithm, choice handed to the agent, K-means in front
+== D2' which algorithm, choice handed to the agent, K-means in front @after D1's local toolchain works   [forward; variant]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[conjugate gradient for the Poisson equation, 2D and 3D, matrix-free stencil] → R
+    rules: 5 then 4   assumes: 'the grader reads one small allreduce per iteration as embarrassingly parallel' fires now
+    who resolves: the agent
+    at risk: the parallelization presents real challenges (reported while 'K-means read as embarrassingly parallel' still fails)
+  computed: E[K-means from the lecture's example list] → R
+    rules: 5 then 4   assumes: 'the grader reads one small allreduce per iteration as embarrassingly parallel' does not hold
+    note on E[K-means from the lecture's example list]: proxy: it changes what is printed, not 'the parallelization presents real challenges'
+    who resolves: the agent
+    at risk: the parallelization presents real challenges (its check was cleared by a proxy)
+  why the other options lost:
+    E[a graph algorithm (BFS or PageRank) on SNAP graphs]: open, but the path starts with E[conjugate gradient for the Poisson equation, 2D and 3D, matrix-free stencil] (rule 5)
+    R: closed by not embarrassingly parallel (rule 2): "the parallelization of the algorithm should present some challenges (i.e., not embarrassingly parallel)." Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md); taken later on a computed path
+  open (returned as branches): whether 'the grader reads one small allreduce per iteration as embarrassingly parallel' (K-means read as embarrassingly parallel) holds here is not settled
+  weak links: rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  CHANGES    not embarrassingly parallel
+  no change  structure must vary in the serial runs
+  no change  topic-specific asks
+  no change  synthetic data eases weak scaling
+  no change  six days left
+  no change  lecture lists K-means
+  CHANGES    K-means read as embarrassingly parallel
+====================================================================================================
+D3 which X
+== D3 which X @after the serial version is validated   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[MPI+OpenMP threads on CPU nodes, the same kernels offloaded to one GPU with OpenMP target (nvhpc on Vanda)] ×n until it clears or you interrupt → R
+    rules: 5 then 4
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the MPI+X analysis earns its 10 points (reported while 'X=OpenMP needs a GPU test' still fails)
+  why the other options lost:
+    E[MPI+Kokkos: OpenMP backend on CPU nodes, CUDA backend on GPU nodes]: open, but the path starts with E[MPI+OpenMP threads on CPU nodes, the same kernels offloaded to one GPU with OpenMP target (nvhpc on Vanda)] (rule 5)
+    E[MPI+CUDA with CUDA-aware MPI on Vanda GPU nodes]: open, but the path starts with E[MPI+OpenMP threads on CPU nodes, the same kernels offloaded to one GPU with OpenMP target (nvhpc on Vanda)] (rule 5)
+    F[MPI+OpenMP on CPU nodes only]: closed by X=OpenMP needs a GPU test (rule 1): "10 points for analyzing the MPI+X parallelization. If you choose X=OpenMP, then you also have to test on at least one GPU." Lecture_12.pdf, 'Project 3' slides (Anthony Chen)
+    R: refused by the environment: MPI+X analysis graded ("10 points for analyzing the MPI+X parallelization. If you choose X=OpenMP, then you also have to test on at least one GPU." Lecture_12.pdf, 'Project 3' slides (Anthony Chen)); taken later on a computed path
+  unsettled but changes no move: whether 'Vanda is down when the X runs are due' (GPU only on Vanda, and Vanda goes down) holds here is not settled; whether 'Vanda has no Kokkos module built with OpenMP and CUDA' (Kokkos must be built for both backends) holds here is not settled
+  weak links: MPI+X analysis graded rests on predicted evidence (checks/run_plan.py)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  X=OpenMP needs a GPU test
+  CHANGES    MPI+X analysis graded
+  no change  lecture frames the rank x thread question
+  no change  nvhpc gives CUDA-aware MPI on Vanda
+  no change  Kokkos must be built for both backends
+  no change  GPU only on Vanda, and Vanda goes down
+  no change  no GPU on this Mac
+====================================================================================================
+D3' which X, CUDA listed first
+== D3' which X, CUDA listed first @after the serial version is validated   [forward; variant]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[MPI+OpenMP threads on CPU nodes, the same kernels offloaded to one GPU with OpenMP target (nvhpc on Vanda)] ×n until it clears or you interrupt → R
+    rules: 5 then 4   assumes: 'Vanda has no Kokkos module built with OpenMP and CUDA' fires now; 'Vanda is down when the X runs are due' fires now
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the MPI+X analysis earns its 10 points (reported while 'X=OpenMP needs a GPU test' still fails)
+  computed: E[MPI+CUDA with CUDA-aware MPI on Vanda GPU nodes] ×n until it clears or you interrupt → R
+    rules: 5 then 4   assumes: 'Vanda has no Kokkos module built with OpenMP and CUDA' fires now and 'Vanda is down when the X runs are due' does not hold  OR  'Vanda has no Kokkos module built with OpenMP and CUDA' does not hold and 'Vanda is down when the X runs are due' does not hold
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the MPI+X analysis earns its 10 points (reported while 'X=OpenMP needs a GPU test' still fails)
+  computed: E[MPI+Kokkos: OpenMP backend on CPU nodes, CUDA backend on GPU nodes] ×n until it clears or you interrupt → R
+    rules: 5 then 4   assumes: 'Vanda has no Kokkos module built with OpenMP and CUDA' does not hold; 'Vanda is down when the X runs are due' fires now
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the MPI+X analysis earns its 10 points (reported while 'X=OpenMP needs a GPU test' still fails)
+  why the other options lost:
+    F[MPI+OpenMP on CPU nodes only]: closed by X=OpenMP needs a GPU test (rule 1): "10 points for analyzing the MPI+X parallelization. If you choose X=OpenMP, then you also have to test on at least one GPU." Lecture_12.pdf, 'Project 3' slides (Anthony Chen)
+    R: refused by the environment: MPI+X analysis graded ("10 points for analyzing the MPI+X parallelization. If you choose X=OpenMP, then you also have to test on at least one GPU." Lecture_12.pdf, 'Project 3' slides (Anthony Chen)); taken later on a computed path
+  open (returned as branches): whether 'Vanda is down when the X runs are due' (GPU only on Vanda, and Vanda goes down) holds here is not settled; whether 'Vanda has no Kokkos module built with OpenMP and CUDA' (Kokkos must be built for both backends) holds here is not settled
+  weak links: MPI+X analysis graded rests on predicted evidence (checks/run_plan.py)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  X=OpenMP needs a GPU test
+  CHANGES    MPI+X analysis graded
+  no change  lecture frames the rank x thread question
+  no change  nvhpc gives CUDA-aware MPI on Vanda
+  CHANGES    Kokkos must be built for both backends
+  CHANGES    GPU only on Vanda, and Vanda goes down
+  no change  no GPU on this Mac
+====================================================================================================
+D4 validation
+== D4 validation @before any timing run is accepted   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[a few named cases: parallel vs serial to rounding, error vs the exact solution falling as h^2, and a planted halo bug the check must refuse] ×n until it clears or you interrupt → R
+    rules: 5 then 4
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the validation tests are explained and few (reaches the decision only as a note)
+  why the other options lost:
+    F[report 'validated' because the residual fell below tolerance]: nothing opens this substitute
+    F[an automated sweep of 100+ cases]: nothing opens this substitute
+    R: refused by the environment: check passes the correct build first ("A check may become binding only after it has passed an accepted example." connector/assumption_drill/circuit_use/ASSUMPTIONS.md, 5); taken later on a computed path
+  weak links: check passes the correct build first rests on predicted evidence (checks/validate.py); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  validation in the report
+  CHANGES    check passes the correct build first
+  no change  100+ tests, why?
+====================================================================================================
+D5 the scaling runs
+== D5 the scaling runs @after D4 has allowed a binary to be timed   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: W[wait for Vanda; the instructor extends for downtime]
+    rules: gap   assumes: 'Vanda is down when the runs are due' fires now; 'the Atlas queues cap a job below 256 cores' fires now; gap → W[wait for Vanda; the instructor extends for downtime]
+    who resolves: nobody yet: the agent waits
+    at risk: nothing you judge
+  computed: F[run the CPU scaling on Atlas (24-core nodes, slower); GPU run still on Vanda] ×n until it clears or you interrupt → R
+    rules: 5 (with +) then 4   assumes: 'Vanda is down when the runs are due' fires now; 'the Atlas queues cap a job below 256 cores' does not hold
+    note on F[run the CPU scaling on Atlas (24-core nodes, slower); GPU run still on Vanda]: used with nothing opening it, because every move ranked before it is closed: E[run the fixed plan on Vanda: serial sizes, strong and weak scaling to 288 cores (4 nodes x 72), X layouts, one GPU node; 3 repeats; few batched PBS jobs] (rule +)
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: MPI scaling reaches 256 cores, strong and weak, with speedup, efficiency and communication cost (reported while 'Vanda down' still fails), core-hours and reruns stay within budget (reported while 'no unbudgeted reruns' still fails)
+  computed: E[run the fixed plan on Vanda: serial sizes, strong and weak scaling to 288 cores (4 nodes x 72), X layouts, one GPU node; 3 repeats; few batched PBS jobs] ×n until it clears or you interrupt → R
+    rules: 5 then 4   assumes: 'Vanda is down when the runs are due' does not hold
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: MPI scaling reaches 256 cores, strong and weak, with speedup, efficiency and communication cost (reported while 'Atlas refuses a 256-core job' still fails), core-hours and reruns stay within budget (reported while 'no unbudgeted reruns' still fails)
+  why the other options lost:
+    F[submit runs one at a time and add what is missing]: closed by no unbudgeted reruns (rule 1): "wow, these have been 5 reruns, isnt that too much ?" Project_2 session 2026-10-17 #335
+    R: refused by the environment: MPI scaling cells ("10 points for analyzing the MPI runtime performance, scaling to at least 256 CPU cores. Both strong and weak scaling should be tested. Please present parallel speedup and parallel efficiency numbers. Do also explain the impact of communication on the runtime." Lecture_12.pdf, 'Project 3' slides (Anthony Chen)); taken later on a computed path
+  open (returned as branches): no rule says: no open move clears MPI scaling cells, serial size sweep; rules 4 and 5 do not say what comes next; whether 'the Atlas queues cap a job below 256 cores' (Atlas refuses a 256-core job) holds here is not settled; whether 'Vanda is down when the runs are due' (Vanda down) holds here is not settled
+  unsettled but changes no move: whether 'the Atlas queues cap a job below 256 cores' (Atlas refuses a 256-core job) holds here is not settled
+  weak links: MPI scaling cells rests on predicted evidence (checks/run_plan.py); serial size sweep rests on predicted evidence (checks/run_plan.py); rule + is behavioural (seen in: Video (one case); P21's unused annex)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  MPI scaling cells
+  no change  serial size sweep
+  CHANGES    no unbudgeted reruns
+  CHANGES    Vanda down
+  CHANGES    Atlas refuses a 256-core job
+  no change  extension for downtime
+====================================================================================================
+D6 report and package
+== D6 report and package @after D5's plan check shows every cell filled   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[fill every requirement row from run records and generated figures] ×n until it clears or you interrupt → Q[you: the first full render]
+    rules: 5 then 3   assumes: asks Q[you: the first full render]
+    note on E[fill every requirement row from run records and generated figures]: proxy: it changes what is printed, not 'the report makes sense to the grader'
+    who resolves: you: the first full render; the loop stops only when the check clears or you interrupt
+    at risk: nothing you judge
+  computed: E[fill every requirement row from run records and generated figures] ×n until it clears or you interrupt → Q[you: code inside the PDF, or a public GitHub repository under your name]
+    rules: 5 then 3   assumes: asks Q[you: code inside the PDF, or a public GitHub repository under your name]
+    note on E[fill every requirement row from run records and generated figures]: proxy: it changes what is printed, not 'the report makes sense to the grader'
+    who resolves: you: code inside the PDF, or a public GitHub repository under your name; the loop stops only when the check clears or you interrupt
+    at risk: nothing you judge
+  why the other options lost:
+    Q[you: the first full render]: open, but the path starts with E[fill every requirement row from run records and generated figures] (rule 5)
+    Q[you: code inside the PDF, or a public GitHub repository under your name]: open, but the path starts with E[fill every requirement row from run records and generated figures] (rule 5)
+    R[the submission PDF]: refused by the environment: requirement table ("An introduction to the algorithm / A discussion of the design decisions made in the parallelization / A discussion of the parallel scaling and efficiency of your parallelization / A validation that the parallel algorithm works correctly / Runtime figures from Atlas or Vanda / If working with real data, conclusions about the data / Explanation of any AI usage" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md))
+  open (returned as branches): Q[you: the first full render], Q[you: code inside the PDF, or a public GitHub repository under your name] each meet what code route, first rendered sample requires; no rule says which the turn ends on
+  weak links: requirement table rests on predicted evidence (checks/requirements_check.py); log axes, no logs rests on predicted evidence (checks/requirements_check.py); terminology defined rests on predicted evidence (checks/requirements_check.py); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  requirement table
+  no change  log axes, no logs
+  no change  terminology defined
+  no change  names and IDs
+  no change  AI declaration
+  CHANGES    code route
+  CHANGES    first rendered sample
+  no change  you upload
+  no change  deadline
+====================================================================================================
+D7 data-science extension
+== D7 data-science extension @after the Poisson solver is validated on a cluster (Atlas 1040046)   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[CG on graph Laplacian systems (L + aI) x = b from SNAP networks with ground-truth communities: semi-supervised community labelling, scored against the ground truth] ×n until it clears or you interrupt → R
+    rules: 5 then 4
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the report draws conclusions about real data (reported while 'no extension is what you ruled out' still fails), the parallelization presents real challenges (reaches the decision only as a note), the parallel code computes the right answer (reaches the decision only as a note)
+  why the other options lost:
+    E[ridge regression on a UCI/LIBSVM sparse dataset by CG on the normal equations (CGLS)]: open, but the path starts with E[CG on graph Laplacian systems (L + aI) x = b from SNAP networks with ground-truth communities: semi-supervised community labelling, scored against the ground truth] (rule 5)
+    E[CG on SuiteSparse SPD engineering matrices]: open, but the path starts with E[CG on graph Laplacian systems (L + aI) x = b from SNAP networks with ground-truth communities: semi-supervised community labelling, scored against the ground truth] (rule 5)
+    F[no extension: synthetic Poisson only]: closed by no extension is what you ruled out (rule 1): "ok continur and add the data science extension, or identifythe correct circuit to find the extension and add it" parent session 2026-11-12
+    R: refused by the environment: real data needs conclusions about the data ("If working with real data, conclusions about the data" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)); taken later on a computed path
+  weak links: you asked for a data-science extension rests on predicted evidence (checks/graph_conclusions.py); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  you asked for a data-science extension
+  no change  real data needs conclusions about the data
+  no change  no extension is what you ruled out
+  no change  graph asks: vary vertices and edges, discuss sparsity
+  no change  lecture lists SNAP
+  no change  lecture lists regression and UCI
+  no change  data reachable from Vanda
+  no change  CG stays the validated CG
+  no change  weak scaling stays on synthetic Poisson
+  no change  five days left
+====================================================================================================
+D7' data-science extension, ridge listed first
+== D7' data-science extension, ridge listed first @after the Poisson solver is validated on a cluster (Atlas 1040046)   [forward; variant]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[ridge regression on a UCI/LIBSVM sparse dataset by CG on the normal equations (CGLS)] ×n until it clears or you interrupt → R
+    rules: 5 then 4
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: the report draws conclusions about real data (reported while 'no extension is what you ruled out' still fails), the parallelization presents real challenges (reaches the decision only as a note), the parallel code computes the right answer (reaches the decision only as a note)
+  why the other options lost:
+    E[CG on graph Laplacian systems (L + aI) x = b from SNAP networks with ground-truth communities: semi-supervised community labelling, scored against the ground truth]: open, but the path starts with E[ridge regression on a UCI/LIBSVM sparse dataset by CG on the normal equations (CGLS)] (rule 5)
+    E[CG on SuiteSparse SPD engineering matrices]: open, but the path starts with E[ridge regression on a UCI/LIBSVM sparse dataset by CG on the normal equations (CGLS)] (rule 5)
+    F[no extension: synthetic Poisson only]: closed by no extension is what you ruled out (rule 1): "ok continur and add the data science extension, or identifythe correct circuit to find the extension and add it" parent session 2026-11-12
+    R: refused by the environment: real data needs conclusions about the data ("If working with real data, conclusions about the data" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)); taken later on a computed path
+  weak links: you asked for a data-science extension rests on predicted evidence (checks/graph_conclusions.py); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  you asked for a data-science extension
+  no change  real data needs conclusions about the data
+  no change  no extension is what you ruled out
+  no change  graph asks: vary vertices and edges, discuss sparsity
+  no change  lecture lists SNAP
+  no change  lecture lists regression and UCI
+  no change  data reachable from Vanda
+  no change  CG stays the validated CG
+  no change  weak scaling stays on synthetic Poisson
+  no change  five days left
+====================================================================================================
+D8 getting >=256 cores scheduled
+== D8 getting >=256 cores scheduled @12 Nov 22:15 IST, two 4-node jobs queued ~8 h   [forward; proposal]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: Q[you: may we use autox? (or ask NUS HPC first), and do you accept spread-node timings]
+    rules: 3   assumes: rule 3 wins
+    who resolves: you: may we use autox? (or ask NUS HPC first), and do you accept spread-node timings
+    at risk: nothing you judge
+  computed: E[resubmit the two 4-node jobs to -q autox (batch_cpux, priority 200, same nodes and charge)] ×n until it clears or you interrupt → Q[you: may we use autox? (or ask NUS HPC first), and do you accept spread-node timings]
+    rules: 5 then 3   assumes: rule 5 wins
+    who resolves: you: may we use autox? (or ask NUS HPC first), and do you accept spread-node timings; the loop stops only when the check clears or you interrupt
+    at risk: nothing you judge
+  why the other options lost:
+    F[add a 256-core job spread over 8 partly used nodes (8 x 32 cores, shared) in batch_cpu]: closed by whole nodes for comparable timings (rule 1): "Timing jobs reserve whole nodes (place=excl)." child turn 1 report (run plan design)
+    W[keep the 4-node jobs in batch_cpu and wait (Saturday-evening fallback)]: open, but the path starts with Q[you: may we use autox? (or ask NUS HPC first), and do you accept spread-node timings] (rule 3)
+    R: refused by the environment: 256 cores required ("10 points for analyzing the MPI runtime performance, scaling to at least 256 CPU cores. Both strong and weak scaling should be tested. Please present parallel speedup and parallel efficiency numbers. Do also explain the impact of communication on the runtime." Lecture_12.pdf, 'Project 3' slides (Anthony Chen))
+  open (returned as branches): rule 3 (a required question) against rule 5 (clear the blocker) is open; arm D of the frozen P21 test settles it
+  unsettled but changes no move: whether 'autox is not documented as open to course users' (autox: purpose undocumented) holds here is not settled
+  weak links: 256 cores required rests on predicted evidence (checks/run_plan.py)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  CHANGES    256 cores required
+  no change  the bottleneck is queue position, not nodes
+  no change  autox: purpose undocumented
+  no change  whole nodes for comparable timings
+  CHANGES    you asked
+====================================================================================================
+D1 where it builds and runs (after: account works, keys pending)
+== D1 where it builds and runs (after: account works, keys pending) @before any code is written   [forward; after your answer]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks] ×n until it clears or you interrupt → R
+    rules: 5 then 4
+    note on E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks]: proxy: it changes what is printed, not 'the report describes the machine the numbers came from'
+    who resolves: the agent; the loop stops only when the check clears or you interrupt
+    at risk: every runtime figure comes from Atlas or Vanda (reported while 'runtime figures from Atlas or Vanda' still fails), the report describes the machine the numbers came from (its check was cleared by a proxy)
+  why the other options lost:
+    E[build and run on Atlas/Vanda through PBS jobs]: open, but the path starts with E[install Open MPI, libomp and CMake on the Mac; develop and validate at <=10 ranks] (rule 5)
+    Q[you: confirm Atlas/Vanda login works and set up key-based SSH the agent can use]: no gate requires it, so rule 4 puts it last
+    F[report runtimes measured on the Mac]: closed by runtime figures from Atlas or Vanda (rule 1): "Runtime figures from Atlas or Vanda" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)
+    R: refused by the environment: run record written by the run ("Runtime figures from Atlas or Vanda" Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md)); taken later on a computed path
+  unsettled but changes no move: whether 'the login is not confirmed' (cluster jobs need your login) holds here is not settled
+  weak links: run record written by the run rests on predicted evidence (src: the solver writes its own record; checks/run_record.py refuses a figure without one); rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  no change  runtime figures from Atlas or Vanda
+  no change  no MPI on this Mac
+  no change  HPC login unconfirmed
+  no change  cluster jobs need your login
+  CHANGES    run record written by the run
+  no change  Atlas slow, Vanda limited and unreliable
+====================================================================================================
+D2 which algorithm (after: CG chosen)
+== D2 which algorithm (after: CG chosen) @after D1's local toolchain works   [forward; after your answer]   rules 0.2 (rule + applied; rule 3 asks what its gate requires; 2026-10-13)
+  computed: E[conjugate gradient for the Poisson equation, 2D and 3D, matrix-free stencil] → R
+    rules: 5 then 4
+    who resolves: the agent
+    at risk: the algorithm is one the group will defend (reaches the decision only as a note)
+  why the other options lost:
+    E[a graph algorithm (BFS or PageRank) on SNAP graphs]: open, but the path starts with E[conjugate gradient for the Poisson equation, 2D and 3D, matrix-free stencil] (rule 5)
+    Q[you: the group's algorithm, and whether a progress report already named one]: no gate requires it, so rule 4 puts it last
+    R: closed by not embarrassingly parallel (rule 2): "the parallelization of the algorithm should present some challenges (i.e., not embarrassingly parallel)." Canvas brief, assignment 279026 (course_materials/ASSIGNMENT_BRIEF.md); taken later on a computed path
+  weak links: rule 2 is behavioural (seen in: Claude Code sessions; your research's Anthropic models. The v2 ladder found false claiming is hump-shaped across 7 models, so its strength depends on the model)
+  against what happened: nothing observed (variant or prediction)
+load (gate removed -> does the path change?):
+  CHANGES    not embarrassingly parallel
+  no change  the algorithm is the group's choice
+  no change  structure must vary in the serial runs
+  no change  topic-specific asks
+  no change  synthetic data eases weak scaling
+  no change  six days left

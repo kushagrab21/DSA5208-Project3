@@ -1,0 +1,14 @@
+# Putting Project 3 in git: reasons transferred from Projects 1 and 2 (B1, proposed then executed)
+
+User, 13 Nov: "put everything done till now in git use the same circuit as the previous assignments to make it first
+principled and in human language, we will wait for the other results and then update" / "transfer the reasons and dont
+copy structure superficially".
+
+| P1/P2 choice | Reason it served there | Holds for P3 now? | P3 choice |
+|---|---|---|---|
+| Public GitHub repo (P1 24 Sep, P2 17 Oct, both made just before submission) | It was the code-submission route: P2's brief asked for code and a README, and the link was the grader's view of the code | No, not now. P3's brief allows "code in the PDF OR a public GitHub link", and the PDF already carries the code (appendix pp. 26-84). The user's reason now is to keep a copy of the work and update it after the remaining results arrive | PRIVATE repo kushagrab21/DSA5208-Project3. Making it public stays the user's decision, and is needed only if they choose the link route |
+| One squashed commit, a clean export | The public face should not show build history or private working notes | No. For a private archive, the 50-commit history is the record of how each claim was checked and fixed | Keep the full history and push the build repo as it is |
+| Export left out data/, .venv, .application, credentials; SHA256SUMS added | Size, licence and privacy, plus the grader's "no log files". The checksums let the reader verify a zip | Partly. Leave out credentials, downloaded data (re-fetchable with fetch_snap.sh) and third-party PDFs. But the run records (results/) are irreplaceable (about 550 core-hours) and are git-ignored today, so they must go IN. Git already hashes every file, so SHA256SUMS is redundant | Track results/, figures and the PDF. Keep data/, cluster/logs/ (terminal output) and secrets out |
+| README: what was done, results first, then contents and run steps with times | The grader opened the repo first, and P2's brief required "a README explaining how to run it" | Changed. The README is now where the report sends provenance (language-pass assumption 2: run plan, records, hashes and validation runs leave the body and go to the README). Its first reader is us, updating after the remaining runs, and possibly the grader later | A README in plain language that gives the reason for each mechanism (why numbers are generated, why the plan was fixed before timing, why a run is accepted only after validation), how to rebuild, and how to add the remaining runs |
+| Language: decision -> reason -> consequence (P2); the P3 language-pass rules | Same reader logic | Yes | Apply them to the README and the process notes |
+| Process notes (circuit, drills, parent state) kept out of the P2 repo | The public repo was for the code | Changes with privacy. In a private archive they are "work done till now" | Include a copy under process/ (no course slides, no third-party PDFs) |

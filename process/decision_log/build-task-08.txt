@@ -1,0 +1,38 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build
+(main). Same exclusions: no real cluster contact, no remotes, no messages, no Canvas. The parent's watcher may write results/ and
+cluster/logs/ (fetch); commit only your own paths. Be quick: this is one focused amendment, and the queue wait is the bottleneck.
+
+SITUATION (12 Nov ~22:30 IST)
+- Done since turn 7: vanda-gpu1 1547835 (offload 2e0a5b22 QUALIFIED on a GPU node; 1 A40: 67M unknowns x 100 iterations in
+  1.20 s 2D, 1.26 s 3D). E7 met. 264/338 cells.
+- Parent changes since turn 7, all committed:
+  - build.sh: --version runs under p3_timeout (120 s), because 1547695 hung on GPU node GN-A40-027;
+  - a socket-spread mapping was tried and reverted (dff6ed9). Do not reintroduce it.
+- Still queued about 8 h: vanda-4node 1546582 and vanda-graph-4node 1546819 (4 whole nodes, place=excl), and vanda-gpu 1546583
+  (2 GPUs).
+- Evidence: 19 whole cpu_node nodes are free, but batch_cpu has 993 jobs queued. Our wait is queue position, not hardware.
+  20 nodes have >= 32 free cores.
+- USER DECISION ("ya just do insuurance run"): add a 256-core INSURANCE job spread over 8 partly used nodes, in our normal
+  queue (project route). Do NOT use the autox queue, and no ticket. Keep the whole-node 288-core jobs queued.
+
+THIS TURN
+1. Plan amendment `spread256-2026-11-12` (legal on the frozen plan, reason recorded quoting the evidence above). Add job
+   `vanda-256spread`:
+   - select=8:ncpus=32:mpiprocs=32:ompthreads=1:mem=93gb (2.9 GB/core), place=scatter (shared, NOT excl), -P project as usual;
+   - new cells at 256 ranks (8 nodes x 32), placement "shared-8x32", distinct from the 288-rank cells;
+   - Poisson strong and weak, 2D and 3D, classic+blocking and pipelined+overlap: the same variants as the strong and weak
+     series, so the 256 points sit on those curves;
+   - graph strong on com-LiveJournal and com-Orkut, classic and pipelined.
+   Keep the walltime modest, using the calibration (the graph cost model is very pessimistic; scale it by what the real graph
+   jobs used).
+2. Binding on shared nodes: a partial-node job here sees all 72 cores (cpuset 0-71, test 1547726), so core binding could collide
+   with other users. Give this job NO core binding: a launcher option, e.g. P3_BIND=none, that p3_launch honours with
+   `--map-by ppr:32:node --bind-to none`. Every other job stays exactly as it is.
+3. Records and report: each row records placement (shared-8x32 vs whole-node). Figures plot 256-spread points with a distinct
+   marker and a caption note ("8 x 32 cores on shared nodes, unbound"). Speedup and efficiency at 256 use the same 1-core
+   baseline. requirements_check: E3/E4 count >= 256 from either placement, and the report text names which. If the whole-node
+   288 rows also arrive, show both.
+4. run_plan check vanda PASS; the fake test passes with the new job; commit.
+
+RETURN: the amendment and check output, the submit command, and the walltime and core-hour estimate. Keep state.md current.

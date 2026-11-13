@@ -1,0 +1,117 @@
+ROLE
+You are the delegated builder (child) for DSA5208 Project 3. Read and follow, in the child role:
+  /Users/kushagra/Desktop/tutor_papers/skills/build-application/SKILL.md
+  /Users/kushagra/Desktop/tutor_papers/skills/build-application/references/authority-and-workers.md (handoff and continuation sections)
+  /Users/kushagra/Desktop/tutor_papers/skills/build-application/references/acceptance.md
+Do not launch other workers. Do not ask the user anything; return blockers and decisions to the parent in your final report.
+Your workspace is /Users/kushagra/Desktop/final_assignment/build. Write only inside it. You may read anything under
+/Users/kushagra/Desktop/final_assignment/.
+
+OUTCOME (the user's words and the brief)
+The user: "I have made this folder in order to do the final assignment of this course". "now develop the semantic circuit for
+project 3". "go, start the build". The user chose: "CG Poisson 2D+3D", "Same as Project 2" (parent accepts, child builds).
+Read in full before writing code:
+  /Users/kushagra/Desktop/final_assignment/course_materials/ASSIGNMENT_BRIEF.md       (Canvas brief, verbatim)
+  /Users/kushagra/Desktop/final_assignment/course_materials/INSTRUCTOR_GUIDANCE_P3.md (Lecture 12 grading split and comments)
+Key lines from the brief:
+  - "This project focuses on a MPI+{OpenMP, CUDA, Kokkos, *} parallelization of an algorithm of your choice. Coding in C or C++"
+  - "implement it in serial and in parallel, exploring different methods of parallelization and how the various choices made in
+    parallelization affect the parallel scaling and efficiency" ... "not embarrassingly parallel"
+  - Report: introduction to the algorithm; design decisions; parallel scaling and efficiency; validation; "Runtime figures from
+    Atlas or Vanda"; AI usage. Code with a README. Due 17 Nov 2026 23:59 SGT. Worth 35 points.
+Grading (Lecture 12, by the grader Anthony Chen):
+  - 5 pts: the algorithm explained.
+  - 5 pts: serial runtime scaling over problem size. For sparse matrix problems, both the matrix dimension and the number of
+    nonzero entries should vary.
+  - 10 pts: MPI runtime performance to at least 256 CPU cores, strong AND weak scaling, with speedup and efficiency, and the
+    impact of communication explained.
+  - 10 pts: MPI+X. "If you choose X=OpenMP, then you also have to test on at least one GPU."
+  - 5 pts: the overall discussion.
+  Comments: define all non-standard terms; "If you are solving the Poisson equation, please implement a solver for both the 2D
+  and 3D problems"; explain how synthetic data is generated; explain the validation tests; "if you have 100+ tests, why?";
+  log axes for time, size and core count; "Do not include your log files or terminal output."
+Lecture slides (the grader's vocabulary): course_materials/slides/Lecture_7.pdf (speedup Ts/Tp(n), efficiency
+Ts/(n Tp(n)), Amdahl, Gustafson, strong/weak), Lecture_8.pdf (MPI, HPC usage), Lecture_9.pdf (OpenMP), Lecture_12.pdf
+(domain decomposition, stencils, runtime = flops x time/flop + volume/bandwidth + calls x latency, avoiding communication).
+Code samples: course_materials/code_samples/.
+
+THE CIRCUIT (binding design; read it)
+/Users/kushagra/Desktop/final_assignment/circuit/CIRCUIT.md (encoding p3_circuit.py, output compute_output.txt).
+Its requirement table E1-E18 (section 3) is the acceptance basis. Its section 5 lists the checks you build. Binding:
+  1. RUN RECORD. The solver itself appends one CSV row per timed run: cluster (from an env var or hostname: atlas|vanda|local),
+     PBS job id (PBS_JOBID or none), nodes, ranks, threads per rank, gpus, dim (2|3), grid n, unknowns, nonzeros, decomposition,
+     variant (classic|pipelined, blocking|overlap halo), iterations, t_total, t_halo, t_reduce, t_compute, t_other, final residual,
+     git/binary sha256. checks/run_record.py validates the CSVs and refuses to let a figure script use rows whose cluster is
+     not atlas or vanda (local rows are for development only). Report figures are drawn only from these CSVs.
+  2. VALIDATION. checks/validate.py runs a SMALL named set of cases (aim for under ~10, each with a one-line purpose printed):
+       - parallel vs serial on the same grid agree to rounding (state the tolerance and why), across several rank counts and
+         decompositions, 2D and 3D;
+       - error against the exact solution falls as h^2 under refinement, 2D and 3D;
+       - a planted halo bug (build option, e.g. -DPLANT_HALO_BUG that skips or shifts one face of the exchange) is REFUSED.
+     It qualifies only if it PASSES the correct build AND REFUSES the planted bug (your user's rule: "A check may become binding
+     only after it has passed an accepted example"; Project 2 only showed refusals). It prints the sha256 of the binary that
+     passed; timing scripts refuse any other binary.
+  3. RUN PLAN. checks/run_plan.py reads a plan file (config/run_plan.*) and prints the graded cells filled/total from the run
+     records: serial sizes (2D and 3D, matrix dimension and nonzeros varying), strong scaling to >=256 cores, weak scaling to
+     >=256 cores, rank x thread layouts per 72-core Vanda node (1x72, 2x36, 4x18, 8x9, 72x1), GPU runs; plus estimated
+     core-hours against a budget (budget unknown until first login: make it a config value). It refuses a job not in the plan
+     unless the plan file records why (the user objected to 5 unplanned reruns in Project 2).
+  4. checks/requirements_check.py: later turn (report). Not this turn, except you may stub it.
+
+BINDING DECISIONS (owner, reason)
+  - Group (user, 11 Nov): Kushagra Bhatnagar (A0351591A) · Pratyush Sinha (A0352482A).
+  - Algorithm (user, 11 Nov): conjugate gradient for the Poisson equation -Laplace(u) = f on the unit square and unit cube,
+    zero Dirichlet boundary, 2nd-order 5-point (2D) / 7-point (3D) stencil, MATRIX-FREE (no assembled matrix), synthetic problem
+    with a known exact solution (e.g. u = prod sin(pi x_i), f = d pi^2 u). Both 2D and 3D are required (L12 comment).
+  - Language: C++17, CMake. MPI everywhere; OpenMP threads inside each rank (MPI_THREAD_FUNNELED is enough unless you show
+    otherwise).
+  - X = OpenMP (parent, from circuit D3): threads for the CPU analysis, and an OpenMP target-offload build of the same kernels for
+    the one required GPU run on Vanda (compiled there with nvhpc: module nvhpc-hpcx-cuda12/26.1, e.g. -mp=gpu). You cannot test
+    offload on this Mac; write it behind a build option so the CPU build is unaffected, and keep it minimal and clearly marked
+    untested until the parent runs it on Vanda.
+  - "Different methods of parallelization" to compare (circuit D2; choose the exact set, but keep each switchable at run time
+    or build time so the same binary family produces the comparison):
+       - domain decomposition 1D vs 2D vs 3D via MPI_Cart_create / MPI_Dims_create;
+       - halo exchange blocking (MPI_Sendrecv) vs non-blocking overlapped with interior computation;
+       - classic CG (two blocking MPI_Allreduce per iteration) vs pipelined CG (one MPI_Iallreduce overlapped with the operator
+         application, Ghysels-Vanroose). Show pipelined CG still converges to the same answer (it is less stable; say so).
+    Time each part separately (halo, reduction, compute) with MPI_Wtime so communication cost is measured, not asserted (E5).
+  - Timing runs use a FIXED iteration count (e.g. 100-200) so runs are comparable and core-hours stay bounded; validation runs
+    iterate to a tolerance. State this in the README. Repeat timed runs 3 times; report the median.
+  - Plan for Vanda: 72 cores per node, strong and weak to 288 cores (4 nodes). Atlas may be 24-core nodes (unverified, older NUS
+    material). Pick strong-scaling grids that fit one node's memory and run in minutes serially at the fixed iteration count;
+    weak scaling grows the grid with the rank count. Write the sizes into the plan with the arithmetic.
+  - Cluster access belongs to the parent. Write PBS job scripts for Atlas and Vanda (templates under cluster/), using Lecture 8's
+    notes: Atlas "source /app1/ebenv" then module load; Vanda compiles on a compute node (qsub -I ... or inside the job). Leave
+    module names as variables where unknown. Do NOT ssh, scp or qsub; the parent will run them once the user's SSH keys work.
+
+CURRENT STATE
+  - Empty workspace (build/). No git repo yet; you may git init inside build/.
+  - This Mac: Apple M5, 10 cores, 16 GB, macOS. Installed by the parent today: Open MPI 5.0.11 (mpicc/mpicxx/mpirun in
+    /opt/homebrew/bin), libomp (/opt/homebrew/opt/libomp), CMake 4.4.5. Apple clang 21 has no -fopenmp driver flag; this
+    compile line works (tested by the parent: 4 ranks x 2 threads, provided=FUNNELED):
+      mpicxx -O2 -std=c++17 -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -lomp
+    Use mpirun --oversubscribe beyond 10 slots. Tectonic is installed (LaTeX, used for the report later). Python 3.14 with numpy
+    and matplotlib; use a venv under build/ if you need more.
+
+ALLOWED EFFECTS
+  Install local dev tools and Python packages; create files, venvs and builds under build/; run local MPI jobs; read
+  documentation online. Not allowed: ssh/scp/qsub or any cluster access; any message to anyone; any Canvas or GitHub action
+  (no remote repository, no push); writing outside build/.
+
+THIS TURN (stop and report at the end of it)
+  1. Serial CG, 2D and 3D, matrix-free, converging on the manufactured problem; error vs exact solution shown.
+  2. MPI version with the decompositions, halo variants and classic/pipelined CG above; OpenMP threads in the local kernels;
+     offload path behind a build option (untested).
+  3. Run records written by the solver; checks/run_record.py.
+  4. checks/validate.py qualified: passes the correct build, refuses the planted halo bug. Keep the output.
+  5. config/run_plan + checks/run_plan.py, with the proposed cluster plan (sizes, rank/thread grid, repeats, core-hour estimate).
+  6. PBS templates for Atlas and Vanda, and a README explaining how to build, validate and run.
+  7. A local smoke run of the timing pipeline at 1-8 ranks (records marked local) and one development plot from it with log
+     axes, to prove the figure path works. These are not report figures.
+  Keep going on independent work if something blocks.
+
+RETURN (your final message, for the parent)
+  Result or blocker per step; the validate.py and run_plan.py outputs verbatim; the planted-bug refusal; paths of key files; the
+  proposed cluster plan with its core-hour estimate; anything that changes a decision above (with evidence); what remains.
+  Keep build/.application/state.md current so the work can resume without repeating intake.

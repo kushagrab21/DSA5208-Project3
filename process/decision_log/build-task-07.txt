@@ -1,0 +1,55 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your own session. Workspace: back in /Users/kushagra/Desktop/final_assignment/build
+(main, which now contains your graph-extension merge, a623678, and parent commits up to 3769f38). Same exclusions: no real cluster
+contact (no ssh/scp/qsub), no remotes, no messages, no Canvas. Report blockers to the parent.
+Note: the parent's watcher runs cluster/ops/fetch.sh vanda from time to time. It writes results/ and cluster/logs/. Do not
+revert those files. Commit your own changes only (git add the paths you changed).
+
+WHAT HAPPENED ON VANDA (real; read results/vanda/, cluster/logs/vanda/, the ledger results/vanda/jobs.csv)
+- Parent fixes to env.sh after the first real jobs, all committed:
+  1) hostname case mismatch (GN-A40-075 vs gn-a40-075.stdct.loc) made PRRTE launch daemons over ssh without modules: prted
+     is now launched by absolute path (P3_MPI_EXTRA);
+  2) forward P3_CLUSTER and PBS_JOBID through the launcher;
+  3) p3_map_args: ranks wider than a socket (1x72) are mapped unbound with OpenMP pinning (Open MPI refused 1 rank across two
+     36-core sockets).
+  Please review these three for anything you would do differently, without changing behaviour that the real jobs have now
+  validated.
+- Finished, exit 0: calibrate, serial, 1node-scaling, 2node, 1node-variants-layouts (rerun), graph-prep (p3graph 9da57b11
+  QUALIFIED G1;G2), graph-serial, graph-strong, graph-variants, graph-2node, graph-sweep. Coverage 262/338 cells.
+  Calibration: 26.7 GB/s per core, 461.6 GB/s per node.
+- Still queued after ~4.5 h:
+  - vanda-4node 1546582 and vanda-graph-4node 1546819: "Insufficient amount of resource: ncpus". They need 4 whole free
+    nodes. Leave them.
+  - vanda-gpu 1546583 (select=1:ncpus=72:mpiprocs=72:ompthreads=1:ngpus=2:mem=480GB, place=excl): "Placement set is too
+    small: Insufficient amount of resource: ngpus (R: 2 A: 1 T: 70)". Only single GPUs come free.
+
+THIS TURN
+1. GPU JOB SPLIT. Amend the frozen Vanda plan, legally and with a recorded reason quoting the qstat comment above. Add a job
+   vanda-gpu1: one GPU, half a GPU node (the `hpc gpu` sample shape: select=1:ncpus=36:mpiprocs=1:ompthreads=36:ngpus=1, no
+   place=excl, memory within half a node). It holds the 1-GPU cells, together with its own offload build and validate.py
+   qualification on the GPU node before timing. vanda-gpu keeps the 2-GPU cells (it is already queued; leave its spec). Every
+   cell stays in exactly one job. run_plan check vanda must PASS. Make submit.sh accept vanda-gpu1, and show it in the fake
+   test. E7 ("at least one GPU") is then met by gpu1 alone.
+2. REPORT WITH REAL DATA. Run scripts/make_report.sh and render the PDF with the 262 real cells (cluster rows only). Check
+   every figure by eye from its PNG: log axes, captions, the cluster named, no mixed builds. Fix what is wrong. Then draft the
+   interpretation paragraphs for the sections whose data is complete or nearly so:
+   - serial scaling (Poisson and graph);
+   - single-node strong and weak scaling with the communication split;
+   - the graph data conclusions (graph-sweep is 70/70);
+   - the graph method comparison at 72 cores.
+   Rules:
+   - every claim cites a generated number;
+   - P2 language rules (prior_circuits/project2_rainfall_spark/report_language_ASSUMPTIONS.md);
+   - define terms;
+   - say plainly where the data is surprising or contradicts expectations;
+   - mark each drafted paragraph in the source as DRAFT-FOR-USER-REVIEW, so the requirements check reports it and the parent
+     can show it to the user.
+   Leave the 288-core and GPU parts as waiting.
+3. Run requirements_check. Report which rows are filled, waiting or draft.
+
+RETURN
+- The plan diff and the check output for the GPU split; the exact submit command for the parent.
+- The PDF path and page count; the list of figures with a one-line "what it shows" from the real data.
+- The drafted paragraphs' key claims with their numbers. Anything surprising in the data, such as pipelined CG vs classic
+  at scale, or the communication share.
+- Keep build/.application/state.md current.

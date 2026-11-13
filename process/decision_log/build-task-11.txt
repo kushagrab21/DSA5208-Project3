@@ -1,0 +1,187 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions (no cluster contact, no remotes, no messages, no Canvas). The parent's watcher may write results/ and
+cluster/logs/; commit only your paths.
+
+CONTEXT
+- The parent accepted turn 10 (e2d2f4f). A SECOND cold-reader check followed: a fresh agent with no context read pp. 1-25 of
+  the PDF only, as the grader would, and recomputed ratios from the report's own tables. Its findings are pasted below
+  VERBATIM. The parent spot-checked two: #6 is real (Table 1 says 2D 72 ranks 9x8 grid, 3,870 halo values; Table 11 says
+  4,098), and #13 is real (Section 11 prints "which ran configurations out of 350" with the number missing).
+- The cold reader is a proxy and can be wrong. Do not take any item on trust.
+
+TASK: resolve every item below, by hand, under the same binding rules
+(/Users/kushagra/Desktop/final_assignment/assumption_drill/report_language_pass/ASSUMPTIONS.md and 03_DRILL.md).
+For each item:
+- First verify it against the data (results/, run records), the code (src/, scripts/) or the run plan. Decide: REAL (fix the
+  claim, not only its words), PARTLY REAL, or NOT REAL (the reader misread; then make the sentence harder to misread if it is
+  cheap to do so).
+- Where the text comes from scripts/report_macros.py or scripts/figures.py, fix the generator.
+- Add NO unmeasured facts. Public specifications may be cited only if labelled as specifications with their source.
+- Keep 0 hand-typed numbers. A new number becomes a generated value.
+- Do not polish the final interpretation of the sections still waiting for the >=256-core data (Summary, 6, 7, 8.8-8.9, 9).
+  Fix contradictions and wrong claims there, and scope claims to what was measured.
+
+THE MOST IMPORTANT ITEMS (analysis, not wording)
+A. #3, the weak-scaling one-rank baseline. Check the actual one-rank weak runs: problem size per rank, ns per unknown-iteration,
+   repeats, the node, the job, and whether it ran alone or alongside other ranks/jobs. Compare with the strong-scaling one-rank
+   runs and the 2-rank weak runs. If the baseline is anomalous for an identifiable reason (cache fit, a different node or
+   job, frequency, placement), say so and use a defensible reference (for example the 2-rank or a per-rank-bandwidth
+   reference), and fix the 6.2 bandwidth-prediction paragraph so its conclusion follows from the numbers. If you cannot find
+   the reason, state the anomaly plainly and do not draw a conclusion from it. Check L3 per socket against what is recorded
+   or specified, and reconcile with Section 5's cache claim.
+B. #4, the one-core pipelined/classic ratio. Recompute it from the actual cells used (Table 9 vs Table 10). Make 6.3, 1.1 and
+   8.7 consistent: what sets the one-core time, and what the 1.33 model ratio predicts and where.
+C. #6, Table 1 vs Table 11. Find the process grid the code actually uses for 2D at 72 ranks (MPI_Dims_create or our own
+   choice) and for 3D. Compute Table 1 for the real grid and the real largest rank, from the code's own decomposition logic.
+D. #1, the validation claim against the four program hashes in Section 11. Check the run records: which binaries were timed,
+   and which validation run covered each one (the offload binary 2e0a5b22 was validated on a GPU node in job 1547835). Make
+   the claim exactly as strong as the records support, and make Section 11 consistent with it.
+E. #2, the attainable-accuracy paragraph against Table 5. Use the true and recursive residual histories that were recorded.
+F. #5, "100 iterations" applies to the Poisson runs only. The graph runs solve to a tolerance. Fix Section 4 and Section 9.
+G. #7, the GPU comparison's CPU reference. Name the exact CPU configuration, its source table, and use the fastest
+   one-node time if "best layout" is claimed. Table 13 prints empty: fix it or remove the pointer.
+H. #8, the reduction claim: use the per-iteration reduction time, not only its share. Say what the time in a reduction
+   consists of (waiting for the slowest rank versus latency), and say what was not measured.
+Then all other items, 9-30.
+
+RETURN
+- For each item: REAL / PARTLY / NOT REAL, the evidence (file, cell or line), and what changed.
+- The PDF path, the page count, and whether every table fits the page width (check Table 7).
+- The requirements_check result (hand-typed numbers must be 0).
+- Keep state.md current. Commit.
+
+=== COLD-READER FINDINGS (verbatim) ===
+
+The reader recomputed and confirmed: all six rows of Table 1; the nnz formula against Table 8; arithmetic intensity 0.16/0.18;
+kappa and the V5 bounds; the shares in Table 11 and in the 6.3 text (4.5/5.3/6.6/10.4/0.9/1.7 %); 19.0, 1.96, 1.14, 2.01, 16.6,
+0.09 and 0.71 in 6.1; 2E/V and 2E+V; the BFS ratios; the thinning losses; 5.4 and 19.2 B/nnz and 0.20 ns; and 2.03, 1.55,
+1.05, 1.86 and 1.10 in 8.9.
+
+Per-section verdicts
+- Summary. Reads in one pass. Two problems: it overstates the broken-version result, and its GPU 1.17 figure inherits the
+  Table 14 reference problem.
+- 1. Clean. Reads in one pass and is consistent.
+- 2. Reads in one pass. However, the stream-counting rule as worded does not give 12, and the 2D 72-rank halo in Table 1
+  disagrees with Table 11.
+- 3. Reads in one pass. Two contradictions: the attainable-accuracy paragraph contradicts Table 5, and the "validated
+  program" claim contradicts 11.
+- 4. Dense but followable. Table 7 is clipped at the page edge, the "100 iterations" claim is false for 8, and 184 does not
+  match Table 7.
+- 5. Reads in one pass and is consistent. One effect is left without a cause.
+- 6. 6.1 is consistent; its placeholders for the one-core times and the one-node efficiency ask for numbers Table 9 already
+  has (24.1/28.4 s, 0.25/0.26). 6.2's conclusion rests on an anomalous one-rank baseline. 6.3 contains a claim its own
+  Table 10 and Table 11 contradict. 6.4 has no causes.
+- 7. The Lecture-9 Q&A reads in one pass but repeats 2. The GPU comparison's CPU reference can't be traced and isn't the
+  fastest one-node time.
+- 8.1-8.7. Read in one pass and are consistent, with minor issues only.
+- 8.8-8.9. The core-count list contradicts Table 7, and "partition matters most" contradicts the next paragraph.
+- 8.10. Two of its three conclusions are partly contradicted by Tables 15/16 and 8.5.
+- 9. The opening sentence promises "scale" and then answers by measure. Limitations contradicts 8.
+- 10/11. 11's hash list contradicts 3, and one sentence is missing a number.
+
+Flagged sentences (section | quote | problem | fix), most important first
+1. 3 | "the program used for every timed run on Vanda passed them on that cluster before any timed run started" | g | 11 lists
+   four program hashes for the timed runs (2e0a5b22cd3d, 9da57b11ddd2, a0006417c428, ace45bed3220), but only ace45bed3220 is
+   listed as validated. Either show that each was validated or narrow the claim.
+2. 3 | "Pipelined CG did not reach it in 3,000 iterations: its recursive residual stopped falling at 2.8 x 10-11 while its true
+   residual stayed at 6.4 x 10-9." | g, f | Table 5 has the same case (2D, n = 63, 4 ranks) reaching a true residual of
+   1.0 x 10-10 after 215 iterations, so the true residual did not "stay at" 6.4e-9 and the attainable accuracy is about 1e-10.
+   Say it got to about 1e-10 and then drifted up to 6.4e-9. Also delete the next sentence, which repeats both residuals.
+3. 6.2 | "If memory bandwidth were the only limit, a node's 438 GB/s shared by 72 ranks would give each rank 0.23 of what one
+   rank gets alone, slightly more than the measured one-node efficiency of 0.19 in 3D and 0.18 in 2D." | g | The weak-scaling
+   one-rank times in Table 10 work out to 2.66 ns (2D) and 3.06 ns per unknown-iteration (3D). Every other serial run in
+   Tables 8 and 9 costs 3.5-4.2 ns, and the 2-rank weak runs cost 4.06 and 4.52 ns.
+   - So the weak efficiency at 2 ranks is 0.66, while the strong one is 0.99 and 4 says the first cores scale almost in
+     proportion.
+   - Using the weak runs' own one-rank bandwidth (36 and 31 GB/s), the prediction becomes 0.17 and 0.19, which equals the
+     measurement, so the "gap" is an artifact.
+   - Fix: explain or replace the fast baseline. One possibility: about 67 MB of vectors per rank against the 67.5 MB L3. That
+     clashes with 5's claim, though.
+4. 6.3 | "On one core, which draws only a small part of a socket's bandwidth, the ratio is only 1.08 in 3D and 1.10 in 2D
+   (Table 9), so there the time is not set by the bytes moved" | g | The one-core runs in Table 10 give pipelined/classic
+   ratios of 1.30 (2D) and 1.20 (3D). Table 9's 3D ratio recomputes to 1.07. The claim also clashes with 1.1 ("set by how fast
+   memory delivers the vectors") and with 8.7's use of 26.3 GB/s. Reconcile these, or call it latency-bound rather than
+   bandwidth-bound.
+5. 4 | "Each timed run performs exactly 100 CG iterations, whatever the residual" (also 9: "was measured only in serial") | g |
+   The graph runs in 8 solve to 1e-8 in parallel: Table 16 shows 102-1,024 iterations per solve, Figure 10 and Table 20 report
+   time per system, and 8.8 gives an iteration ratio. Limit both statements to the Poisson runs.
+6. 2.1 | "Table 1 works this out for the strong-scaling grids." | g | For 2D at 72 ranks, Table 1 gives a 9x8 grid with 3,870
+   halo values, but Table 11 gives 4,098. No rank of a 9x8 grid can have 4,098 (the most is 2*911 + 2*1024 = 3,870);
+   4,098 = 2*1366 + 2*683, which is a 6x12 grid. The 3D values also differ (60,112 against 59,772) because Table 1 uses a
+   hypothetical box that is largest in every direction. State the process grid actually used and compute Table 1 for real
+   ranks.
+7. 7 | "One GPU takes 1.26 s for the 3D grid and 1.20 s for the 2D grid, which is 1.17 and 1.12 times as fast as the best
+   layout on one CPU node (Table 14)." | g, c | Table 12's fastest one-node 3D time is 14.576 ms/it, which is 1.458 s and less
+   than the 1.47 used here; against it the ratio is 1.16. Table 13 is empty, so 1.34 and 1.47 can't be traced. Name the CPU
+   configuration and its source, in the Summary as well.
+8. 6.3 | "The reductions grow faster than the halo exchange when the run leaves the node, because every reduction then waits
+   for a message between nodes" | g, c | In 3D the reduction time per iteration in Table 11 is unchanged (0.793 to 0.793 ms);
+   only its share grows, because computation halves. Also, 0.8 ms for two one-number allreduces is far above a log2 P
+   latency, so it is mostly waiting for slower ranks (4). Say so.
+9. 8.10 | "because denser graphs have larger maximum degrees, 33,313 on com-Orkut, and need more iterations, 1,024 per system
+   against 113 on com-Amazon" | g | com-Youtube is sparse (2E/V 5.3) yet has dmax 28,754 and needs 708 iterations.
+   com-LiveJournal is denser (17.3) but has dmax 14,815 and needs 624. Iterations follow dmax, not density, so rephrase.
+10. 8.9 | "On one node the choice of partition matters most (Table 20 and Figure 12)." | g | The next paragraph says "The
+    largest gain on one node comes from fewer ranks with more threads." On com-Orkut the partition gives 1.55x and the hybrid
+    layout 1.86x; on com-LiveJournal it is 2.03x against 1.10x. State it per graph.
+11. 8.8 | "were run on 1, 2, 4, 9, 18, 36, 72, 144, 256 and 288 cores" | g | Table 7 says 1-144, Figure 10 stops at 144, and
+    256 is not a whole number of 72-core nodes (unlike 6's design). Say "planned for" and list only what was run.
+12. 4, Table 7 | the last column header prints as "solv", and the graph strong-scaling entry as "3 (1" | a | That column runs
+    past the right page edge, so the "solves" column is cut off on screen. Narrow the table.
+13. 11 | "which ran configurations out of 350 planned in advance" | a | The count of configurations run is missing.
+    "run 20261112T225342Z" is also unexplained. Add the number and say what the run ID is.
+14. 2.5 | "A loop makes one pass through memory, which we call a stream, for each vector that it reads or writes, and two for a
+    vector that it writes without reading" | g, a | Read literally, the rule gives 3 + 4 + 2 = 9 streams, not 12. Reword: one
+    stream per vector read, one per vector written, plus one extra for a vector written without being read.
+15. 6.4 | "On one node the fastest 3D combination is the 2D decomposition with classic CG and blocking halo exchange, and the
+    fastest 2D one is the 2D decomposition with classic CG and blocking halo exchange." | c, d | No cause is given for any of
+    these: the 2D margin (13.560 against 13.575 ms, 0.1 %) is below the 0.6 % repeat spread in 4; columns beat blocks in 3D
+    (14.576 against 14.967 ms); slabs are 35 % slower; the strong-scaling runs used blocks, not the fastest choice. Merge the
+    two clauses and add causes.
+16. 9 | "Which part needs the most communication depends on the scale." | a, g | The next sentences answer by measure (volume
+    against number of waits), not by scale. They also repeat Table 1's 23,120. Use "depends on what is counted".
+17. 4 | "Over the 184 configurations solved 3 times" | g | Table 7's three-solve rows sum to 198, or 196 without the two
+    one-solve com-Orkut runs. Reconcile.
+18. 6.1 | "The ratio comes from the same runs as the speedup, so it restates the speedup in units of bandwidth and does not
+    confirm it independently." | g, c | 16.6 matches neither speedup (19.0 or 17.8), because it is a median over variants and
+    over "the large one-core runs", a set that is never defined. Name the runs.
+19. 8.10 | "those of com-DBLP and email-Eu-core are the hardest, and on them more seeds help (Section 8.5)" | g | 8.5 shows
+    com-Orkut gaining as much (+0.232) as email-Eu-core (+0.245), more than com-DBLP (+0.180), and com-LiveJournal taking the
+    largest single step. Drop "on them".
+20. 8.4 | "The graph solver has two validation tests of its own, G1 and G2, and a third check, G3, that both fail on a
+    deliberately broken version of the ghost exchange, as for the Poisson solver." | a | This is garbled: say "G3 checks that
+    both fail on...". In the same bullet, "its products are off by 1.1" gives no unit or reference (c); say "relative error
+    1.1".
+21. Summary | "and the tests fail on two deliberately broken versions of the boundary exchange" | g | Table 6 shows V1 and V2
+    pass on both broken versions. Write "the three parallel tests fail".
+22. 5 | "so the time follows the vectors streamed from memory, which are the same number per unknown in 2D and 3D, rather than
+    the nonzeros" | c | This leaves the 18 % higher 3D cost per unknown (4.24 against 3.59 ns) unexplained. Give a cause, for
+    example neighbour planes not staying in cache.
+23. 6.3 | "The memory model of Section 2.5 gives it 128 bytes of memory traffic per unknown against 96 for classic CG, a ratio
+    of 1.33." | f | The 96/128/1.33 figures are already stated in 2.3, 2.5 and 6.1. Refer back instead of restating.
+24. 6.1 | "so once the cores of a socket saturate its memory bandwidth, more cores on that socket cannot make an iteration
+    faster, while a second socket or a second node brings its own memory" | f | The same mechanism is given in 2.5 and 4.
+    Likewise "Up to 144 cores communication is a small part of the time." (6.3) repeats 2.5 and the end of 6.2. Keep one of
+    each.
+25. 8.8 | "unlike the grid, whose halo is a thin surface" | f, e | The thin-surface contrast appears four times (2.5, 8 intro,
+    8.8, 8.9). Keep one.
+26. 7 | "Fewer ranks mean fewer and larger messages and a shallower reduction, but threads pay for starting and joining every
+    parallel loop and for memory placed across sockets." | f, a | This repeats 2.4, as do the FUNNELED, windows and host-copy
+    points. "Memory placed across sockets" is undefined and conflicts with 2.4's first-touch claim. Shorten and point to 2.4.
+27. 2.5, 6.2, 8.10 | "Our thesis follows from this:" / "Weak scaling shows the same memory limit from the other side." / "The
+    runs say three things about these networks." | e | These read as flourishes. State the content directly.
+28. 8.7 and 8.9 | "We did not record the level sizes that would confirm this. com-Amazon, which is sparse, also gains little
+    (Table 17), for a reason we did not establish." / "We did not test this, and a run with an asynchronous progress thread
+    would settle it." | d, f | These are choppy caveat strings, and the 8.9 progress explanation repeats 2.2. Fold each into
+    its preceding sentence.
+29. 9 Limitations | "It first ran on a GPU in the Vanda job that validated it on the GPU node and then timed it, so it was not
+    tuned for the GPU." | a | Hard to parse. Try: "Its first GPU run was the Vanda job that validated and then timed it, so
+    it was never tuned for the GPU."
+30. Minor (a/b):
+    - 2.5 "a bandwidth b that one core can draw on its own" reuses b (the right-hand side) and beta (the CG coefficient in
+      Algorithm 2). Rename them.
+    - 6 "and on whole nodes the recorded runs reach 144 cores on 2 nodes" is unclear.
+    - 10 "a coordinating session and a delegated builder session" is jargon for this reader.
+    - 8.9's "1.18 times" and "1.11 times" (all-to-all and overlap) don't say which graph or partition.
+=== END ===
