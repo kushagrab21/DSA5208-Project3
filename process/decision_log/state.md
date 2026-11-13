@@ -306,3 +306,5 @@ Due 17 Nov 2026 23:59 SGT (extended twice for Vanda downtime). The parent is the
   the user's choice.
 - Parent: topic labels (Sections 3, 4 and Limitations) now end with a colon, at the user's request; rebuilt, 84 pp, hand-typed 0.
 - Parent: Section 7 Lecture 9 list, each answer starts on the line below its question (user's request); rebuilt, 84 pp.
+- Turn 13 accepted (d932896): results/, figures, PDF and report/generated tracked; README rewritten; 194 files, ~3.5 MB; secrets 0. Parent: process/ copy via scripts/sync_process_notes.sh.
+- 13 Nov: user: "ok make it public and put it". Scan before publishing: no emails, password values, IPs or third-party names in tree or history. The NUS account name stays (PBS project string, record paths). The user was told and approved public. Repo kushagrab21/DSA5208-Project3 created PUBLIC with full history.
