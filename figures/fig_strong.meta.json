@@ -7,7 +7,7 @@
  "groups": [
   "strong"
  ],
- "utc": "2026-11-13T06:58:17Z",
+ "utc": "2026-11-13T07:29:30Z",
  "status": "partial",
  "axes": [
   {
@@ -64,7 +64,7 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "348ad719d53160c5285051d7455e77baa18dedac27a9e68fe5ed556b0f5a66ea",
+ "image_sha256": "1e2626251b4119e64012c1c385da9aafd2012548d8740d17734b9982ca9199a7",
  "waiting_for": [
   "vanda strong: 32 of 40 runs recorded"
  ]

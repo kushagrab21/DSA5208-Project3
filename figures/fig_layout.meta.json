@@ -7,7 +7,7 @@
  "groups": [
   "layout"
  ],
- "utc": "2026-11-13T06:58:18Z",
+ "utc": "2026-11-13T07:29:31Z",
  "status": "partial",
  "axes": [
   {
@@ -54,7 +54,7 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "fcda2d439953c890c582b9120bee89acfc5fc7a672bf089da650e7af0a4fcbd4",
+ "image_sha256": "6d7edc9abd05abc641a20700607119018ef1153e6af91bb43fd026fbd771569a",
  "waiting_for": [
   "vanda layout: 10 of 20 runs recorded"
  ]

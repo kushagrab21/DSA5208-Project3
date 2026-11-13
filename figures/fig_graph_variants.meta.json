@@ -7,7 +7,7 @@
  "groups": [
   "graph-variants"
  ],
- "utc": "2026-11-13T06:58:18Z",
+ "utc": "2026-11-13T07:29:32Z",
  "status": "partial",
  "axes": [
   {
@@ -54,7 +54,7 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "eea1f280f3d01363baaee37710d3679b6884f8f4aa30873ca12b8cfa5a2c86b8",
+ "image_sha256": "399c278e3ce6a2f37bf00d9fd1fec40e60863ae90b6c5de1b351f73b2bd70f87",
  "waiting_for": [
   "vanda graph-variants: 40 of 80 runs recorded"
  ]
