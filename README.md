@@ -2,119 +2,49 @@
 
 Kushagra Bhatnagar (A0351591A) and Pratyush Sinha (A0352482A)
 
-This repository holds the solver, the checks that guard it, the scripts that ran it on the NUS cluster Vanda, every
-run record those runs produced, and the report built from them (`report/DSA5208_Project3_Report.pdf`). The report
-gives the method and the results. This file explains how the pieces fit together and why they work the way they do,
-so that someone who opens the repository without context can rebuild the report, check where a number came from, and
-add the runs that are still outstanding.
+A conjugate gradient (CG) solver for the Poisson equation in 2D and 3D, parallelised with MPI across ranks, OpenMP
+threads inside each rank and OpenMP GPU offload, together with every run record from the NUS cluster Vanda and the
+report built from them: [`report/DSA5208_Project3_Report.pdf`](report/DSA5208_Project3_Report.pdf). The report gives
+the method and the results. This file says how to reproduce them.
 
-## What the program solves
+## Reproduce
 
-`bin/p3cg` solves the Poisson equation -Δu = f on the unit square and the unit cube with zero boundary values, using
-the 5-point stencil in 2D and the 7-point stencil in 3D and the conjugate gradient (CG) method. We never store the
-matrix, because the stencil describes it completely and storing it would only add memory traffic, so every CG
-iteration applies the stencil directly. The right-hand side comes from a chosen exact solution, so every run can
-measure its own error.
+You need an MPI library (MPI 3), a C++17 compiler with OpenMP, Python 3 (the checks use only its standard library),
+matplotlib for the figures and tectonic for the PDF. On macOS the compiler also needs Homebrew's `libomp`.
 
-The work is split in two levels. MPI ranks each own a box of the grid (domain decomposition) and exchange the layer of
-values next to each shared face before every stencil application (the halo exchange). OpenMP threads inside a rank
-share the loops over that box. The same loops can also run on a GPU through OpenMP GPU offload, in a separate build.
-Three choices can be switched at run time, so that one program produces every comparison in the report: how many
-directions the grid is split along (`--decomp 1|2|3`), whether the halo exchange is blocking or non-blocking
-(`--halo blocking|overlap`), and whether CG is the classic form or the pipelined form, which overlaps its one
-reduction per iteration with the next stencil application (`--cg classic|pipelined`). `bin/p3cg --help` lists every
-option.
-
-`bin/p3graph` applies the same CG code to real graphs from the Stanford Large Network Dataset Collection (SNAP), to
-label communities by diffusion. Report Sections 1 and 2 describe the solver, and Section 8 the graph part.
-
-## Where things are
-
-| Folder | What it holds |
-|---|---|
-| `src/` | the C++ solver (`p3cg`), the graph solver and converter (`p3graph`, `p3convert`) |
-| `checks/` | the validation tests, the check that a program has passed them, the plan tools and the report check |
-| `config/` | the plans: every configuration to be timed, per cluster, fixed before timing |
-| `cluster/` | the batch-job environment per cluster, the scripts that submit and fetch jobs, and the runbook |
-| `results/` | every run record, the validation records, the job ledger and the node descriptions |
-| `scripts/` | build, plan generation, SNAP download and conversion, figures and report generation |
-| `figures/` | the report's figures, each with a `.meta.json` file naming the records it was drawn from |
-| `report/` | the report source, the generated values and tables it reads, and the built PDF |
-| `.application/` | our working notes on the state of the project |
-
-## Why every number in the report is generated
-
-Every run that is timed appends one row to a CSV file under `results/<cluster>/`. We call such a row a run record. It
-says where the run happened (job, node, ranks, threads), what it ran (problem size, method, iterations), how long each
-part took, and which program produced it, by the SHA-256 hash that the program computes of its own binary.
-
-The report contains no typed number. Every number, table and figure is computed from the run records by
-`scripts/report_macros.py` and `scripts/figures.py`, and the report source refers to each number by name (`\val{...}`).
-We chose this because a typed number cannot be traced back to the runs that support it, and it goes stale without
-warning when records are added or corrected. `checks/requirements_check.py` refuses the report if a digit is typed in
-its body. A number whose runs are still missing prints as a red "waiting for cluster data" mark, so the report can be
-built at any stage.
-
-The consequence is a rule for editing. To change a number, change the records or the script that computes it, then
-run `scripts/make_report.sh`, and never edit the number in `report/DSA5208_Project3_Report.tex`. The wording around
-the numbers is edited in the `.tex` as usual. `report/generated/` holds the computed values and tables. It is tracked,
-although `make_report.sh` rebuilds it, because the tracked PDF depends on it and its diff shows exactly which numbers
-changed when new records arrived.
-
-## Why the timed runs follow a plan fixed in advance
-
-Before any timing we wrote down every configuration to be timed, that is every combination of problem, core count,
-threads and method, in a plan (`config/run_plan.vanda.json`, generated by `scripts/make_plan.py` and
-`scripts/make_graph_plan.py`). The plan also groups the configurations into batch jobs. It was frozen (`"frozen":
-true`) before the first timed job, and `cluster/ops/submit.sh`, the only route to the queue, refuses a job that is not
-in the plan or a timed job while the plan is not frozen.
-
-The reason is that results chosen after they are seen can mislead, even without intent. Without a fixed plan a slow
-run could be quietly repeated, or a core count dropped because it scaled badly. With the plan, every run in the report
-belongs to a configuration that was decided beforehand. A job can be submitted a second time only after a reason has
-been written into the plan's `"reruns"` list, and a change to the plan after freezing is an amendment: a dated entry
-in the plan's `"amendments"` list that says what was added and why, written by one of the `scripts/amend_*.py`
-scripts. The amendments so far added configurations or moved some to a new job, and none removed one. The
-consequence for anyone adding runs is that they first
-add an amendment and only then submit.
-
-## Why a program is timed only after it passes the validation tests
-
-A fast program that computes the wrong answer is worthless, and the errors a parallel solver can make, such as a halo
-face that is never received, do not show in a run on one rank. `checks/validate.py` therefore runs five validation
-tests, V1 to V5, which Section 3 of the report explains: two check that the error falls with the grid spacing as the
-discretisation predicts, two check that every parallel layout reproduces the one-rank result to rounding, and one
-checks that pipelined CG converges to the same answer as classic CG. The program is also built twice with a
-deliberately broken halo exchange (`bin/p3cg_bug1` and `bin/p3cg_bug2`), and with `--qualify` the check accepts a
-program only if it passes all five tests and both broken builds fail them. A test that cannot catch a known error
-proves nothing. The graph solver has its own tests, G1 and G2, in `checks/validate_graph.py`, with one broken build.
-
-The tests run on the cluster that does the timing, on a compute node, because a program built and tested elsewhere is
-a different binary with a different compiler and MPI library. When a program passes, its SHA-256 hash, the cluster and
-the time of the validation run go into `results/validated_binaries.csv`, and its results into
-`results/validation/<cluster>/` as a `.json` and a `.csv` file per run. A validation run is named by the UTC time at
-which it started, for example `20261112T063938Z`. Two checks then tie each timed row to a validated program.
-`checks/timing_gate.py`, which every batch job runs first, refuses to start timing with a program whose hash has not
-passed on that cluster. `checks/run_record.py`, through which the figures and the report read the records, refuses a
-row whose program hash has no validation on that cluster, and a row from a laptop. Section 11 of the report lists the
-hash of each program behind its results together with its validation run.
-
-## Building and validating on your own machine
-
-You need an MPI library (MPI 3), a C++17 compiler with OpenMP, Python 3 with only its standard library for the checks,
-matplotlib for the figures, and tectonic for the PDF. CMake is used if it is installed. On macOS the compiler also
-needs Homebrew's `libomp`.
+**1. Build the solver and run the validation tests.** The tests must pass, and the two deliberately broken builds must
+fail them, before any timing means anything.
 
 ```bash
-scripts/build.sh                     # bin/p3cg and the two broken builds bin/p3cg_bug1, bin/p3cg_bug2
+scripts/build.sh                     # bin/p3cg and the broken builds bin/p3cg_bug1, bin/p3cg_bug2
 python3 checks/validate.py --qualify --binary bin/p3cg --bug-binary bin/p3cg_bug1 --bug-binary bin/p3cg_bug2
 OMP_NUM_THREADS=2 mpirun -np 4 bin/p3cg --dim 3 --n 128 --decomp 3 --halo overlap --cg pipelined --iters 100
-scripts/make_report.sh               # figures, generated values and tables, the PDF, then the requirements check
 ```
 
-A run on a laptop is recorded with the cluster name `local`, and the report never uses such a row. Laptop timings
-share one memory system across all cores and say nothing about the cluster. For the graph solver, download and convert
-a SNAP graph first, which writes to `data/` (not tracked, because the files are large and can be downloaded again):
+**2. Rebuild the report from the recorded runs.** This needs no cluster. Every number, table and figure is
+recomputed from `results/`.
+
+```bash
+scripts/make_report.sh               # figures, generated values and tables, the PDF, then the report check
+```
+
+**3. Run the experiments on Vanda.** This needs an NUS HPC account, the NUS VPN and an SSH host alias `vanda` with a
+key that works without a password. The jobs are charged to the PBS project in the `"pbs"` block of
+`config/run_plan.vanda.json`, so change that entry for another account.
+
+```bash
+cluster/ops/sync.sh vanda                    # copy the committed tree to ~/p3 on Vanda
+cluster/ops/submit.sh vanda vanda-validate   # build and validate on a compute node
+cluster/ops/submit.sh vanda <job>            # a timed job from the plan
+cluster/ops/poll.sh vanda                    # job states
+cluster/ops/fetch.sh vanda                   # bring the run records back into results/vanda/
+scripts/make_report.sh
+```
+
+`python3 checks/run_plan.py status --plan vanda` lists the jobs in the plan and which have been recorded.
+`cluster/RUNBOOK.md` covers failed jobs.
+
+**4. The graph experiments.** They use SNAP graphs, which are downloaded into `data/` and not tracked.
 
 ```bash
 scripts/fetch_snap.sh email-Eu-core "$PWD/data"
@@ -123,45 +53,75 @@ scripts/convert_snap.sh email-Eu-core "$PWD/data"
 python3 checks/validate_graph.py --qualify --binary bin/p3graph --bug-binary bin/p3graph_bug1
 ```
 
-## Running on Vanda
+**5. Add the runs still outstanding.** The jobs with 256 cores or more had not run when this was written, and the
+report marks the values that wait for them. When they finish, run `fetch.sh` and `make_report.sh` as in step 3 and
+commit `results`, `figures` and `report`. The values fill in by themselves. The orange "To write once the cluster runs
+are in" boxes and the Summary are then written by hand.
 
-The scripts in `cluster/ops/` do every step, and each one refuses when something is not in order.
-`cluster/RUNBOOK.md` gives the full procedure and what to do when a job fails. They reach the cluster through an SSH
-host alias named `vanda` in `~/.ssh/config`, with a key that works without a password, over the NUS VPN. The batch
-jobs are charged to the PBS project named in the plan's `"pbs"` block. Someone using a different account changes that
-entry, for example with `python3 scripts/apply_discovery.py`, which proposes the queue, project and module names from a
-read-only probe of the login node (`cluster/ops/discover.sh vanda`).
+## Architecture
 
-```bash
-cluster/ops/sync.sh vanda                    # copy the committed tree to ~/p3 on Vanda (refuses uncommitted changes)
-cluster/ops/submit.sh vanda vanda-validate   # build on a compute node and run the validation tests there
-cluster/ops/poll.sh vanda                    # state of every submitted job, and flags for failed ones
-cluster/ops/fetch.sh vanda                   # bring back the records and merge them into results/vanda/
-cluster/ops/submit.sh vanda <job>            # a timed job from the plan, once the program has passed on Vanda
-python3 checks/run_plan.py status --plan vanda   # configurations recorded so far, reruns, core-hours used
+```
+  src/  C++ solver (p3cg) and graph solver (p3graph)
+    |
+    |  scripts/build.sh
+    v
+  bin/p3cg ------------------> checks/validate.py
+    |                          tests V1-V5, and the broken builds must fail
+    |
+    |  cluster/ops/submit.sh   only jobs listed in config/run_plan.vanda.json
+    v
+  Vanda batch jobs (PBS)
+    validation job   build on a compute node, run the tests, record the binary's hash
+    timed jobs       checks/timing_gate.py: this exact binary passed validation here
+                     then the runs, one CSV row each: where, what, how long, binary hash
+    |
+    |  cluster/ops/fetch.sh
+    v
+  results/vanda/*.csv
+    |
+    |  scripts/figures.py, scripts/report_macros.py
+    v
+  figures/*.pdf, report/generated/*.tex
+    |
+    |  scripts/make_report.sh   (tectonic, then checks/requirements_check.py)
+    v
+  report/DSA5208_Project3_Report.pdf
 ```
 
-`submit.sh` writes the PBS script from the plan into `cluster/generated/` and records the job in
-`results/vanda/jobs.csv`. The GPU jobs build and validate their own offload build on the GPU node before timing it.
-`cluster/ops/test_fake_cluster.sh` runs the whole sequence against a fake cluster on your machine, which is the way to
-test a change to these scripts without using cluster time.
+Inside one run, each MPI rank owns a box of the grid. Every iteration it exchanges the layer of values next to each
+shared face with its neighbours (the halo exchange), applies the stencil to its box, and joins the reductions
+(`MPI_Allreduce`) for the inner products. The OpenMP threads of a rank share the loops over its box. The run-time
+switches `--decomp 1|2|3`, `--halo blocking|overlap` and `--cg classic|pipelined` choose how many directions the grid
+is split along, whether the halo exchange overlaps the stencil, and whether CG uses two blocking reductions per
+iteration or one non-blocking one. The same program therefore produces every comparison in the report.
 
-## Adding the remaining runs
+## Where things are
 
-Some jobs of the plan, those with 256 cores or more, had not finished when this was written, and the report marks the
-values that wait for them. When they finish:
+| Folder | What it holds |
+|---|---|
+| `src/` | the C++ solver (`p3cg`), the graph solver and converter (`p3graph`, `p3convert`) |
+| `checks/` | the validation tests, the timing gate, the plan tools and the report check |
+| `config/` | the plan: every configuration to be timed, fixed before timing |
+| `cluster/` | the batch-job environment, the scripts that submit and fetch jobs, and the runbook |
+| `results/` | every run record and validation record |
+| `scripts/` | build, plan generation, SNAP download and conversion, figures and report generation |
+| `figures/` | the report's figures, each with a `.meta.json` file naming the records it was drawn from |
+| `report/` | the report source, its generated values and tables, and the PDF |
+| `process/` | our planning notes: the decision map, the assumption drills and the decision log |
+| `.application/` | the build session's working notes |
 
-```bash
-cluster/ops/poll.sh vanda          # confirm they finished without flags
-cluster/ops/fetch.sh vanda         # merge the new records into results/vanda/
-scripts/make_report.sh             # rebuild figures, values, tables and the PDF
-git add results figures report && git commit -m "Records of <jobs>, report rebuilt"
-```
+## Why the results can be trusted
 
-The requirements check at the end of `make_report.sh` lists what is still waiting and for which runs. When a group of
-runs is complete, its values fill in by themselves, but the orange boxes that read "To write once the cluster runs are
-in" mark paragraphs of interpretation that must be written by hand from the new tables, and the Summary is revised
-last. Commit the fetched records before the next `sync.sh`, which refuses to copy a tree with uncommitted changes.
+- **No number in the report is typed.** The source refers to each number by name (`\val{...}`), and
+  `scripts/report_macros.py` computes it from the run records, so the text cannot drift from the data. To change a
+  number, change the records or the script and rerun `scripts/make_report.sh`. Never edit it in the `.tex`.
+- **Every timed run was decided before timing.** `config/run_plan.vanda.json` was frozen before the first timed job,
+  and `submit.sh` refuses a job that is not in it. Later additions and reruns are recorded in the plan with their
+  reasons, so no result was chosen after it was seen.
+- **Only validated programs were timed.** A halo error does not show on one rank, so the validation tests run on the
+  cluster that does the timing. A program that passes is recorded by its SHA-256 hash in
+  `results/validated_binaries.csv`, and each run record carries the hash of the program that produced it. Section 11
+  of the report lists each program with its validation run.
 
 ## Declaration of AI use
 
