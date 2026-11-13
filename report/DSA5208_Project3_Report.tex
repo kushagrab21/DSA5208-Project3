@@ -65,16 +65,16 @@ Kushagra Bhatnagar (A0351591A) \quad$\cdot$\quad Pratyush Sinha (A0352482A)
 \textbf{Summary.} We solve the Poisson equation $-\Delta u = f$ on the unit square and the unit cube with the
 \term{conjugate gradient} (CG) method, an iterative solver for symmetric positive definite linear systems, without
 ever storing the matrix. It is parallelised with MPI across processes and with OpenMP \term{threads} (workers that
-share one process's memory) inside each process; the same loops can also run on a GPU through OpenMP offloading. The
-parallel solver offers three switchable choices: how the grid is split (along one, two or three directions), whether
-boundary values are exchanged between processes before or during the computation, and whether CG waits for two
-global sums per iteration or overlaps a single one with the work. A small set of \val{val.ncases} validation cases
+share one process's memory) inside each process, and the same loops can also run on a GPU through OpenMP GPU offload.
+The parallel solver offers three switchable choices: how the grid is split (along one, two or three directions),
+whether boundary values are exchanged between processes before or during the computation, and whether CG waits for two
+reductions per iteration or overlaps a single one with the work. A small set of \val{val.ncases} validation tests
 shows that the error falls as $h^2$ and that every parallel configuration reproduces the serial result to rounding,
-and it refuses two deliberately broken versions of the boundary exchange. On \val{cl.name}, with the problem fixed
+and the tests fail on two deliberately broken versions of the boundary exchange. On \val{cl.name}, with the problem fixed
 and the cores increased to \val{meas.top}\val{meas.where}, classic CG keeps a \term{parallel efficiency} (how close the run
-comes to being $P$ times as fast on $P$ cores) of \val{st.3.classic.Etop} in 3D and \val{st.2.classic.Etop} in 2D; with the work per core fixed,
+comes to being $P$ times as fast on $P$ cores) of \val{st.3.classic.Etop} in 3D and \val{st.2.classic.Etop} in 2D. With the work per core fixed,
 it keeps \val{wk.3.classic.Etop} (3D) and \val{wk.2.classic.Etop} (2D) of the one-core speed.\val{scale.note} At \val{meas.top}
-cores, exchanging boundary values takes \val{cm.3.halo} and global sums \val{cm.3.red} of the 3D run time. One GPU
+cores, exchanging boundary values takes \val{cm.3.halo} and reductions \val{cm.3.red} of the 3D run time. One GPU
 runs the 3D problem \val{gpu.3.vsnode} times as fast as the best layout on one \val{lay.cpn}-core node of
 \val{cl.layout}.
 
@@ -106,10 +106,13 @@ of $A$ small integers.
 
 The solver never stores $A$. A product with $A$ is one pass over the grid that reads each point and its $2d$
 neighbours, and a solver that works only through such products is called \term{matrix-free}. We chose this because
-the stencil describes $A$ completely, so storing it would add memory traffic and nothing else. Each point does only a
-few additions for every value it reads, so the arithmetic intensity is low in the sense of Lecture~12, and the time of
-every step is set by how fast memory delivers the vectors rather than by arithmetic: the computation is
-\term{memory-bound}.
+the stencil describes $A$ completely, so storing it would add memory traffic and nothing else. One iteration of
+classic CG performs \val{cg.flops2} floating-point operations per grid point in 2D and \val{cg.flops3} in 3D, counted in
+the loops of the program, and moves about \val{bytes.classic} bytes per point between memory and the processor
+(Section~\ref{sec:model}). Its arithmetic intensity, the operations per byte moved, is therefore only \val{cg.ai2} in
+2D and \val{cg.ai3} in 3D, and at so few operations per byte the time of an iteration is set by how fast memory
+delivers the vectors rather than by arithmetic. The computation is \term{memory-bound}, which the serial measurements of
+Section~\ref{sec:serial} confirm.
 
 \subsection{The conjugate gradient method}
 CG solves a symmetric positive definite system by building, one iteration at a time, search directions that are
@@ -161,8 +164,9 @@ Every CG iteration depends on the whole grid in two ways. The stencil at a point
 a process that owns part of the grid needs, in every iteration, the boundary values owned by the processes next to it.
 Each inner product needs a contribution from every point, so every process takes part in a reduction
 (\code{MPI\_Allreduce}) whose result all of them need before the next step can start, and Algorithm~\ref{alg:cg} has
-two such reductions per iteration. Neither dependence can be removed without changing the method, and a solve repeats
-both thousands of times, so their cost, not the arithmetic, decides how far the method scales.
+two such reductions per iteration. Neither dependence can be removed without changing the method, and both recur in
+every iteration. Section~\ref{sec:model} weighs their cost against the memory traffic of an iteration and says where
+each of them limits the scaling.
 
 % ======================================================================================================
 \section{Parallel design of the solver}\label{sec:design}
@@ -202,24 +206,25 @@ The blocking halo exchange calls \code{MPI\_Sendrecv} twice per split direction,
 then towards the lower one, and applies the stencil only when all ghost layers are filled, so the rank does nothing
 while it waits. The \term{non-blocking halo exchange} instead starts all receives and sends with \code{MPI\_Irecv} and
 \code{MPI\_Isend}, applies the stencil to the interior points, whose neighbours are all local, waits with
-\code{MPI\_Waitall}, and then applies the stencil to the outer shell of points that need ghost values. Only the faces
-that touch another rank are held back, so a box on the edge of the domain has a thinner shell. The aim is to hide the
+\code{MPI\_Waitall}, and then applies the stencil to the outer shell of points that need ghost values. Only the points
+next to a face shared with another rank are computed after the wait, so a box on the edge of the domain has a shell on
+fewer sides. The aim is to hide the
 message time behind computation, but whether it is hidden depends on the MPI library, because many implementations move
 a large message forward only while the program is inside an MPI call, which here happens only at the final wait. We
 therefore measure the overlap rather than assume it (Section~\ref{sec:mpi}). Both exchanges use two-sided messages, and
 we did not implement the one-sided alternative with MPI windows.
 
 \subsection{Classic CG and a pipelined variant}
-Classic CG waits for two reductions per iteration, and each costs at least the network latency times the depth of the
-reduction tree, about $\log_2 P$ steps for $P$ ranks, so at large $P$ these waits do not shrink with the work per rank.
+Classic CG waits for two reductions per iteration, and each lasts at least the latency of one message times the depth
+of the reduction tree, about $\log_2 P$ steps for $P$ ranks, however little work each rank has.
 
 Ghysels and Vanroose~\cite{gv} rearrange the recurrences of CG so that each iteration needs a single reduction of two
 numbers, which is started with the non-blocking \code{MPI\_Iallreduce} and runs while the next matrix--vector product is
 computed (Algorithm~\ref{alg:pcg}), and we call this form \term{pipelined CG}. In exact arithmetic it produces the same
-iterates as classic CG, and its costs follow from the extra recurrences. It carries \val{vec.pipelined} vectors instead
-of \val{vec.classic}, so each iteration moves about \val{bytes.pipelined} bytes per grid point instead of
-\val{bytes.classic}, and on a memory-bound problem an iteration therefore takes longer whenever there is no reduction
-latency to hide. Its residual is also updated through a longer chain of recurrences, so rounding errors accumulate
+iterates as classic CG. It keeps \val{vec.pipelined} vectors instead of \val{vec.classic} and updates most of them in
+one loop, and counting the vectors that each loop reads and writes (Section~\ref{sec:model}) gives about
+\val{bytes.pipelined} bytes per grid point and iteration against \val{bytes.classic} for classic CG. On a memory-bound
+problem an iteration of pipelined CG therefore takes longer unless there is reduction latency to hide. Its residual is also updated through a longer chain of recurrences, so rounding errors accumulate
 further: the residual that the method tracks, which we call the \term{recursive residual}, drifts away from the
 \term{true residual} $\mathbf{b}-A\mathbf{x}$, and this limits the accuracy that pipelined CG can reach
 (Section~\ref{sec:validation}). We kept both variants because only measurement on the target machine can decide whether
@@ -232,11 +237,11 @@ $\mathbf{r}=\mathbf{b}$, \ $\mathbf{w}=A\mathbf{r}$\\
 repeat:\\
 \hspace*{1.2em}start $\gamma=(\mathbf{r},\mathbf{r})$, $\delta=(\mathbf{w},\mathbf{r})$ \hfill\emph{one non-blocking
 reduction (\code{MPI\_Iallreduce})}\\
-\hspace*{1.2em}$\mathbf{n}=A\mathbf{w}$ \hfill\emph{halo exchange, stencil, while the reduction runs}\\
+\hspace*{1.2em}$\mathbf{m}=A\mathbf{w}$ \hfill\emph{halo exchange, stencil, while the reduction runs}\\
 \hspace*{1.2em}wait for $\gamma,\delta$, and stop if $\sqrt{\gamma}\le\text{tol}\,\|\mathbf{b}\|$\\
 \hspace*{1.2em}$\beta=\gamma/\gamma_{\text{old}}$, $\alpha=\gamma/(\delta-\beta\gamma/\alpha_{\text{old}})$ \
 (first iteration: $\beta=0$, $\alpha=\gamma/\delta$)\\
-\hspace*{1.2em}$\mathbf{z}\leftarrow\mathbf{n}+\beta\mathbf{z}$, $\mathbf{s}\leftarrow\mathbf{w}+\beta\mathbf{s}$,
+\hspace*{1.2em}$\mathbf{z}\leftarrow\mathbf{m}+\beta\mathbf{z}$, $\mathbf{s}\leftarrow\mathbf{w}+\beta\mathbf{s}$,
 $\mathbf{p}\leftarrow\mathbf{r}+\beta\mathbf{p}$, $\mathbf{x}\leftarrow\mathbf{x}+\alpha\mathbf{p}$,
 $\mathbf{r}\leftarrow\mathbf{r}-\alpha\mathbf{s}$, $\mathbf{w}\leftarrow\mathbf{w}-\alpha\mathbf{z}$
 \hfill\emph{one pass}
@@ -256,23 +261,48 @@ compares these layouts on a \val{cpn}-core node.
 For the GPU we kept the same loops and added OpenMP GPU offload directives (\code{target teams distribute parallel
 for}), switched on at build time. The vectors are copied to the GPU once and stay there, and in every halo exchange the
 halos are packed on the GPU, copied to the host, exchanged with MPI and copied back. One rank drives one GPU. We chose
-OpenMP offload over CUDA so that the CPU and GPU versions run the same arithmetic and the CPU analysis does not depend
-on a GPU node, at the price of the extra copies of the halos.
+OpenMP offload over CUDA so that one source builds both versions, which then run the same loops, and so that the
+program could be developed and validated on a machine without a GPU. The halos pass through the host because our MPI
+calls take host buffers, and a CUDA version would copy them in the same way unless its MPI library could send directly
+from GPU memory.
 
 \subsection{The cost model}\label{sec:model}
 Lecture~12 splits the run time into three parts: the floating-point operations times the time per operation, the
 volume of communication divided by the bandwidth, and the number of communication calls times the latency. For our
-solver the first part is really memory traffic, about \val{bytes.classic} bytes per owned point and iteration for
-classic CG, because the computation is memory-bound. The second part is the halo of Table~\ref{tab:geometry} at eight
-bytes per value, and the third is the halo messages, two per split direction, plus the reductions, two per iteration
-for classic CG and one for pipelined CG, each of about $\log_2 P$ latency steps. With the problem fixed and $P$
-growing, the first part falls like $1/P$, the second like the area of a face, $P^{-1/2}$ for 2D blocks and $P^{-2/3}$
-for 3D blocks, and the third stays the same or grows. The model therefore predicts that communication takes a growing
-share of each iteration and that the reductions, which do not shrink at all, eventually dominate. This differs from
-the textbook picture in which the matrix--vector product is the costly step, because our product is a matrix-free
-stencil whose cost falls like $1/P$, so the reductions, not the product, set the limit of scaling. The program times
-the three parts separately on every rank with \code{MPI\_Wtime}, which lets Section~\ref{sec:mpi} check this prediction
-against measurement.
+memory-bound solver the first part is the memory traffic, which we count per grid point and iteration from the loops of
+the program. A loop makes one pass through memory, which we call a stream, for each vector that it reads or writes,
+and two for a vector that it writes without reading, because the cache loads a line from memory before it writes it.
+Classic CG then makes \val{cg.st.classic} streams per point, \val{cg.st.classic.stencil} in the stencil,
+\val{cg.st.classic.xr} in the update of $\mathbf{x}$ and $\mathbf{r}$ and \val{cg.st.classic.p} in the update of
+$\mathbf{p}$, which at eight bytes each are the \val{bytes.classic} bytes used throughout. Pipelined CG makes
+\val{cg.st.pipelined.stencil} in the stencil and \val{cg.st.pipelined.upd} in its single update loop, \val{bytes.pipelined}
+bytes in all, a ratio of \val{cg.byteratio}.
+
+These bytes set a floor under the time of an iteration. With $\beta$ bytes per point, $N$ points, $P$ ranks on $s$
+sockets, a memory bandwidth $B$ per socket and a bandwidth $b$ that one core can draw on its own,
+\begin{equation*}
+T_{\text{mem}}\ \ge\ \max\Big(\frac{\beta N}{s\,B},\ \frac{\beta N}{P\,b}\Big).
+\end{equation*}
+The second part of the cost is the halo of Table~\ref{tab:geometry} at eight bytes per value, and the third is the halo
+messages, two per split direction, plus the reductions, two per iteration for classic CG and one for pipelined CG, each
+of about $\log_2 P$ latency steps.
+
+With the problem fixed and $P$ growing, the model predicts the following. While the cores of a socket leave some of its
+bandwidth unused, the memory term falls like $1/P$, but once they draw all of it, only another socket or another node
+makes the term smaller, so inside a socket the time stops falling well before its cores run out, and inside a node only
+the second socket helps. Across nodes the memory
+term falls again with the number of sockets, the halo term falls like the area of a face, $P^{-1/2}$ for 2D blocks and
+$P^{-2/3}$ for 3D blocks, and the reduction term grows like $\log_2 P$. Our thesis follows from this: inside a node,
+memory bandwidth limits the scaling, and across nodes the reductions take a growing share of each iteration, until
+beyond some number of nodes they and not the memory traffic set the limit. Up to \val{node.cpn2} cores, two nodes, the
+measurements of Section~\ref{sec:mpi} are in the first of these regimes, and for the graphs of Section~\ref{sec:graph},
+whose ghost exchange is not a thin surface, communication already takes most of the time on two nodes. The halo of the
+grid stays small because it is the surface of a box (Table~\ref{tab:geometry}), not because the product is
+matrix-free: a stored sparse matrix distributed in the same way would exchange the same halo.
+
+The program times three parts on every rank with \code{MPI\_Wtime}. The computation (the stencil and the vector loops)
+tests the memory term. The halo exchange contains both the volume term and the latency of the halo messages, and the
+reductions contain their latency and also any waiting for slower ranks (Section~\ref{sec:timing}).
 
 % ======================================================================================================
 \section{Validation tests}\label{sec:validation}
@@ -281,7 +311,7 @@ We use \val{val.ncases} validation tests (Table~\ref{tab:cases}), because the pr
 ways and each test checks one of them: the discretisation (V1, V2), the bookkeeping of the parallel runs (V3, V4) and
 the second CG variant (V5). A program is used for timing only if it passes all of them, and the program used for every
 timed run on \val{cl.used} passed them on that cluster before any timed run started. The results below were obtained
-on \val{val.where}.
+on \val{val.where}, the kind of node that Section~\ref{sec:env} describes.
 
 \begin{table}[H]\centering\small
 \input{generated/tab_cases.tex}
@@ -322,8 +352,10 @@ iterations.}\label{tab:valagree}
 arithmetic and can be compared only once both have converged. For any $\mathbf{x}$ the relative error is at most
 $\kappa$ times the relative true residual $\rho=\|\mathbf{b}-A\mathbf{x}\|/\|\mathbf{b}\|$, and applying this to both
 answers bounds their difference by $\|\mathbf{x}_p-\mathbf{x}_s\|/\|\mathbf{x}_s\|\le\kappa(\rho_p+\rho_s)/(1-\kappa
-\rho_s)$. Both variants are run to a relative residual of \val{val.pipetol} and must also converge in their true
-residual. Pipelined CG took \val{val.pipe.iters}, and the largest difference, \val{val.pipe.maxdiff}, lies far inside
+\rho_s)$, where the subscript $p$ marks the pipelined and $s$ the standard, classic variant. Both variants stop when the
+residual that they track falls below \val{val.pipetol} of $\|\mathbf{b}\|$, and the true residual of the pipelined
+answer must also be at most \val{val.pipe.truetol}, a looser limit because its tracked residual can drift
+(Section~\ref{sec:design}). Pipelined CG took \val{val.pipe.iters}, and the largest difference, \val{val.pipe.maxdiff}, lies far inside
 the smallest bound, \val{val.pipe.minbound} (Table~\ref{tab:valpipe}).
 
 \begin{table}[H]\centering\footnotesize
@@ -334,8 +366,8 @@ $\kappa(\rho_p+\rho_s)/(1-\kappa\rho_s)$.}\label{tab:valpipe}
 
 \emph{The tests detect errors in the halo exchange.} A validation test is useful only if it fails on a wrong program,
 so we built \val{val.bug.n} deliberately broken versions of the halo exchange and checked that the tests fail on them
-(Table~\ref{tab:valbugs}). In the first version a received face is dropped, and in the second a rank sends the plane
-next to its boundary layer instead of the boundary layer itself. Both change the parallel answer by a relative
+(Table~\ref{tab:valbugs}). In the first version a received face is dropped, and in the second a rank sends, on one
+face, the ghost layer it holds instead of its halo. Both change the parallel answer by a relative
 \val{val.bug.min} to \val{val.bug.max}, and V3, V4 and V5 fail on both. V1 and V2 pass on both because a one-process run
 has no halo between ranks, so a validation made only of serial checks would have accepted both errors.
 
@@ -349,21 +381,32 @@ error.}\label{tab:valbugs}
 \val{val.floor.tol} on the 2D grid with $n=\val{val.floor.n}$ on \val{val.floor.ranks} ranks, allowing at most
 \val{val.floor.maxit} iterations. Classic CG \val{val.floor.classic.verdict}. Pipelined CG
 \val{val.floor.pipelined.verdict}. The smallest true residual that a variant can reach in floating point is called its
-\term{attainable accuracy}, and it is lower for pipelined CG, although the two variants agree at the tolerances used in
-the validation tests (V5) and differ only when a residual far below those tolerances is requested.
+\term{attainable accuracy}, and it is worse for pipelined CG, a true residual of \val{val.floor.pipelined.true} against
+\val{val.floor.classic.true} for classic CG in this run. The two variants agree at the tolerances used in the validation
+tests (V5) and differ only when a residual far below those tolerances is requested.
 
 % ======================================================================================================
 \section{Hardware and measurement}\label{sec:env}\label{sec:timing}
 \req{E10}
 All timed runs were made at NUS HPC, on \val{cl.used}. A CPU node has \val{node.sockets} sockets, each an
 \val{node.cpu} processor with \val{node.cps} cores, so \val{cpn} cores per node, and \val{env.mem}\,GB of memory in
-total, divided between the two sockets. A core reads the
-memory of its own socket directly and that of the other socket through the link between the two, so the memory
-bandwidth available to a run grows with the number of sockets it uses, not with its number of cores. The launcher
+total, divided between the two sockets. Intel's specification of this processor gives each socket
+\val{spec.cpu.channels} memory channels of type \val{spec.cpu.memtype} at up to \val{spec.cpu.mts} million transfers per second, a peak of
+\val{spec.cpu.peak}\,GB/s per socket and \val{spec.node.peak}\,GB/s per node, and \val{spec.cpu.cache}\,MB of cache
+shared by the cores of a socket. We did not record how the memory modules are fitted, which decides whether that peak
+rate applies, and Section~\ref{sec:mpi} compares it with the bandwidth we measured. A core reads the memory of its own
+socket directly and that of the other socket through the link between the two. One core draws only a small part of a
+socket's bandwidth, so the first few cores of a socket add bandwidth almost in proportion: two cores run the 3D
+strong-scaling grid \val{pst.3.classic.2.S} times as fast as one, and four cores \val{pst.3.classic.4.S} times
+(Table~\ref{tab:strong}). Once the cores of a socket together saturate its memory channels, the bandwidth available to a
+run grows with the number of sockets it uses, not with its number of cores. The launcher
 places the ranks of a node on consecutive cores and binds each rank to its cores, so the ranks fill the first socket
 before the second: the binding report of a full-node run shows the first \val{node.cps} ranks on the first socket. A run
 with at most \val{node.cps} ranks on a node therefore uses one socket and only that socket's memory bandwidth. A GPU node,
-named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus} NVIDIA GPUs.
+named \val{env.gpu.node} in the cluster, has the same processors and \val{env.gpus} NVIDIA GPUs. Our jobs did not record
+the GPU model, which we take from the node name to be the NVIDIA \val{spec.gpu.name}. NVIDIA's specification of it gives
+\val{spec.gpu.mem}\,GB of memory and a memory bandwidth of \val{spec.gpu.bw}\,GB/s, against the \val{spec.node.peak}\,GB/s
+peak of the two sockets of a CPU node.
 
 The CPU runs were compiled with GCC \val{env.cxx} and run with Open MPI \val{env.mpi}, and the GPU runs were compiled
 with the NVIDIA HPC SDK compiler nvc++ \val{env.gpu.cxx} and run with the Open MPI \val{env.gpu.mpi} of its HPC-X
@@ -371,9 +414,20 @@ package, each on a compute node of the type that ran it. A laptop was used only 
 validation tests during development, and none of its timings appear in this report.
 
 Each timed run performs exactly \val{iters} CG iterations, whatever the residual, so that runs of different sizes and
-layouts do the same work per unknown and the total cluster time stays bounded. Each run solves the problem
-\val{repeats} times in one process, and we report the median. The time of a solve is that of the slowest rank, measured
-with \code{MPI\_Wtime} from a barrier at its start. The halo, reduction and computation times are averaged over ranks,
+layouts do the same work per unknown and the total cluster time stays bounded. The time of a solve is that of the
+slowest rank, measured with \code{MPI\_Wtime} from a barrier at its start.
+
+Each run solves the problem
+\val{repeats} times in one launch of the program, and we report the median. Over the \val{rep.cells} configurations
+solved \val{repeats} times, the largest and the smallest of their times differ by a median of \val{rep.median} of
+the median time, and by more than \val{rep.thr} in \val{rep.nthr} of them. The largest differences are in one-core
+runs, up to \val{rep.serial.max1s} for runs longer than a second, and the median keeps a single outlying repeat out of
+the reported time. The runs to a tolerance (Section~\ref{sec:serial}) and the labelling runs of
+Section~\ref{sec:graph}, which measure iteration counts and accuracy, are solved once, as are the one-core graph runs
+on com-Orkut, which take about \val{gr.longrep} minutes per solve. The \val{rep.long.n} repeated runs of more than
+\val{rep.long.min} minutes differ by at most \val{rep.long.max} between repeats.
+
+The halo, reduction and computation times are averaged over ranks,
 so the time a rank spends waiting inside a reduction for a slower rank counts as reduction time, and this
 \term{load imbalance} is part of what we report as the cost of communication. Parallel runs used whole nodes reserved
 for the job, so no other job shared a node's memory bandwidth or network links during a
@@ -381,8 +435,8 @@ measurement.\val{spread.except}\val{env.serialnote} Table~\ref{tab:plan} lists t
 
 \begin{table}[H]\centering\small
 \input{generated/tab_plan.tex}
-\caption{The experiments on \val{cl.used}: what each varies, the problem, the cores and the number of configurations,
-each solved \val{repeats} times.}\label{tab:plan}
+\caption{The experiments on \val{cl.used}: what each varies, the problem, the cores, the number of configurations and
+how many times each configuration is solved.}\label{tab:plan}
 \end{table}
 
 % ======================================================================================================
@@ -390,8 +444,9 @@ each solved \val{repeats} times.}\label{tab:plan}
 \req{E2}\req{E14}
 The serial runs, on one core of \val{cl.serial}, vary the matrix dimension and the number of nonzeros together: 2D grids
 with \val{serial.list2} points per direction and 3D grids with \val{serial.list3}, from \val{serial.Nmin} to
-\val{serial.Nmax} unknowns. We chose the 3D sizes so that each has about as many unknowns as a 2D size, and at the same matrix dimension the 3D matrix has seven
-nonzeros per row against five, so each pair separates the effect of the dimension from that of the nonzeros. The cost
+\val{serial.Nmax} unknowns. We chose the 3D sizes so that each has about as many unknowns as a 2D size, while its matrix
+has seven nonzeros per row against five, so comparing the two members of a pair shows whether the time follows the
+unknowns or the nonzeros. The cost
 model of Section~\ref{sec:model} predicts a time per iteration proportional to $N$, which is a slope of one in
 Figure~\ref{fig:fig_serial}.
 
@@ -405,15 +460,20 @@ unknown and per nonzero.}\label{tab:serial}
 \end{table}
 
 \revised{serial}%
-The cost per unknown is nearly constant once the grid no longer fits in a core's cache, as expected of a memory-bound
-computation. The fitted slopes are \val{ser.slope2} in 2D and \val{ser.slope3} in 3D, against the predicted value of
-one, and from $N=\val{ser.2.n512.N}$ unknowns upwards a 2D iteration costs between \val{ser.2.n4096.ns} and
-\val{ser.2.n2048.ns}\,ns per unknown (Table~\ref{tab:serial}). The two smallest grids depart from this in opposite
-directions. The smallest costs \val{ser.2.n64.ns}\,ns per unknown in 2D, because with only \val{ser.2.n64.N} unknowns
-the fixed cost of starting each loop is no longer small next to the work, while the next one costs only
-\val{ser.2.n128.ns}\,ns, because its vectors fit in the core's cache and the iteration does not wait for main memory.
+The cost per unknown is nearly constant once the vectors no longer fit in cache, as expected of a memory-bound
+computation. The slopes fitted over all \val{ser.nsizes2} sizes of each dimension are \val{ser.slope2} in 2D and
+\val{ser.slope3} in 3D, against the predicted value of one. From $N=\val{ser.2.n512.N}$ unknowns upwards, where the four
+vectors that an iteration touches take \val{ser.ws.2.n512}\,MB or more, a 2D iteration costs between
+\val{ser.2.n4096.ns} and \val{ser.2.n2048.ns}\,ns per unknown (Table~\ref{tab:serial}). The cost does not fall at
+$N=\val{ser.2.n1024.N}$, whose vectors take \val{ser.ws.2.n1024}\,MB and would fit in the \val{spec.cpu.cache}\,MB cache
+of a socket (Section~\ref{sec:env}), so for a single core that shared cache does not keep the iteration away from main
+memory. The two smallest grids depart from this in opposite directions. The smallest costs \val{ser.2.n64.ns}\,ns per
+unknown in 2D, because with only \val{ser.2.n64.N} unknowns the fixed cost of starting each loop is no longer small next
+to the work, while the next one costs only \val{ser.2.n128.ns}\,ns, because its vectors, \val{ser.ws.2.n128}\,MB, fit
+in the cache close to the core and the iteration does not wait for main memory. The serial repeats spread more than most
+runs (Section~\ref{sec:timing}), so differences of a few per cent between neighbouring sizes are not significant.
 
-The dimension matters less than the count of nonzeros suggests. On the largest grids a 3D iteration costs
+The time follows the unknowns more than the nonzeros. On the largest grids a 3D iteration costs
 \val{ser.ns3}\,ns per unknown against \val{ser.ns2}\,ns in 2D, a ratio of \val{ser.ratio32}, well below the ratio of
 nonzeros per row of seven to five, and per nonzero the 3D iteration is the cheaper one, at \val{ser.nsnnz3} against
 \val{ser.nsnnz2}\,ns. Most of the neighbour values that the stencil reads are still in cache from the previous plane or
@@ -422,8 +482,14 @@ than the nonzeros.
 
 The time to a fixed tolerance grows faster than $N$ because the iteration count grows with $n$
 (Figure~\ref{fig:fig_serial_tol}). The fitted exponent of iterations against $n+1$ is \val{ser.itslope2} in 2D and
-\val{ser.itslope3} in 3D, against the value of one that $\sqrt{\kappa}\propto n$ predicts, so the serial time to the
-tolerance of \val{serialtol.tol} grows like $N^{1+1/d}$, as derived in Section~\ref{sec:algorithm}.
+\val{ser.itslope3} in 3D, against the value of one that $\sqrt{\kappa}\propto n$ predicts. With a constant cost per
+unknown this would make the time to the tolerance of \val{serialtol.tol} grow like $N^{1+1/d}$
+(Section~\ref{sec:algorithm}), with exponents of \val{ser.tslope.pred2} in 2D and \val{ser.tslope.pred3} in 3D. The
+fitted exponents of the time are larger, \val{ser.tslope2} and \val{ser.tslope3}, because the largest of these runs
+has only \val{ser.2.n1024.N} unknowns (2D), in the range where the cost per unknown still rises as the vectors outgrow
+the cache: fitted against $N$, the
+cost per unknown and iteration of these runs grows with an exponent of \val{ser.tcslope2} in 2D and \val{ser.tcslope3}
+in 3D, about the difference.
 
 \figslot{fig_serial_tol}{0.98\linewidth}{Iterations to a relative residual of \val{serialtol.tol} against the grid
 points per direction $n$ (left), and the serial time to reach it against $N$ (right), one core of \val{cl.serialtol}.}
@@ -434,14 +500,14 @@ points per direction $n$ (left), and the serial time to reach it against $N$ (ri
 Strong scaling keeps the problem fixed and adds cores, and weak scaling grows the problem with the cores so that each
 core keeps the same work. With $T(P)$ the time on $P$ cores, the speedup is $S=T(1)/T(P)$, the strong-scaling efficiency
 is $E=S/P$ and the weak-scaling efficiency is $E=T(1)/T(P)$, so that $E=1$ is perfect. The serial time $T(1)$ is the
-one-rank run of the same program and CG variant, compiled with MPI. All runs in this section were made on
-\val{cl.strong}, \val{scale.where}, with one thread per rank.\val{scale.note}\val{spread.sent}
+one-rank run of the same program and CG variant, compiled with MPI. The runs in this section were made on
+\val{cl.strong} with one thread per rank. \val{scale.where}\val{scale.note}\val{spread.sent}
 
-\subsection{Strong scaling}
+\subsection{Strong scaling}\label{sec:strong}
 The strong-scaling grids have \val{strong.N2} unknowns in 2D ($n=\val{strong.n2}$) and \val{strong.N3} in 3D
-($n=\val{strong.n3}$), so 2D and 3D do the same work and differ only in the stencil and in how much halo each rank has.
-They fit in one node's memory, at most \val{strong.mem3}\,GB for pipelined CG, and \val{iters} iterations of classic CG
-take \val{st.2.classic.T1}\,s in 2D and \val{st.3.classic.T1}\,s in 3D on one core. We ran \val{rankcounts} ranks. With
+($n=\val{strong.n3}$), so 2D and 3D have about the same number of unknowns, while the 3D matrix has seven nonzeros per
+row against five and a 3D rank has more halo. They fit in one node's memory, at most \val{strong.mem3}\,GB for pipelined CG, and \val{iters} iterations of classic CG
+take \val{st.2.classic.T1}\,s in 2D and \val{st.3.classic.T1}\,s in 3D on one core. We ran \val{st.counts} ranks. With
 classic CG the efficiency at \val{meas.top} cores\val{meas.where} is \val{st.2.classic.Etop} in 2D and
 \val{st.3.classic.Etop} in 3D, from speedups of \val{st.2.classic.Stop} and \val{st.3.classic.Stop} against the ideal
 \val{meas.top}, and on one full node it is \val{st.2.classic.Enode} and \val{st.3.classic.Enode}. With pipelined CG and
@@ -464,15 +530,16 @@ Up to \val{node.cpn2} cores almost all of the efficiency is lost inside the firs
 the \val{node.cpn} cores of one node run \val{pst.3.classic.node.S} times as fast as one core (\val{pst.2.classic.node.S}
 times in 2D), where perfect scaling would give \val{node.cpn}, so the efficiency on one node is
 \val{pst.3.classic.node.E}. Going from one node to two divides the time by \val{pst.3.classic.gain.node.2node}, close to
-the ideal factor of two, so the efficiency on \val{node.cpn2} cores stays at \val{pst.3.classic.2node.E}. The cost model
-explains this. Every iteration of classic CG streams about \val{cg.bytes.classic} bytes per unknown through memory,
+the ideal factor of two, so the efficiency on \val{node.cpn2} cores stays at \val{pst.3.classic.2node.E}. This is the
+memory regime of the cost model (Section~\ref{sec:model}). Every iteration of classic CG streams about \val{cg.bytes.classic} bytes per unknown through memory,
 whatever the number of cores, so once the cores of a socket saturate its memory bandwidth, more cores on that socket
 cannot make an iteration faster, while a second socket or a second node brings its own memory. We express this as an
 effective bandwidth, the unknowns times the bytes moved per unknown and iteration (\val{cg.bytes.classic} for classic CG
 and \val{cg.bytes.pipelined} for pipelined CG, from the memory model of Section~\ref{sec:model}) times the iterations,
 divided by the measured time. Its median is \val{cal.core}\,GB/s over the large one-core runs and \val{cal.node}\,GB/s
-over the full-node runs, a ratio of \val{cal.ratio}. This ratio comes from the same runs, so it restates the speedup in
-units of bandwidth and does not confirm it independently.
+over the full-node runs, a ratio of \val{cal.ratio}, and these are \val{cal.core.ofpeak} of the specified peak of one
+socket and \val{cal.node.ofpeak} of the peak of a node (Section~\ref{sec:env}). The ratio comes from the same runs as the
+speedup, so it restates the speedup in units of bandwidth and does not confirm it independently.
 
 The shape of the curve inside the node follows from the two sockets described in Section~\ref{sec:env}. From
 \val{node.q} to \val{node.half} cores the time falls only by a factor of \val{pst.3.classic.gain.q.half}, against the
@@ -527,11 +594,14 @@ faster than the halo exchange when the run leaves the node, because every reduct
 nodes, while the halo of a block shrinks with its faces, as the cost model of Section~\ref{sec:model} predicts. Pipelined
 CG cuts the share of the reductions on two nodes to \val{pcm.3.pipelined.2node.red}, but up to \val{node.cpn2} cores it
 is slower at every core count, taking \val{pst.3.pratio.node} times the classic time on one node and
-\val{pst.3.pratio.2node} times on two (\val{pst.2.pratio.node} and \val{pst.2.pratio.2node} in 2D). Its iteration updates
-more vectors, and the memory model gives \val{cg.bytes.pipelined} bytes of memory traffic per unknown against
-\val{cg.bytes.classic} for classic CG, a ratio of \val{cg.byteratio} that is close to the measured time ratios. On a
-memory-bound run that extra traffic costs more than the reduction time it hides as long as the reductions take only a
-small share of the time.
+\val{pst.3.pratio.2node} times on two (\val{pst.2.pratio.node} and \val{pst.2.pratio.2node} in 2D). The memory model of
+Section~\ref{sec:model} gives it \val{cg.bytes.pipelined} bytes of memory traffic per unknown against
+\val{cg.bytes.classic} for classic CG, a ratio of \val{cg.byteratio}. On full nodes, where memory bandwidth is saturated
+(Section~\ref{sec:strong}), the measured time ratios are a little above that ratio. On one core, which draws only a small
+part of a socket's bandwidth, the ratio is only \val{pst.3.pratio.one} in 3D and \val{pst.2.pratio.one} in 2D
+(Table~\ref{tab:strong}), so there the time is not set by the bytes moved, most likely by how many memory requests one
+core can keep in flight, which we did not measure. Where the bandwidth is saturated, the extra traffic costs more than
+the reduction time it hides as long as the reductions take only a small share of the time.
 
 \figslot{fig_comm}{0.98\linewidth}{Time per iteration in computation, halo exchange and reductions, mean over ranks,
 for classic CG with blocking halo exchange on \val{cl.strong}. At one rank there is no halo exchange or reduction to
@@ -557,7 +627,7 @@ and the fastest 2D one is the \val{var.2.node.best}. At \val{topcores} cores the
 \val{plan.variantsP} cores on \val{cl.variants}.}\label{tab:variants}
 \end{table}
 
-\interpslot{mpi-top}{From the four-node runs: whether pipelined CG overtakes classic CG at \val{topcores} cores, where
+\interpslot{mpi-top}{From the runs at \val{topcores} cores: whether pipelined CG overtakes classic CG at \val{topcores} cores, where
 the reductions take a larger share, whether the non-blocking halo exchange hid any message time, and how the slab
 decomposition behaves at \val{topcores} ranks (Table~\ref{tab:geometry}).}
 
@@ -611,18 +681,19 @@ memory bandwidth and what the two-GPU run says about the host copies of halos.}
 \req{E11}\req{E12}\req{E14}
 The project asks for an application to real data with conclusions about the data, and for a graph it asks how sparsity
 affects the results. A graph also gives the solver an irregular communication pattern, unlike the grid, where each rank
-exchanges a thin halo with a few neighbouring blocks. We therefore apply the same CG code to \val{gr.ndata} graphs from the Stanford Large Network Dataset Collection, which we call SNAP below, taken from
-its networks with ground-truth communities: \val{gr.datalist}. Each graph comes with known groups of vertices, its
-\term{communities}. We ask a semi-supervised question of the data: if a few vertices of each community are labelled,
+exchanges a thin halo with a few neighbouring blocks. We therefore apply the same CG code to \val{gr.ndata} graphs from the Stanford Large Network Dataset Collection, which we call SNAP below:
+\val{gr.datalist}. Each graph comes with known groups of vertices, its \term{communities}. We ask a semi-supervised question of the data: if a few vertices of each community are labelled,
 how many of the others does diffusion over the graph label correctly, and how does that depend on how sparse the graph
 is? The answer can be scored because the communities are known.
 
-\subsection{The data and the communities}
-In email-Eu-core an edge records e-mail between two members of a European research institution, and a member's
-community is their department. In the five \emph{com-} graphs an edge joins two co-purchased products (Amazon), two
-co-authors (DBLP) or two friends (Youtube, LiveJournal, Orkut), and a community is a product category, a publication
-venue or a user group. For every graph SNAP also lists the communities of highest quality in a separate file
-(\code{.top5000.cmty}), and we use that file. Table~\ref{tab:graphdata} lists the graphs.
+\subsection{The data and the communities}\label{sec:snapdata}
+In email-Eu-core an edge records e-mail between two members of a European research institution, and SNAP gives the
+department of each member in a separate file, so a community is a department. In the five \emph{com-} graphs, taken
+from SNAP's networks with ground-truth communities, an edge joins two co-purchased products (Amazon), two co-authors
+(DBLP) or two friends (Youtube, LiveJournal, Orkut), and a community is a product category, a publication venue or a
+user group. For these five SNAP also provides a file (\code{.top5000.cmty}) of the communities that rank best, on
+average, under several structural scores, among them conductance, which measures how many of a community's edges leave
+it~\cite{yl}, and we use that file. Table~\ref{tab:graphdata} lists the graphs.
 
 We downloaded the files from SNAP and converted them into the solver's input format, in which every graph is undirected
 and simple: email-Eu-core is directed, so an edge in either direction becomes one undirected edge, and self-loops and
@@ -633,17 +704,18 @@ where SNAP counts the directed edges of email-Eu-core.
 \begin{table}[H]\centering\small
 \input{generated/tab_graphdata.tex}
 \caption{The graphs as converted: vertices $V$, undirected edges $E$, average degree $2E/V$ and largest degree
-$d_{\max}$, SNAP's published counts, the number of evaluated vertices and the share of the largest of the \val{gr.K}
-communities among them.}\label{tab:graphdata}
+$d_{\max}$, SNAP's published counts, the number of evaluated vertices at $s=\val{gr.s}$ seeds per community and the
+share of the largest of the \val{gr.K} communities among them.}\label{tab:graphdata}
 \end{table}
 
-We use $K=\val{gr.K}$ communities per graph, the largest ones that are nearly disjoint, taken greedily by size: a
-community is taken if at most a fraction $\theta=\val{gr.theta}$ of its members are already in a taken one and at most
-that fraction of each taken community's members are in it. The largest communities leave enough members both to seed
-and to evaluate, and near-disjointness matters because the top communities overlap heavily and some are near-duplicates
-of each other, so that with two copies of the same group a correct label could not be told from a wrong one. A vertex
-that belongs to exactly one of the $K$ communities we call \term{exclusive}, and only exclusive vertices serve as seeds
-or are evaluated.
+We use the $K=\val{gr.K}$ largest communities of each graph that are nearly disjoint. Going through the communities
+from the largest down, we take one if at most a fraction $\theta=\val{gr.theta}$ of its members belong to communities
+already taken, and if it holds at most that fraction of the members of each of them. The largest communities leave
+enough members both to seed and to evaluate, and near-disjointness matters because the top communities overlap heavily
+and some are near-duplicates of each other, so that with two copies of the same group a correct label could not be told
+from a wrong one. A vertex that belongs to exactly one of the $K$ communities we call \term{exclusive}. The seeds are
+chosen among the exclusive vertices, and the \term{evaluated vertices} are the exclusive vertices that are not seeds,
+so their number falls slightly as the number of seeds grows.
 
 \subsection{The method}\label{sec:graphmethod}
 Let $A$ be the adjacency matrix, $D$ the diagonal matrix of degrees and $L=D-A$ the graph Laplacian. For each community
@@ -666,8 +738,8 @@ recorded with the runs.
 A vertex whose $x_c$ is zero for every $c$ is \term{unreached} and counted as wrong. This happens when no seed lies in
 its connected component, and also because of a property of CG: after $k$ iterations $x_c$ lies in
 $\mathrm{span}\{b_c,(L+aI)b_c,\dots,(L+aI)^{k-1}b_c\}$, which is zero beyond graph distance $k-1$ from the seeds. A
-vertex is therefore labelled only if CG ran for at least as many iterations as it is far from the nearest seed, so a
-large $a$, which needs few iterations, also limits the reach. The accuracy is the share of evaluated vertices labelled
+vertex is therefore labelled only if CG ran for more iterations than its distance from the nearest seed, so a large
+$a$, which needs few iterations, also limits the reach. The accuracy is the share of evaluated vertices labelled
 with their own community, and we compare it with two baselines, \emph{majority}, which always answers the largest
 community among the evaluated vertices, and \emph{random}, whose expected accuracy is $1/K$. Unless stated otherwise we
 use $a=\val{gr.a}$ and $s=\val{gr.s}$, and every system is solved to a relative residual of \val{gr.tol}.
@@ -678,8 +750,9 @@ are written once for any operator, and the stencil and the graph each supply a p
 local part of $x\cdot y$. The matrix $L+aI$ is stored in compressed sparse rows and partitioned in one dimension, each
 rank owning a contiguous range of vertex numbers. The ranges are chosen in one of two ways, equal rows (\emph{rows})
 giving each rank the same number of vertices, and equal nonzeros (\emph{nnz}) giving each rank the same number of
-nonzeros of $L+aI$, which is the degree plus one per row. The degrees are heavy-tailed ($d_{\max}$ in
-Table~\ref{tab:graphdata}), so equal rows can give one rank far more work. We also number the vertices in a second
+nonzeros of $L+aI$, which is the degree plus one per row. The degrees are heavy-tailed: a few vertices, which we call
+\term{hubs}, have degrees far above the average ($d_{\max}$ against $2E/V$ in Table~\ref{tab:graphdata}), so equal rows
+can give one rank far more work. We also number the vertices in a second
 order, the breadth-first (Cuthill--McKee) order, which gives neighbours nearby numbers so that a contiguous range should
 cut fewer edges.
 
@@ -694,26 +767,28 @@ share edges, which we call the \term{neighbourhood collective},
 \end{itemize}
 The received values land directly in the ghost part of each vector, behind the owned part, so the vector kernels of the
 Poisson code run unchanged on the owned part. Within a rank the rows are split among threads by equal numbers of
-nonzeros. Every run records the \term{edge cut}, the share of edges whose two ends are owned by different ranks, the
-ghosts and neighbours per rank, the \term{nonzero imbalance}, the largest number of nonzeros per rank over the mean,
-and the time spent exchanging ghosts, as the halo time was recorded for the Poisson problem.
+nonzeros. Every run records the \term{edge cut} (the share of edges whose two ends are owned by different ranks), the
+ghosts and neighbours per rank, the \term{nonzero imbalance} (the largest number of nonzeros per rank over the mean) and
+the time spent exchanging ghosts, as the halo time was recorded for the Poisson problem.
 
 Weak scaling stays on the synthetic problem because a real graph has a fixed size. Growing the work with the cores
 would need a family of graphs of the same structure, which only a synthetic generator could provide, and the six graphs
 differ in their degree distribution as well as in size, whereas the Poisson grid grows with the cores exactly.
 
 \subsection{Validation of the graph solver}\label{sec:graphval}
-The graph solver has its own two validation tests, and as for the Poisson solver the tests must fail on a deliberately
-broken version of the ghost exchange.
+The graph solver has two validation tests of its own, G1 and G2, and a third check, G3, that both fail on a
+deliberately broken version of the ghost exchange, as for the Poisson solver.
 \begin{itemize}
 \item \textbf{G1} runs email-Eu-core on two to five ranks, with threads, both partitions, all three exchanges and both
 vertex orders, in \val{gr.val.layouts} configurations. The product $(L+aI)v$ equals the one-rank product to
 \val{gr.val.spmv}, against a tolerance of \val{gr.val.spmvtol}, and after \val{gr.val.iters} iterations of classic or
-pipelined CG the iterates agree to \val{gr.val.x}, against \val{gr.val.xtol}. Converged answers differ by
-\val{gr.val.conv}, within the condition-number bound of \val{gr.val.bound} used in V5. The fixed-iteration comparison
-stops early because on this graph the rounding differences grow by about three orders of magnitude every five iterations
-once CG has found the large eigenvalues of the hub vertices, and they grow in the same way between one and two threads
-on one rank, so a longer comparison would measure rounding rather than correctness.
+pipelined CG the iterates agree to \val{gr.val.x}, against \val{gr.val.xtol}. The comparison stops after
+\val{gr.val.iters} iterations because beyond that the rounding differences between two correct runs grow quickly on
+this graph. They grow in the same way between one and two threads on one rank, where no ghost is exchanged, so a longer
+comparison would measure rounding rather than correctness. The growth that we measured during development
+is listed with G1 in the validation program (Appendix~\ref{app:code}). Run to convergence, the answers of the parallel
+runs, classic and pipelined, differ from the one-rank classic answer by at most \val{gr.val.conv}, below the smallest of
+their condition-number bounds, \val{gr.val.bound}, computed as in V5.
 \item \textbf{G2} builds a small graph by hand: two cliques of five vertices, a bridge, a tail, a self-loop, a repeated
 edge and a vertex whose only edge is a self-loop. The conversion must report what was built, \val{gr.val.tinyV} vertices
 and \val{gr.val.tinyE} edges, and on one to three ranks $x$ must match a dense solve of the same system to
@@ -726,26 +801,26 @@ products are off by \val{gr.val.bugspmv}, and its labelling accuracy drops from
 These results were obtained on \val{gr.val.where}, and the program used for the graph runs passed G1 and G2 on the
 cluster before any graph run.
 
-\subsection{Accuracy against the baselines}
+\subsection{Accuracy against the baselines}\label{sec:graphacc}
 \begin{table}[H]\centering\small
 \input{generated/tab_graphacc.tex}
-\caption{Labelling with $a=\val{gr.a}$ and $s=\val{gr.s}$ on \val{cl.gr.sweep}: accuracy over the evaluated vertices,
-the share left unreached, the two baselines, CG iterations per system and time per system.}
+\caption{Labelling with $a=\val{gr.a}$ and $s=\val{gr.s}$ on one node of \val{cl.gr.sweep}, \val{gr.sweep.ranks} ranks
+(\val{gr.sweep.ranks.email} for email-Eu-core): accuracy over the evaluated vertices, the share left unreached, the two
+baselines, CG iterations per system and time per system.}
 \label{tab:graphacc}
 \end{table}
 
 \revised{graph-accuracy}%
 With \val{gr.s} seeds per community every graph is labelled far better than both baselines (Table~\ref{tab:graphacc}).
-The accuracy is \val{gr.acc.lo} at worst and \val{gr.acc.hi} at best, against majority shares between
-\val{gr.maj.com-orkut} and \val{gr.maj.com-youtube} and an expected \val{gr.rand} for a random guess, and the graphs fall
-into three groups. On com-Amazon (\val{gr.acc.com-amazon}) and com-LiveJournal (\val{gr.acc.com-lj}) the diffusion from
-\val{gr.s} seeds recovers almost every evaluated vertex, which is what one expects if a product category and a
-LiveJournal user group are regions whose members link mostly to each other, since the diffusion from their seeds then
-stays inside them. com-Youtube (\val{gr.acc.com-youtube}) and com-Orkut (\val{gr.acc.com-orkut}) are in between, and
-email-Eu-core (\val{gr.acc.email-Eu-core}) and com-DBLP (\val{gr.acc.com-dblp}) are the hardest. A likely reason is that
-their communities are defined by something other than the links, a department or a publication venue whose authors also
-publish elsewhere, so that many members are as close to another community's seeds as to their own. We did not measure
-the share of each community's edges that stay inside it, which would settle this.
+The accuracy lies between \val{gr.acc.lo} and \val{gr.acc.hi}, against majority shares between \val{gr.maj.com-orkut}
+and \val{gr.maj.com-youtube} and an expected \val{gr.rand} for a random guess. com-LiveJournal reaches
+\val{gr.acc.com-lj}, com-Youtube \val{gr.acc.com-youtube} and com-Orkut \val{gr.acc.com-orkut}, and email-Eu-core, at
+\val{gr.acc.email-Eu-core}, is the second hardest after com-DBLP. Diffusion labels a vertex correctly when more of its
+paths lead to the seeds of its own community than to those of others, so the accuracy depends on how many of a
+community's edges stay inside it, which we did not measure. How the communities were chosen gives one hint: those of
+the com- graphs are SNAP's selection of the communities with the best structural scores (Section~\ref{sec:snapdata}),
+while the departments of email-Eu-core were not selected in this way. That hint does not explain com-DBLP, whose
+communities were selected like com-Amazon's and are still the hardest to recover.
 
 More seeds help on most graphs. From $s=1$ to $s=\val{gr.smax}$, email-Eu-core rises from \val{gw.email-Eu-core.s1.acc}
 to \val{gw.email-Eu-core.s20.acc}, com-Orkut from \val{gw.com-orkut.s1.acc} to \val{gw.com-orkut.s20.acc} and com-DBLP
@@ -768,31 +843,35 @@ the same, so that a sparser graph changes only the edges. Comparing the six grap
 of the graph, and this controlled thinning separates the two.
 
 \revised{graph-sparsity}%
-Thinning a graph removes paths, and its effect depends on how many paths there were. Keeping each edge with probability
-$1/8$, com-Amazon, whose average degree falls from \val{gw.com-amazon.deg} to \val{gr.keep.com-amazon.deg}, falls
-apart: \val{gr.keep.com-amazon.unr} of its evaluated vertices are no longer connected to any seed of their own community
-and are left unreached, and the accuracy drops to \val{gr.keep.com-amazon.acc}. com-DBLP and com-Youtube behave alike,
-with average degrees of \val{gr.keep.com-dblp.deg} and \val{gr.keep.com-youtube.deg} after thinning, below the average
-degree of one under which a random graph no longer has a component that spans most of it. The same thinning leaves
-com-Orkut, at \val{gw.com-orkut.deg} edges per vertex, nearly intact: at an average degree of
-\val{gr.keep.com-orkut.deg}, only \val{gr.keep.com-orkut.unr} of its evaluated vertices are unreached and its accuracy
-is \val{gr.keep.com-orkut.acc} against \val{gr.acc.com-orkut} on the full graph. The accuracy lost on thinned graphs is
-therefore mostly the unreached vertices, not wrong labels on reached ones. A sparser graph is also cheaper to solve: CG
+Thinning harms the sparse graphs far more than the dense ones. Keeping each edge with probability $1/8$ lowers the
+average degree of com-Amazon from \val{gw.com-amazon.deg} to \val{gr.keep.com-amazon.deg}, and then
+\val{gr.keep.com-amazon.unr} of its evaluated vertices are unreached (Section~\ref{sec:graphmethod}) and its accuracy
+drops to \val{gr.keep.com-amazon.acc}. com-DBLP and com-Youtube fall to average degrees of \val{gr.keep.com-dblp.deg} and
+\val{gr.keep.com-youtube.deg}, to accuracies of \val{gr.keep.com-dblp.acc} and \val{gr.keep.com-youtube.acc}, with
+\val{gr.keep.com-dblp.unr} and \val{gr.keep.com-youtube.unr} of their evaluated vertices unreached. These degrees are
+below one, the average degree under which an Erd\H{o}s--R\'enyi random graph no longer has a giant component, one that
+holds a fixed share of all vertices, although com-Youtube still reaches most of its evaluated vertices, so the
+threshold is only a rough guide for these graphs. On these three sparse graphs most of the accuracy lost is unreached
+vertices: com-Amazon loses \val{gr.keep.com-amazon.loss}, com-DBLP \val{gr.keep.com-dblp.loss} and com-Youtube
+\val{gr.keep.com-youtube.loss}. The same thinning lowers the average degree of com-Orkut from \val{gw.com-orkut.deg} to
+\val{gr.keep.com-orkut.deg}, leaves only \val{gr.keep.com-orkut.unr} of its evaluated vertices unreached and costs it
+\val{gr.keep.com-orkut.loss} of accuracy, down to \val{gr.keep.com-orkut.acc}, so on this dense graph most of the smaller loss is wrong labels on reached
+vertices. A sparser graph is also cheaper to solve: CG
 needs \val{gr.keep.com-amazon.itratio} times fewer iterations per system on the thinned com-Amazon and
 \val{gr.keep.com-orkut.itratio} times fewer on the thinned com-Orkut, because fewer edges lower the largest degree and
 with it the largest eigenvalue and the condition number.
 
 The iterations follow the condition-number estimate in the shift: their fitted exponent against $a$ is
-\val{gr.aslope}, against the $-1/2$ that $\sqrt{\kappa}$ predicts. Over most of the range the accuracy hardly depends on
+$\val{gr.aslope}$, against the $-1/2$ that $\sqrt{\kappa}$ predicts. Over most of the range the accuracy hardly depends on
 $a$, so a small shift costs iterations without buying accuracy: com-Youtube needs \val{gw.com-youtube.amin.it}
 iterations per system at $a=\val{gw.com-youtube.amin}$ for an accuracy of \val{gw.com-youtube.amin.acc}, against
-\val{gw.com-youtube.it} at $a=1$ for \val{gr.acc.com-youtube}. There are two exceptions. com-DBLP labels better with a
-small shift, \val{gw.com-dblp.amin.acc} at $a=\val{gw.com-dblp.amin}$ against \val{gw.com-dblp.a100.acc} at
-$a=\val{gr.amax}$, which suggests that its communities are spread out so that labels must travel far, although we did
-not measure the distances within its communities. And at the largest shift com-Amazon leaves
-\val{gw.com-amazon.a100.unr} of its vertices unreached, because CG stops after \val{gw.com-amazon.a100.it} iterations per
-system, and after $k$ iterations the solution is non-zero only within $k$ steps of a seed
-(Section~\ref{sec:graphmethod}).
+\val{gw.com-youtube.it} at $a=1$ for the accuracy in Table~\ref{tab:graphacc}. Two graphs depart from this. com-DBLP
+labels better with a small shift, \val{gw.com-dblp.amin.acc} at $a=\val{gw.com-dblp.amin}$ against
+\val{gw.com-dblp.a100.acc} at $a=\val{gr.amax}$, which suggests that its communities are spread out so that labels must
+travel far, although we did not measure the distances within its communities. com-Amazon, at the largest shift, leaves
+\val{gw.com-amazon.a100.unr} of its vertices unreached, because CG then stops after \val{gw.com-amazon.a100.it}
+iterations per system, and after $k$ iterations only the vertices within distance $k-1$ of a seed can have a non-zero
+value (Section~\ref{sec:graphmethod}).
 
 \subsection{Serial cost per iteration across the six graphs}
 \figslot{fig_graph_serial}{0.98\linewidth}{Time per CG iteration on one core of \val{cl.gr.serial} against the nonzeros
@@ -806,23 +885,33 @@ the breadth-first (BFS) order, and the speed-up that the BFS order gives.}\label
 \end{table}
 
 \revised{graph-serial}%
-The six graphs vary the vertices and the edges together (Figure~\ref{fig:fig_graph_serial}). As on the grid, an
-iteration costs a roughly fixed time per nonzero once the graph no longer fits in cache. The time per iteration
-grows with the nonzeros with a fitted exponent of \val{gr.ser.slope} in the natural order and \val{gr.ser.slopebfs} in
-the breadth-first order, against the value of one for a constant cost per nonzero. On com-Orkut, the largest graph, one
-iteration costs \val{gr.ser.ns.natural}\,ns per nonzero in the natural order and \val{gr.ser.ns.bfs}\,ns in the
-breadth-first order, which is \val{gs.vsgrid} times the \val{ser.nsnnz2}\,ns of the 2D stencil. The stencil finds its
-neighbours at fixed offsets, mostly in cache, whereas the graph stores a column index for every nonzero and reads each
-neighbour's value at an address that only the index decides, so many of those reads go to main memory. The smallest
-graph, email-Eu-core, fits in cache and costs \val{gs.email-Eu-core.ns}\,ns per nonzero (Table~\ref{tab:graphserial}).
+The six graphs vary the vertices and the edges together (Figure~\ref{fig:fig_graph_serial}). Unlike the grid, whose
+time follows the unknowns (Section~\ref{sec:serial}), a graph iteration costs about the same time per nonzero: the time
+per iteration grows with the nonzeros with a fitted exponent of \val{gr.ser.slope} in the natural order and
+\val{gr.ser.slopebfs} in the breadth-first order, against the value of one for a constant cost per nonzero. On
+com-Orkut, the largest graph, one iteration costs \val{gr.ser.ns.natural}\,ns per nonzero in the natural order and
+\val{gr.ser.ns.bfs}\,ns in the breadth-first order, which is \val{gs.vsgrid} times the \val{ser.nsnnz2}\,ns of the 2D
+stencil, although per nonzero the graph streams fewer bytes. The operator stores no matrix values, because every
+off-diagonal entry of $L+aI$ is $-1$, only a column index of \val{gs.bytes.nnz} bytes per entry and \val{gs.bytes.row}
+bytes per row for the row pointer and the degree. With the CG vectors an iteration on com-Orkut therefore streams about
+\val{gs.com-orkut.bpnnz} bytes per nonzero, against \val{ser.bpnnz2} for the 2D stencil, and at the one-core bandwidth
+of Section~\ref{sec:strong} that takes about \val{gs.com-orkut.streamns}\,ns per nonzero, a small part of the measured
+time. The rest goes to reading each neighbour's value, one read per nonzero at an address that only the column index
+decides, which the cache can serve only when neighbours have nearby numbers, whereas the stencil finds its neighbours at
+fixed offsets, mostly in cache. The smallest graph, email-Eu-core, fits in cache and costs \val{gs.email-Eu-core.ns}\,ns
+per nonzero (Table~\ref{tab:graphserial}).
 
-The breadth-first numbering speeds up the serial iteration by up to \val{gr.ser.bfsgain} on graphs whose SNAP
-numbering scattered the neighbours of a vertex (Table~\ref{tab:graphserial}), because the values of a row's neighbours
-are then read from nearby memory. It helps little on the
-two largest graphs, where com-Orkut runs \val{gs.com-orkut.bfsratio} times as fast and com-LiveJournal
-\val{gs.com-lj.bfsratio} times, slightly slower. On these two social networks a breadth-first search reaches a large
-share of the graph within a few steps, so the order cannot put a vertex's neighbours close to it, and the parallel runs
-below show the same effect as a larger edge cut.
+The breadth-first numbering speeds up the serial iteration on most of the graphs (Table~\ref{tab:graphserial}),
+because the values of a row's neighbours are then read from nearby memory. The clearest case is com-DBLP, which runs
+\val{gs.com-dblp.bfsratio} times as fast, with natural-order repeats that agree within \val{gs.com-dblp.natspread}. The
+largest ratio, \val{gr.ser.bfsgain}, is uncertain: the natural-order times of com-Youtube fell from one repeat to the
+next and spread over \val{gs.com-youtube.natspread} of their median, and with the fastest repeat of each order the
+speed-up is \val{gs.com-youtube.bfsratio.fast}. The numbering helps least on the two largest graphs, which are also the
+two densest com- graphs (Table~\ref{tab:graphdata}), where com-Orkut runs \val{gs.com-orkut.bfsratio} times as fast and com-LiveJournal \val{gs.com-lj.bfsratio} times,
+slightly slower. In a dense graph a breadth-first search reaches a large share of the vertices within a few steps, so
+each level of the search is large and the order cannot keep all of a vertex's neighbours close to it, and the parallel
+runs below show the same effect as a larger edge cut. We did not record the level sizes that would confirm this.
+com-Amazon, which is sparse, also gains little (Table~\ref{tab:graphserial}), for a reason we did not establish.
 
 \subsection{Strong scaling and communication}
 \figslot{fig_graph_strong}{0.98\linewidth}{Strong scaling on \val{cl.gr.strong}: time per system against cores for
@@ -833,9 +922,8 @@ The two largest graphs, \val{gr.strongdata}, were run on \val{gr.strong.counts} 
 nonzeros, the neighbourhood collective and the natural order. At \val{gr.st.top} cores classic CG reaches a speedup of
 \val{gr.st.com-lj.classic.S} on com-LiveJournal and \val{gr.st.com-orkut.classic.S} on com-Orkut, efficiencies of
 \val{gr.st.com-lj.classic.E} and \val{gr.st.com-orkut.classic.E}, and on one full node the efficiencies are
-\val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}. Runs whose single repetition would last more
-than \val{gr.longrep} minutes were run once instead of \val{repeats} times, because at that length the timing noise is
-far below one per cent.
+\val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}. The one-core runs on com-Orkut were solved
+once (Section~\ref{sec:timing}).
 
 \begin{table}[H]\centering\small
 \input{generated/tab_graphstrong.tex}
@@ -893,7 +981,7 @@ On one node the choice of partition matters most (Table~\ref{tab:graphpart72} an
 Equal rows give the busiest rank \val{gv.com-lj.node.imb.rows} times the mean number of nonzeros on com-LiveJournal
 (\val{gv.com-orkut.node.imb.rows} on com-Orkut), because a contiguous range of vertices can hold several hubs, and the
 solve then takes \val{gv.com-lj.node.rows} times as long as with equal nonzeros (\val{gv.com-orkut.node.rows} on
-com-Orkut). The breadth-first numbering does not help these social networks: it cuts \val{gv.com-lj.node.cut.bfs} of
+com-Orkut). The breadth-first numbering does not help these two dense graphs: it cuts \val{gv.com-lj.node.cut.bfs} of
 com-LiveJournal's edges against \val{gv.com-lj.node.cut.nat} for the natural order, and the solve takes
 \val{gv.com-lj.node.bfs} times as long. With \val{node.cpn} ranks almost every rank exchanges with every other, up to
 \val{gv.com-orkut.node.nbrs.nat} neighbours on com-Orkut, and most edges are cut whatever the order, because these graphs
@@ -901,8 +989,8 @@ have no narrow cut along any one-dimensional order. Among the exchanges the neig
 all-to-all over every rank takes \val{gv.com-lj.node.a2a} times as long, and the overlapped form
 \val{gv.com-lj.node.ovl} times, so the overlap did not hide the exchange. The likely reason is that the MPI library
 does not move the messages while the rank computes. We did not test this, and a run with an asynchronous progress
-thread would settle it. Pipelined CG takes \val{gv.com-lj.node.pipe} times as long on one node (\val{gv.com-orkut.node.pipe} on
-com-Orkut), as it does on the grid.
+thread would settle it. Pipelined CG is also slower on one node, taking \val{gv.com-lj.node.pipe} times as long on
+com-LiveJournal and \val{gv.com-orkut.node.pipe} times on com-Orkut, less than on the grid (Section~\ref{sec:mpi}).
 
 The largest gain on one node comes from fewer ranks with more threads. Two ranks of \val{node.half} threads each reduce
 com-Orkut's edge cut from \val{gv.com-orkut.node.cut.nat} to \val{gv.com-orkut.node.cut.hyb} and its neighbours per rank
@@ -910,23 +998,21 @@ to \val{gv.com-orkut.node.nbrs.hyb}, and solve \val{gv.com-orkut.node.hybrid} ti
 times on com-LiveJournal). On a graph the threads of a rank share its ghosts while more ranks multiply them, whereas on
 the grid a rank's halo is a thin surface whose size depends little on how many ranks share the node.
 
-\interpslot{graph-parallel-top}{From the four-node runs: whether the hybrid layout and pipelined CG together recover
+\interpslot{graph-parallel-top}{From the runs at \val{topcores} cores: whether the hybrid layout and pipelined CG together recover
 scaling at \val{topcores} cores, and which method we would use there.}
 
 \subsection{Conclusions about the data}
 \revised{graph-conclusions}%
 The runs say three things about these networks. First, in most of them a few labelled members identify a community:
-with \val{gr.s} seeds per community the share of evaluated vertices labelled correctly is \val{gr.acc.com-amazon} on
-com-Amazon, \val{gr.acc.com-lj} on com-LiveJournal, \val{gr.acc.com-youtube} on com-Youtube and \val{gr.acc.com-orkut}
-on com-Orkut, \val{gr.lift.range} times the majority baseline. Second, the communities that are hardest to recover are
-those defined by something outside the network, departments in email-Eu-core (\val{gr.acc.email-Eu-core}) and venues in
-com-DBLP (\val{gr.acc.com-dblp}), where the links say less about the label and more seeds help. Third, how sparse a
-network is decides how robust the labelling is. The sparse networks, com-Amazon, com-DBLP and com-Youtube with
-\val{gw.com-amazon.deg}, \val{gw.com-dblp.deg} and \val{gw.com-youtube.deg} edges per vertex, depend on few paths and
-break into unreachable pieces when thinned, while the dense com-Orkut, with \val{gw.com-orkut.deg}, loses little. For
-labelling by diffusion, a missing edge therefore matters most in a network that has few, and the cost of the method falls
-in the same direction, because denser graphs have larger maximum degrees, \val{gw.com-orkut.dmax} on com-Orkut, and
-need more iterations, \val{gw.com-orkut.it} per system against \val{gw.com-amazon.it} on com-Amazon.
+with \val{gr.s} seeds per community, com-Amazon, com-LiveJournal, com-Youtube and com-Orkut are labelled
+\val{gr.lift.range} times as accurately as the majority baseline (Table~\ref{tab:graphacc}). Second, the communities are
+not equally easy to recover from the links: those of com-DBLP and email-Eu-core are the hardest, and on them more seeds
+help (Section~\ref{sec:graphacc}). Third, how sparse a network is decides how robust the labelling is. The three
+sparse com- graphs, com-Amazon, com-DBLP and com-Youtube (Table~\ref{tab:graphdata}), depend on few paths and lose most
+of their accuracy to unreached vertices when thinned, while the densest, com-Orkut, loses much less and mostly to wrong
+labels. For labelling by diffusion a missing edge therefore matters most in a network that has few, and the cost of the
+method falls in the same direction, because denser graphs have larger maximum degrees, \val{gw.com-orkut.dmax} on
+com-Orkut, and need more iterations, \val{gw.com-orkut.it} per system against \val{gw.com-amazon.it} on com-Amazon.
 
 % ======================================================================================================
 \section{Discussion}\label{sec:discussion}
@@ -951,8 +1037,8 @@ would use at which scale, and what limited scaling in our runs, keeping to what 
 \emph{Limitations.} The timings use a fixed number of iterations, so they describe the cost of one iteration, and the
 total cost to a tolerance, which also grows with $n$ through the iteration count, was measured only in serial. Reduction
 times include waiting for the slowest rank, so they mix network latency with load imbalance. The OpenMP GPU offload
-version was developed on a laptop, where the offload directives run on the CPU, so the Vanda GPU runs, made after it had
-passed the validation tests on a GPU node, were its first execution on a GPU.
+version was developed on a laptop, where the offload directives run on the CPU. It first ran on a GPU in the Vanda job
+that validated it on the GPU node and then timed it, so it was not tuned for the GPU.
 
 % ======================================================================================================
 \section{Declaration of AI use}
@@ -980,6 +1066,8 @@ cluster and are not part of the package, and no log files or terminal output are
 \emph{Journal of Research of the National Bureau of Standards} 49(6), 1952.
 \bibitem{gv} P.~Ghysels and W.~Vanroose. Hiding global synchronization latency in the preconditioned conjugate
 gradient algorithm. \emph{Parallel Computing} 40(7), 2014.
+\bibitem{yl} J.~Yang and J.~Leskovec. Defining and evaluating network communities based on ground-truth.
+\emph{IEEE International Conference on Data Mining (ICDM)}, 2012.
 \bibitem{l12} A.~Chen. DSA5208 Lecture 12: The design of parallel algorithms. NUS, 2026.
 \end{thebibliography}
 
@@ -992,7 +1080,7 @@ here.
 \makeatletter
 \@for\pf:=\appendixfiles\do{%
   \subsection*{\texttt{\detokenize\expandafter{\pf}}}%
-  \lstinputlisting{../\pf}}
+  \lstinputlisting{generated/listing/\pf}}
 \makeatother
 
 \end{document}

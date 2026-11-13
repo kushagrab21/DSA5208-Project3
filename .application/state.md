@@ -222,6 +222,27 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   recorded; appendix listings drop non-ASCII characters (arrows, <=) in README/code comments (pre-existing: listings
   literate does not apply under tectonic); waiting marks still use plan wording and "; " (vanish with full data).
 
+## Turn 10 (13 Nov 2026): the cold-reader findings fixed
+- Thesis stated once (2.5): inside a node memory bandwidth limits scaling (new floor T_mem >= max(beta N/(s B),
+  beta N/(P b))), across nodes the reductions take a growing share; up to 144 cores the runs are in the first regime,
+  the graphs are communication-bound on two nodes. 1.4 and 2.3 point to it; 6.1 calls it "the memory regime".
+- From the code: 96/128 B = 12/16 streams (classic 3+6+3, pipelined 3+13, write-allocate counted) -> STREAMS in
+  report_macros.py, checked against the plan's model; flops 15/17 per point -> intensity 0.16/0.18. Graph operator
+  stores no values (all -1): 4 B per off-diagonal index + 16 B per row -> 5.4 B/nnz on com-Orkut vs 19.2 for the stencil.
+- From the records: repeat spread (median 0.6 %, 41 of 184 configurations > 5 %, one-core up to 48 %); one-core
+  pipelined/classic 1.08/1.10 vs model 1.33 (full node 1.38-1.44); time-to-tolerance exponents 1.61/1.43 vs 1.50/1.33
+  (cost per unknown grows N^0.10 over those sizes); com-Youtube natural-order serial repeats 23.8/19.8/14.3 ms, so its
+  BFS speed-up 1.75 is uncertain (1.27 fastest-vs-fastest); seeds are excluded from evaluation (label.cpp); Table 16
+  runs on 72 ranks (8 for email-Eu-core); labelling, time-to-tolerance and the one-core com-Orkut runs solve once.
+- Specifications cited as such: Intel 8452Y (8 DDR5-4800 channels -> 307.2 GB/s per socket, 67.5 MB cache), NVIDIA A40
+  (48 GB, 696 GB/s; GPU model taken from the node name, not recorded); Yang & Leskovec for SNAP's top-5000 selection.
+- Placement wording generated for all four states (288 whole / 256 shared / both / neither): scale.where, st.counts,
+  spread.sent ("an additional run" when both), waiting marks no longer say "may come from whole or shared nodes";
+  Table 7 shows recorded cores and configurations and a "solves" column.
+- Appendix printed from ASCII copies (report/generated/listing/), 0 missing characters.
+- Checks: 0 hand-typed numbers, 0 prose semicolons, selftests pass. Keys removed from the text: gr.acc.com-amazon,
+  gr.acc.com-dblp, gw.com-dblp.deg, gw.com-youtube.deg (all in tables), rankcounts (replaced by st.counts + scale.where).
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.

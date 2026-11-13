@@ -190,7 +190,10 @@ scripts/make_report.sh        # figures -> generated numbers/tables -> PDF (Tect
   if a local row is among them. It draws a figure only when every planned run behind it is recorded, and writes
   `figures/<name>.meta.json` with the axis scales, source CSVs, their SHA-256 and the binaries.
 - `scripts/report_macros.py` writes `report/generated/`: `values.tex` (every number in the text), `tab_*.tex`,
-  `slots.tex` and `status.json`. A number or table whose runs are missing renders as a red "waiting for cluster data"
+  `slots.tex` and `status.json`. It also writes ASCII copies of the files listed in the appendix
+  (`report/generated/listing/`, with characters such as arrows and the less-or-equal sign spelled out), because the
+  listings package cannot print characters above 255 under XeTeX (tectonic). The hardware specifications the report
+  cites (Intel Xeon Platinum 8452Y, NVIDIA A40) are constants at the top of the script, with their sources. A number or table whose runs are missing renders as a red "waiting for cluster data"
   mark, so the PDF can be built at any time.
 - `checks/requirements_check.py` maps E1–E18 to report sections and prints which rows are still waiting, and for
   what. It refuses release when:
