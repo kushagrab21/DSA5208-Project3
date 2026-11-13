@@ -700,13 +700,17 @@ decomposition behaves at \val{topcores} ranks (Table~\ref{tab:geometry}).}
 Lecture~9 asks four questions of an MPI+OpenMP program, and the design of Section~\ref{sec:design} already answers the
 first three for our solver.
 \begin{enumerate}[label=(\arabic*)]
-\item What is parallelised across ranks, and what across threads? Across ranks we parallelise the grid itself: each rank
+\item What is parallelised across ranks, and what across threads?\\
+Across ranks we parallelise the grid itself: each rank
 owns a box and takes part in the halo exchange and the reductions, while the threads of a rank share every loop over
 its box.
-\item How do ranks and threads synchronise, and how much? They synchronise at the implicit barrier at the end of each
+\item How do ranks and threads synchronise, and how much?\\
+They synchronise at the implicit barrier at the end of each
 threaded loop, after which the master thread alone calls MPI, so one barrier per loop and no locks are needed.
-\item How do threads interact with MPI windows? They do not, because the program uses no windows.
-\item Which split of a \val{lay.cpn}-core node into ranks and threads is fastest? This needs measurement, and the rest of
+\item How do threads interact with MPI windows?\\
+They do not, because the program uses no windows.
+\item Which split of a \val{lay.cpn}-core node into ranks and threads is fastest?\\
+This needs measurement, and the rest of
 this section gives it.
 \end{enumerate}
 We timed \val{plan.layouts} ranks $\times$ threads per node, on \val{lay.nodes} of \val{cl.layout}, with the
