@@ -605,6 +605,15 @@ def build(results, out, names=None, stamp_text=None):
             except RD.MixedBuild as e:
                 mixed = str(e)
                 plt.close("all")
+        elif D.settled(*groups):
+            # every missing cell is outstanding (its run failed and a rerun is recorded in the plan): draw what was
+            # measured, as a finished figure. The report states the core count each series reaches.
+            try:
+                fig, axes, used = fn(D.filled_view())
+                meta["outstanding"] = sorted(c for g in groups for c in D.group_cells(g) if c not in D.cell_rows)
+            except RD.MixedBuild as e:
+                mixed = str(e)
+                plt.close("all")
         elif all(D.group_status(g)[0] > 0 for g in groups):
             # PARTIAL: draw the recorded cells only (every series from its own 1-core cell); the figure stays
             # waiting for its E rows and the report prints what it waits for under it
@@ -617,7 +626,7 @@ def build(results, out, names=None, stamp_text=None):
             except Exception as e:  # a series without its baseline, etc.: not drawable yet
                 report.append("%-16s (partial drawing failed: %s)" % (name, str(e).splitlines()[0][:80]))
                 plt.close("all")
-        if not (D.complete(*groups) or partial) or mixed:
+        if not (D.complete(*groups) or D.settled(*groups) or partial) or mixed:
             meta.update({"status": "unfilled", "waiting_for": [mixed] if mixed else D.waiting(*groups)})
             if os.path.exists(pdf):
                 os.remove(pdf)

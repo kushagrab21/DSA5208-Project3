@@ -1,13 +1,13 @@
 {
  "figure": "fig_serial",
  "script": "scripts/figures.py",
- "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "script_sha256": "5e2d92ca494e0183bd033ad084f4b5fb8124beeb567874597bbf45a197bccf5e",
  "plan": "vanda",
  "cluster": "vanda",
  "groups": [
   "serial"
  ],
- "utc": "2026-11-13T07:29:30Z",
+ "utc": "2026-11-14T06:28:10Z",
  "status": "filled",
  "axes": [
   {
@@ -54,5 +54,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "34b64af4e18234029dc260f224df9ff2b5f8e9a55580350e69879bc27228e394"
+ "image_sha256": "7566ef8ec0c009c8f6a941439017de7eddba62ef3f98f72b0153bb4831face1e"
 }

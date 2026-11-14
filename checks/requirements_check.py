@@ -606,9 +606,10 @@ def selftest():
     scenario("one strong-scaling run from another binary", mixed_build, exp_mixed_build)
 
     real = run(DEFAULT_TEX, no_pdf=True, quiet=True)
-    results.append(("the real report today (no cluster rows)", real[0], real[1],
-                    real[0] != "PASS" and any(any(x.startswith("cluster data") for x in real[3].get(r, ()))
-                                              for r in real[2])))
+    # the real report: it passes once every graded run is in, and before that it may wait only for cluster data
+    results.append(("the real report today", real[0], real[1],
+                    real[0] == "PASS" or (not real[1] and all(any(x.startswith("cluster data")
+                                                                  for x in real[3].get(r, ())) for r in real[2]))))
     after = {d: F.snapshot(os.path.join(REPO, d)) for d in ("figures", "report")}
     clean = guard == after
     ok = all(r[3] for r in results) and clean

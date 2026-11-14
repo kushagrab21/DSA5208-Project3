@@ -295,6 +295,29 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   locally, running on Vanda, adding the remaining runs, the AI declaration (Section 10 wording). No measured results.
 - process/ (copy of the process notes) from repo_transfer.md was not part of this brief; left to the parent.
 
+## Turn 14 (14 Nov 2026): 288-core data in, graph rerun prepared, final text pass
+- Records (committed by the parent): vanda-4node 1546582 complete (strong, weak, variants, layout to 288 cores on 4 whole
+  nodes, one of them GPU node GN-A40-066 with the same CPUs and memory). vanda-graph-4node 1546819 exceeded its walltime
+  (21 of 40 cells: every com-LiveJournal cell, one com-Orkut cell). vanda-256spread 1549987 exceeded its walltime
+  (Poisson and com-LiveJournal shared-node cells recorded, both com-Orkut ones missing).
+- Amendment graph-rerun-2026-11-14 (scripts/amend_vanda_graph_rerun.py, committed 2cd... see git log): the 19 missing
+  com-Orkut cells move to vanda-graph-4node-rerun (4 x 72, place=excl), strong cells first, breadth-first cells last.
+  Estimate 17,601 s from measured com-LiveJournal cells at 288 x the com-Orkut/com-LiveJournal ratio at 72 (+10 s each,
+  +300 s job overhead), walltime 9:50:00 (x2), 1,408 core-h expected, 2,816 at most. Rerun reason per cell. NOT
+  submitted. Submit: cluster/ops/sync.sh vanda && cluster/ops/submit.sh vanda vanda-graph-4node-rerun
+- Report reads correctly with or without the rerun: reportdata gains superseded() (a shared-node cell whose whole-node
+  partner is recorded leaves figures and tables, one sentence in 6.1), outstanding() (missing cell with a rerun reason)
+  and settled(); figures draw settled groups as filled; graph values use each graph's largest complete count
+  (com-LiveJournal 288, com-Orkut 144 strong / 72 methods) with a generated sentence saying so.
+- Text: Summary rewritten (no semicolons, no gloss); thesis, 6.1-6.4, 7, 8.8-8.9, 9 revised for 288; the four orange
+  boxes written. Kept to 288: efficiency lost inside the node (0.26 on 1, 2 and 4 nodes); pipelined slower at every
+  count (3D 1.44, 1.38, 1.44). Changed: communication share grows (3D 10 -> 17 -> 27 %), 2D reductions grow with nodes
+  (latency), 3D reductions follow the imbalance. Graphs: com-LiveJournal on 4 nodes no faster than 1, hybrid 8x9 per
+  node best (1.53x pure MPI), breadth-first + neighbourhood collective 32x slower at 288.
+- Margins 2.8 cm (drill item 4). Wide tables fit with adjustbox, Section 6 floats follow their first mention, tall
+  floats [htbp] where [H] left gaps; every float within a page of its first mention, one page 19 % empty.
+- requirements_check: PASS (0 hand-typed numbers, 0 waiting, 0 log files); every selftest passes.
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.

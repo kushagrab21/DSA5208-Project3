@@ -1,14 +1,20 @@
 {
  "figure": "fig_graph_strong",
  "script": "scripts/figures.py",
- "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "script_sha256": "5e2d92ca494e0183bd033ad084f4b5fb8124beeb567874597bbf45a197bccf5e",
  "plan": "vanda",
  "cluster": "vanda",
  "groups": [
   "graph-strong"
  ],
- "utc": "2026-11-13T07:29:31Z",
- "status": "partial",
+ "utc": "2026-11-14T06:28:12Z",
+ "outstanding": [
+  "g-com-orkut-natural-nnz-neighbor-clas-a1-s5-k1-r256x1-N8-tol1e-08-rhs2-pshared8x32",
+  "g-com-orkut-natural-nnz-neighbor-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-neighbor-pipe-a1-s5-k1-r256x1-N8-tol1e-08-rhs2-pshared8x32",
+  "g-com-orkut-natural-nnz-neighbor-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2"
+ ],
+ "status": "filled",
  "axes": [
   {
    "panel": "com-lj",
@@ -35,8 +41,13 @@
    "scale": "log"
   }
  ],
- "rows": 92,
+ "rows": 98,
  "sources": [
+  {
+   "path": "results/vanda/1546819.stdct-mgmt-02.graph.csv",
+   "sha256": "8c220fa57a43cecffb6bba7590ba0b63c4bdcf36f06131b9339ee11a50bda1be",
+   "rows_used": 6
+  },
   {
    "path": "results/vanda/1546820.stdct-mgmt-02.graph.csv",
    "sha256": "968bfaa416c76b298abd57967be9143e6aebe42eec1a9bd3927e8cfa7a567dd2",
@@ -59,8 +70,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "4b957f233f3c06d1d42a93d5a8dd1194af2ea21796001889e52b32609425ba3e",
- "waiting_for": [
-  "vanda graph-strong: 32 of 40 runs recorded"
- ]
+ "image_sha256": "3ac314f5f52d9d26dcfa891161add6cf1a97fce40712560ea7b11b0b9a1bbb91"
 }

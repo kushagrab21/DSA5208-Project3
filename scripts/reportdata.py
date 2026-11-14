@@ -76,7 +76,32 @@ class ClusterData:
 
     # -- status ---------------------------------------------------------------------------------------------------
     def group_cells(self, group):
-        return self.plan["groups"].get(group, {}).get("cells", [])
+        """The cells of a group, without the shared-node insurance cells whose whole-node partner is recorded: once the
+        whole-node run exists, the figures and tables use it, and the report mentions the shared-node run in one
+        sentence (from the plan and the rows directly)."""
+        sup = self.superseded()
+        return [c for c in self.plan["groups"].get(group, {}).get("cells", []) if c not in sup]
+
+    def superseded(self):
+        out = set()
+        for cid, c in self.plan["cells"].items():
+            if c.get("insurance_for") and c["insurance_for"] in self.cell_rows:
+                out.add(cid)
+        return out
+
+    def outstanding(self):
+        """Cells without a record whose run, or whose insurance partner's run, carries a rerun reason in the plan: the
+        run failed and a rerun is recorded but has not arrived. The report shows what was measured without them and
+        states the core count it uses; the values fill in by themselves if the rerun arrives."""
+        rr = set(x.get("cell") for x in self.plan.get("reruns", []) if x.get("cell") and x.get("reason"))
+        pr = self.pairs()
+        return set(c for c in self.plan["cells"] if not self.satisfied(c) and (c in rr or pr.get(c) in rr))
+
+    def settled(self, *groups):
+        """Every cell of each group is recorded (or its insurance partner is), or is outstanding (see outstanding)."""
+        out = self.outstanding()
+        return all(self.group_cells(g) and all(self.satisfied(c) or c in out for c in self.group_cells(g))
+                   for g in groups)
 
     def pairs(self):
         """Insurance pairs: a cell with "insurance_for" (e.g. 256 ranks on shared nodes) stands in for the cell it

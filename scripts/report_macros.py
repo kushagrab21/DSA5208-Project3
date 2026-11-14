@@ -377,8 +377,8 @@ def design_values(out, results):
         cores = cores_of(g) if g != "gpu" else "1 and 2 GPUs"
         rows.append([name, varies, problem, cores, count(g), repeats_of(g)])
     table(out, "plan", ["experiment", "what varies", "problem", "cores", "configs.", "solves"], rows,
-          ">{\\raggedright\\arraybackslash}p{0.16\\linewidth}>{\\raggedright\\arraybackslash}p{0.21\\linewidth}"
-          ">{\\raggedright\\arraybackslash}p{0.21\\linewidth}lrl", ["E2", "E3", "E4", "E6", "E7"])
+          ">{\\raggedright\\arraybackslash}p{0.15\\linewidth}>{\\raggedright\\arraybackslash}p{0.19\\linewidth}"
+          ">{\\raggedright\\arraybackslash}p{0.19\\linewidth}lrl", ["E2", "E3", "E4", "E6", "E7"])
     put("plan.atlas.cells", len(A["cells"]))
 
 
@@ -802,21 +802,27 @@ def cluster_values(out, results, figures):
     else:
         for k in ("spread.sent", "spread.cap", "spread.tabnote", "spread.except"):
             put(k, "", ["E3", "E4"])
+    # a shared-node run whose whole-node partner exists: not in the figures or tables, one sentence in the text
+    sup = sorted(Dsw.superseded())
+    if sup:
+        c0 = Dsw.plan["cells"][sup[0]]
+        put("spread.except", " The one exception is a run at %d cores on %d nodes $\\times$ %d cores shared with other "
+            "jobs, which Section~\\ref{sec:strong} mentions in one sentence." %
+            (c0["ranks"], c0["nodes"], c0["ranks"] // c0["nodes"]), ["E3", "E4"])
     top = Dsw.top_cells("strong", dim=3, cg="classic", halo="blocking")
     if Dsw.complete("strong", "weak") and top:
         tc = top[0][1]
         put("meas.top", tc["ranks"] * tc["threads"], ["E3", "E4"])
         put("meas.where", where(tc), ["E3", "E4"])
-        both = [c for cid, c in Dsw.filled_view().cells("strong", dim=3, cg="classic", halo="blocking")
-                if c["ranks"] >= 256]
-        sp = [c for c in both if c.get("placement")]
-        if sp and not tc.get("placement"):  # whole-node top recorded and the insurance run too: name both
-            spc = [(cid, c) for cid, c in Dsw.cells("strong", dim=3, cg="classic", halo="blocking")
-                   if c.get("placement") and cid in Dsw.cell_rows][0]
+        # the shared-node run of the same series, when the whole-node top exists (superseded: read from the plan)
+        spc = [(cid, Dsw.plan["cells"][cid]) for cid in sup if Dsw.plan["cells"][cid].get("dim") == 3 and
+               Dsw.plan["cells"][cid].get("cg") == "classic" and cid in Dsw.plan["groups"]["strong"]["cells"]]
+        if spc and not tc.get("placement"):
             one = [cid for cid, c in Dsw.cells("strong", dim=3, cg="classic", halo="blocking") if c["ranks"] == 1][0]
-            put("meas.both", " The %d-core run%s reached a 3D classic efficiency of %s." % (
-                spc[1]["ranks"], where(spc[1]), fx(Dsw.med(one) / (spc[1]["ranks"] * Dsw.med(spc[0])), 2)),
-                ["E3"])
+            put("meas.both", " A further run at %d cores, on %d nodes $\\times$ %d cores shared with other jobs and "
+                "with ranks not bound to cores, reached a 3D classic efficiency of %s." % (
+                    spc[0][1]["ranks"], spc[0][1]["nodes"], spc[0][1]["ranks"] // spc[0][1]["nodes"],
+                    fx(Dsw.med(one) / (spc[0][1]["ranks"] * Dsw.med(spc[0][0])), 2)), ["E3"])
         else:
             put("meas.both", "", ["E3"])
         wt = {}
@@ -1298,60 +1304,84 @@ def graph_values(out, results):
         for k in ("gr.ser.slope", "gr.ser.slopebfs", "gr.ser.bfsgain", "gr.ser.ns.natural", "gr.ser.ns.bfs"):
             pend(k, rq, w)
 
-    # strong scaling (time per solve)
+    # strong scaling (time per solve), each graph to the largest core count at which both CG variants are recorded on
+    # whole nodes (a run whose rerun is outstanding is not waited for: the text says which count each graph reaches)
     rq = ["E3"]
-    if Dst.complete("graph-strong"):
-        Dst = Dst.filled_view()  # the top may be the shared-node insurance run (its partner not recorded)
+    planned_top = max(c["ranks"] for cid, c in Dst.cells("graph-strong") if not c.get("placement"))
+    tops = {}
+    for d in GP.STRONG_DATASETS:
+        per = {}
+        for cg in ("classic", "pipelined"):
+            per[cg] = dict((c["ranks"], cid) for cid, c in Dst.cells("graph-strong", dataset=d, cg=cg, threads=1)
+                           if not c.get("placement") and cid in Dst.cell_rows)
+        common = sorted(set(per["classic"]) & set(per["pipelined"]))
+        if common and common[0] == 1:
+            tops[d] = (common[-1], per)
+    if Dst.settled("graph-strong") and len(tops) == len(GP.STRONG_DATASETS):
         rows = []
         for d in GP.STRONG_DATASETS:
+            P, per = tops[d]
+            put("gr.st.%s.top" % d, P, rq)
             for cg in ("classic", "pipelined"):
-                cs = sorted(Dst.cells("graph-strong", dataset=d, cg=cg, threads=1), key=lambda t: t[1]["ranks"])
-                Dst.check_same_build([cid for cid, c in cs], "graph-strong %s %s" % (d, cg))
-                t1, tp, P = Dst.med(cs[0][0], "t_solve"), Dst.med(cs[-1][0], "t_solve"), cs[-1][1]["ranks"]
-                n72 = [x for x in cs if x[1]["ranks"] == Dst.plan["cores_per_node"]]
-                rows.append([dsn(d), cg, sig(t1, 3), sig(tp, 3) + (" ($%d^{\\dagger}$)" % P if cs[-1][1].get(
-                    "placement") else ""), fx(t1 / tp, 1), fx(t1 / tp / P, 2)])
+                cids = [per[cg][k] for k in sorted(per[cg]) if k <= P]
+                Dst.check_same_build(cids, "graph-strong %s %s" % (d, cg))
+                t1, tp = Dst.med(per[cg][1], "t_solve"), Dst.med(per[cg][P], "t_solve")
+                cpn0 = Dst.plan["cores_per_node"]
+                rows.append([dsn(d), cg, sig(t1, 3), grp(P), sig(tp, 3), fx(t1 / tp, 1), fx(t1 / tp / P, 2)])
                 put("gr.st.%s.%s.S" % (d, cg), fx(t1 / tp, 1), rq)
                 put("gr.st.%s.%s.E" % (d, cg), fx(t1 / tp / P, 2), rq)
                 put("gr.st.%s.%s.T1" % (d, cg), sig(t1, 3), rq)
-                if n72:
-                    put("gr.st.%s.%s.Enode" % (d, cg), fx(t1 / Dst.med(n72[0][0], "t_solve") / n72[0][1]["ranks"],
-                                                          2), rq)
-                else:
-                    put("gr.st.%s.%s.Enode" % (d, cg), "--", rq)
+                put("gr.st.%s.%s.Enode" % (d, cg), fx(t1 / Dst.med(per[cg][cpn0], "t_solve") / cpn0, 2)
+                    if cpn0 in per[cg] else "--", rq)
                 if cg == "classic":
-                    r = Dst.row0(cs[-1][0])
-                    tot = Dst.med(cs[-1][0], "t_total")
-                    put("gr.comm.%s.halo" % d, "%s\\%%" % fx(100 * Dst.med(cs[-1][0], "t_halo") / tot, 0), ["E5"])
-                    put("gr.comm.%s.red" % d, "%s\\%%" % fx(100 * Dst.med(cs[-1][0], "t_reduce") / tot, 0), ["E5"])
+                    c0 = per[cg][P]
+                    r = Dst.row0(c0)
+                    tot = Dst.med(c0, "t_total")
+                    put("gr.comm.%s.halo" % d, "%s\\%%" % fx(100 * Dst.med(c0, "t_halo") / tot, 0), ["E5"])
+                    put("gr.comm.%s.red" % d, "%s\\%%" % fx(100 * Dst.med(c0, "t_reduce") / tot, 0), ["E5"])
                     put("gr.comm.%s.ghosts" % d, grp(r["ghosts_max"]), ["E5"])
                     put("gr.comm.%s.nbrs" % d, grp(r["neighbors_max"]), ["E5"])
-        put("gr.st.top", cs[-1][1]["ranks"], rq)
-        table(out, "graphstrong", ["dataset", "CG", "$T(1)$ (s)", "$T(P_{\\max})$ (s)", "$S$", "$E$"], rows,
-              "llrrrr", rq)
+        short = [d for d in GP.STRONG_DATASETS if tops[d][0] < planned_top]
+        put("gr.st.top", max(tops[d][0] for d in GP.STRONG_DATASETS), rq)
+        put("gr.st.note", "".join(" The %s runs at %d cores did not finish within the time limit of their job, so "
+                                  "%d cores is the largest count for that graph here." %
+                                  (dsn(d), planned_top, tops[d][0]) for d in short), rq)
+        table(out, "graphstrong", ["dataset", "CG", "$T(1)$ (s)", "$P$", "$T(P)$ (s)", "$S$", "$E$"], rows,
+              "llrrrrr", rq)
     else:
         w = "; ".join(Dst.waiting("graph-strong"))
         for d in GP.STRONG_DATASETS:
+            pend("gr.st.%s.top" % d, rq, w)
             for cg in ("classic", "pipelined"):
                 for k in ("S", "E", "T1", "Enode"):
                     pend("gr.st.%s.%s.%s" % (d, cg, k), rq, w)
             for k in ("halo", "red", "ghosts", "nbrs"):
                 pend("gr.comm.%s.%s" % (d, k), ["E5"], w)
         pend("gr.st.top", rq, w)
+        pend("gr.st.note", rq, w)
         table(out, "graphstrong", ["dataset", "CG", "$S$", "$E$"], [], "llrr", rq, False, w)
 
-    # partitions: edge cut, ghosts, imbalance, and the best variant at the largest core count
+    # partitions: edge cut, ghosts, imbalance, and the best variant, each graph at the largest core count at which every
+    # combination of partition, exchange and CG variant is recorded
     rq = ["E8", "E12"]
-    if Dvar.complete("graph-variants"):
+    vtops = {}
+    for d in GP.STRONG_DATASETS:
+        counts = sorted(set(c["ranks"] for cid, c in Dvar.cells("graph-variants", dataset=d, threads=1)))
+        full = [P for P in counts if all(cid in Dvar.cell_rows for cid, c in
+                                         Dvar.cells("graph-variants", dataset=d, threads=1, ranks=P))]
+        if full:
+            vtops[d] = full[-1]
+    if Dvar.settled("graph-variants") and len(vtops) == len(GP.STRONG_DATASETS):
         rows = []
+        planned = max(c["ranks"] for cid, c in Dvar.cells("graph-variants", threads=1))
         for d in GP.STRONG_DATASETS:
-            top = max(c["ranks"] for cid, c in Dvar.cells("graph-variants", dataset=d, threads=1))
+            top = vtops[d]
             best = []
             for (o, p) in MG.VARIANT_PARTS:
                 cs = Dvar.cells("graph-variants", dataset=d, threads=1, ranks=top, order=o, part=p,
                                 exchange="neighbor", cg="classic")
                 r = Dvar.row0(cs[0][0])
-                rows.append([dsn(d), "%s, %s" % (o, p), "%s\\%%" % fx(100 * float(r["cut_fraction"]), 1),
+                rows.append([dsn(d), grp(top), "%s, %s" % (o, p), "%s\\%%" % fx(100 * float(r["cut_fraction"]), 1),
                              grp(r["ghosts_max"]), grp(r["neighbors_max"]), fx(float(r["nnz_imbalance"]), 2),
                              sig(Dvar.med(cs[0][0], "t_solve"), 3)])
                 put("gr.cut.%s.%s.%s" % (d, o, p), "%s\\%%" % fx(100 * float(r["cut_fraction"]), 1), rq)
@@ -1362,11 +1392,19 @@ def graph_values(out, results):
                                         exchange=e, cg=cg)
                         best.append((Dvar.med(cc[0][0], "t_solve"), o, p, e, cg))
             best.sort()
-            put("gr.var.%s.best" % d, "%s order, %s partition, %s exchange, %s CG" % best[0][1:], rq)
+            words = {"rows": "equal rows", "nnz": "equal nonzeros", "alltoallv": "the all-to-all exchange",
+                     "neighbor": "the neighbourhood collective", "overlap": "the overlapped neighbourhood collective",
+                     "natural": "the natural order", "bfs": "the breadth-first order"}
+            b0 = best[0]
+            put("gr.var.%s.best" % d, "%s with %s, %s and %s CG" % (words[b0[1]], words[b0[2]], words[b0[3]], b0[4]),
+                rq)
             put("gr.var.%s.spread" % d, fx(best[-1][0] / best[0][0], 2), rq)
             put("gr.var.%s.top" % d, top, rq)
-        table(out, "graphpart", ["dataset", "order, partition", "edges cut", "max ghosts", "max neighbours",
-                                 "nnz imbalance", "time/solve (s)"], rows, "llrrrrr", rq)
+        short = [d for d in GP.STRONG_DATASETS if vtops[d] < planned]
+        put("gr.var.note", "".join(" The %s runs at %d cores did not finish within the time limit of their job, so its "
+                                   "comparison is at %d cores." % (dsn(d), planned, vtops[d]) for d in short), rq)
+        table(out, "graphpart", ["dataset", "cores", "order, partition", "edges cut", "max ghosts", "max neighbours",
+                                 "nnz imbalance", "time/solve (s)"], rows, "lrlrrrrr", rq)
     else:
         w = "; ".join(Dvar.waiting("graph-variants"))
         for d in GP.STRONG_DATASETS:
@@ -1375,6 +1413,7 @@ def graph_values(out, results):
                 pend("gr.imb.%s.%s.%s" % (d, o, p), rq, w)
             for k in ("best", "spread", "top"):
                 pend("gr.var.%s.%s" % (d, k), rq, w)
+        pend("gr.var.note", rq, w)
         table(out, "graphpart", ["dataset", "order, partition", "edges cut", "nnz imbalance"], [], "llrr", rq,
               False, w)
 
@@ -1454,9 +1493,17 @@ def partial_values(out, results):
 
     # core counts by role, so the text names a role ("node") and not a number that only holds on one cluster
     role = {1: "one", cpn // 4: "q", cpn // 2: "half", cpn: "node", 2 * cpn: "2node"}
+    # the largest whole-node core count of the strong and weak series (288 on Vanda) is also called "top"; it may
+    # coincide with another role on a smaller cluster, so it is an extra name, never a replacement
+    TOP = max(c["ranks"] for cid, c in D.cells("strong") if not c.get("placement"))
+
+    def rnames(P):
+        """The role names of a core count (with "top" for the largest), or the count itself."""
+        out = ([role[P]] if P in role else []) + (["top"] if P == TOP else [])
+        return out or [str(P)]
 
     def names(P):
-        return [str(P)] + ([role[P]] if P in role else [])
+        return [str(P)] + [x for x in rnames(P) if x != str(P)]
 
     # ---- Poisson strong and weak, per core count recorded
     for group, tag, reqs in (("strong", "pst", ["E3"]), ("weak", "pwk", ["E4"])):
@@ -1475,7 +1522,7 @@ def partial_values(out, results):
                         else:
                             need(key + ".E", reqs, w, lambda: fx(t1 / tp, 2))
                         need(key + ".T", reqs, w, lambda: sig(tp, 3))
-                for P, nm in role.items():  # a role this cluster's plan has no run for (Atlas: no second node)
+                for P, nm in list(role.items()) + [(TOP, "top")]:  # a role this cluster's plan has no run for
                     if P not in cs:
                         key = "%s.%d.%s.%s" % (tag, d, cg, nm)
                         why = "no %d-core %s run in the %s plan" % (P, group, D.plan["plan"])
@@ -1494,12 +1541,14 @@ def partial_values(out, results):
                      lambda: fx(1e9 * med(D, cl[P]) * P / (int(D.row0(cl[P])["iters"]) *
                                                            int(D.row0(cl[P])["unknowns"])), 2))
             if group == "weak":
-                for P in (cpn, 2 * cpn):
-                    need("pwk.%d.classic.%s.E2" % (d, role[P]), reqs, "; ".join(D.waiting(group)),
-                         lambda: fx(med(D, cl[2]) / med(D, cl[P]), 2))
+                for P in sorted(set((cpn, 2 * cpn, TOP))):
+                    for nm in rnames(P):
+                        need("pwk.%d.classic.%s.E2" % (d, nm), reqs, "; ".join(D.waiting(group)),
+                             lambda: fx(med(D, cl[2]) / med(D, cl[P]), 2))
             if group == "strong":
-                for a, b in ((cpn // 4, cpn // 2), (cpn // 2, cpn), (cpn, 2 * cpn)):
-                    need("pst.%d.classic.gain.%s.%s" % (d, role[a], role[b]), reqs, "; ".join(D.waiting(group)),
+                for a, b, nb in ((cpn // 4, cpn // 2, "half"), (cpn // 2, cpn, "node"), (cpn, 2 * cpn, "2node"),
+                                 (2 * cpn, TOP, "top")):
+                    need("pst.%d.classic.gain.%s.%s" % (d, role[a], nb), reqs, "; ".join(D.waiting(group)),
                          lambda: fx(med(D, cl[a]) / med(D, cl[b]), 2))
             else:
                 need("pwk.%d.classic.ratio.2node.node" % d, reqs, "; ".join(D.waiting(group)),
@@ -1508,19 +1557,34 @@ def partial_values(out, results):
     # mean over ranks), strong classic runs
     for d in (2, 3):
         cs = dict((c["ranks"], cid) for cid, c in D.cells("strong", dim=d, cg="classic", halo="blocking"))
-        for P in (2, cpn, 2 * cpn):
-            nm = role.get(P, str(P))
+        for P in sorted(set((2, cpn, 2 * cpn, TOP))):
             ms = lambda col: 1e3 * med(D, cs[P], col) / int(D.row0(cs[P])["iters"])  # noqa: E731
-            need("pcm.%d.classic.%s.redms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
-                 lambda: fx(ms("t_reduce"), 2))
-            need("pcm.%d.classic.%s.imbms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
-                 lambda: fx(ms("t_compute_max") - ms("t_compute"), 2))
-    # one-node method comparison: where the time of the 3D decompositions goes (classic CG, blocking exchange)
-    for dc in (1, 2, 3):
-        cs = [cid for cid, c in D.cells("variants", dim=3, decomp=dc, cg="classic", halo="blocking", ranks=cpn)]
-        for col, nm in (("t_halo", "halo"), ("t_reduce", "red"), ("t_compute", "comp")):
-            need("var.3.node.d%d.%s" % (dc, nm), ["E8"], "; ".join(D.waiting("variants")),
-                 lambda: fx(1e3 * med(D, cs[0], col) / int(D.row0(cs[0])["iters"]), 2))
+            for nm in rnames(P):
+                need("pcm.%d.classic.%s.redms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
+                     lambda: fx(ms("t_reduce"), 2))
+                need("pcm.%d.classic.%s.imbms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
+                     lambda: fx(ms("t_compute_max") - ms("t_compute"), 2))
+    # method comparison: where the time of the 3D decompositions goes (classic CG, blocking exchange), one node and
+    # the largest count
+    vtop = max(c["ranks"] for cid, c in D.cells("variants"))
+    for P, tag in ((cpn, "node"), (vtop, "top")):
+        for dc in (1, 2, 3):
+            cs = [cid for cid, c in D.cells("variants", dim=3, decomp=dc, cg="classic", halo="blocking", ranks=P)]
+            for col, nm in (("t_halo", "halo"), ("t_reduce", "red"), ("t_compute", "comp")):
+                need("var.3.%s.d%d.%s" % (tag, dc, nm), ["E8"], "; ".join(D.waiting("variants")),
+                     lambda: fx(1e3 * med(D, cs[0], col) / int(D.row0(cs[0])["iters"]), 2))
+        vt = {}
+        for cid, c in D.cells("variants", ranks=P):
+            if cid in D.cell_rows:
+                vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = med(D, cid)
+        gains = [vt[(d, dc, cg, "blocking")] / vt[(d, dc, cg, "overlap")] - 1 for (d, dc, cg, h) in vt
+                 if h == "overlap" and (d, dc, cg, "blocking") in vt]
+        need("var.%s.ovl.gain" % tag, ["E8"], "variants", lambda: fx(100 * max(gains), 1) + "\\,\\%"
+             if gains else None)
+        need("var.%s.ovl.loss" % tag, ["E8"], "variants", lambda: fx(-100 * min(gains), 1) + "\\,\\%"
+             if gains else None)
+        need("var.3.%s.slab" % tag, ["E8"], "variants", lambda: fx(vt[(3, 1, "classic", "blocking")] /
+                                                                    vt[(3, 2, "classic", "blocking")], 2))
     vt = {}
     for cid, c in D.cells("variants", ranks=cpn):
         if cid in D.cell_rows:
@@ -1539,9 +1603,9 @@ def partial_values(out, results):
     for d in (2, 3):
         for cg, halo in (("classic", "blocking"), ("pipelined", "overlap")):
             cs = dict((c["ranks"], cid) for cid, c in D.cells("strong", dim=d, cg=cg, halo=halo))
-            for P in (cpn, 2 * cpn):
+            for P, rn in [(P, rn) for P in sorted(set((cpn, 2 * cpn, TOP))) for rn in rnames(P)]:
                 for col, nm in (("t_halo", "halo"), ("t_reduce", "red"), ("t_compute", "comp")):
-                    need("pcm.%d.%s.%s.%s" % (d, cg, role[P], nm), ["E5"], "; ".join(D.waiting("strong")),
+                    need("pcm.%d.%s.%s.%s" % (d, cg, rn, nm), ["E5"], "; ".join(D.waiting("strong")),
                          lambda: fx(100 * med(D, cs[P], col) / med(D, cs[P]), 1) + "\\,\\%")
     put("node.q", cpn // 4, ["E5"])
     # (the shared-node placement is described by spread.sent, spread.cap and spread.tabnote)
@@ -1580,8 +1644,8 @@ def partial_values(out, results):
         for cg in ("classic", "pipelined"):
             cs = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg=cg, threads=1))
             t1 = med(G, cs.get(1), "t_solve")
-            for P in (cpn, 2 * cpn):
-                key = "pgs.%s.%s.%s" % (ds, cg, role[P])
+            for P, rn in [(P, rn) for P in sorted(set((cpn, 2 * cpn, TOP))) for rn in rnames(P)]:
+                key = "pgs.%s.%s.%s" % (ds, cg, rn)
                 need(key + ".S", ["E3"], w, lambda: fx(t1 / med(G, cs[P], "t_solve"), 1))
                 need(key + ".E", ["E3"], w, lambda: fx(t1 / med(G, cs[P], "t_solve") / P, 2))
                 need(key + ".T", ["E3"], w, lambda: sig(med(G, cs[P], "t_solve"), 3))
@@ -1592,8 +1656,8 @@ def partial_values(out, results):
                  lambda: fx(med(G, cs[2 * cpn], "t_solve") / med(G, cs[cpn], "t_solve"), 2))
         cl = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg="classic", threads=1))
         pi = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg="pipelined", threads=1))
-        for P in (cpn, 2 * cpn):
-            need("pgs.%s.pratio.%s" % (ds, role[P]), ["E3"], w,
+        for P, rn in [(P, rn) for P in sorted(set((cpn, 2 * cpn, TOP))) for rn in rnames(P)]:
+            need("pgs.%s.pratio.%s" % (ds, rn), ["E3"], w,
                  lambda: fx(med(G, pi[P], "t_solve") / med(G, cl[P], "t_solve"), 2))
         need("pgs.%s.itratio" % ds, ["E3"], w,
              lambda: fx(float(G.row0(pi[1])["iters"]) / float(G.row0(cl[1])["iters"]), 2))
@@ -1642,10 +1706,72 @@ def partial_values(out, results):
                          fx(float(r["nnz_imbalance"]), 2), sig(med(V, c, "t_solve"), 3)])
     hd = ["dataset", "order, partition", "layout", "cut", "ghosts", "nbrs", "imbal.", "s/system"]
     if rows:
-        table(out, "graphpart72", hd, rows, "lllrrrrr", ["E8", "E12"], partial=bool(V.waiting("graph-variants")),
-              waiting="%d-core variants: %s" % (2 * 2 * cpn, w) if V.waiting("graph-variants") else "")
+        one = [cid for cid, c in V.cells("graph-variants") if c["nodes"] == 1]
+        miss = [cid for cid in one if cid not in V.cell_rows]
+        table(out, "graphpart72", hd, rows, "lllrrrrr", ["E8", "E12"], partial=bool(miss),
+              waiting="%d one-node cells: %s" % (len(miss), w) if miss else "")
     else:
         table(out, "graphpart72", hd, [], "lllrrrrr", ["E8", "E12"], False, w)
+
+    # ---- layouts: the time split of every ranks x threads layout per node count, ms per iteration
+    # named by role, so the text holds on any cluster: pure MPI (one rank per core), one rank per node with every core
+    # as a thread, and two ranks per node; on one node ("n1") and on the largest node count ("top")
+    L = RD.choose(results, ["layout"])
+    lcpn = L.plan["cores_per_node"]
+    lnodes = sorted(set(c["nodes"] for cid, c in L.cells("layout")))
+    lw = "; ".join(L.waiting("layout"))
+    for d in (2, 3):
+        for nn, ntag in ((1, "n1"), (lnodes[-1] if lnodes else 1, "top")):
+            for lname, rpn in (("pure", lcpn), ("single", 1), ("two", 2)):
+                cs = [cid for cid, c in L.cells("layout", dim=d, nodes=nn) if c["ranks"] // c["nodes"] == rpn]
+                for col, nm in (("t_compute", "comp"), ("t_halo", "halo"), ("t_reduce", "red")):
+                    need("lay.%d.%s.%s.%s" % (d, ntag, lname, nm), ["E6"], lw,
+                         lambda: fx(1e3 * L.med(cs[0], col) / int(L.row0(cs[0])["iters"]), 2))
+    # ---- GPUs: one against two, and the halo time of the two-GPU runs
+    Gd = RD.choose(results, ["gpu"])
+    for d in (2, 3):
+        g = dict((c["gpus"], cid) for cid, c in Gd.cells("gpu", dim=d) if cid in Gd.cell_rows)
+        need("gpu.%d.two.gain" % d, ["E7"], "gpu", lambda: fx(Gd.med(g[1]) / Gd.med(g[2]), 2))
+        need("gpu.%d.two.halo" % d, ["E7"], "gpu", lambda: fx(1e3 * Gd.med(g[2], "t_halo") /
+                                                              int(Gd.row0(g[2])["iters"]), 2))
+        need("gpu.%d.two.comp" % d, ["E7"], "gpu", lambda: fx(1e3 * Gd.med(g[2], "t_compute") /
+                                                              int(Gd.row0(g[2])["iters"]), 2))
+    put("spec.gpu.vsnode", fx(SPEC["gpu.bw_gbs"] / (2 * SPEC["cpu.channels"] * 8 * SPEC["cpu.mts"] / 1000.0), 2),
+        ["E7"])
+
+    # ---- graph methods at the largest core count at which every combination is recorded for that graph
+    for ds in GP.STRONG_DATASETS:
+        counts = sorted(set(c["ranks"] * c["threads"] for cid, c in V.cells("graph-variants", dataset=ds)))
+        full = [n for n in counts if all(cid in V.cell_rows for cid, c in V.cells("graph-variants", dataset=ds)
+                                         if c["ranks"] * c["threads"] == n)]
+        top = full[-1] if full else None
+
+        def tcell(order="natural", part="nnz", ex="neighbor", cg="classic", th=1):
+            cs = [cid for cid, c in V.cells("graph-variants", dataset=ds, order=order, part=part, exchange=ex, cg=cg,
+                                              threads=th) if c["ranks"] * c["threads"] == top]
+            return cs[0] if cs and cs[0] in V.cell_rows else None
+
+        def tts(**kw):
+            return med(V, tcell(**kw), "t_solve")
+        key = "gt.%s" % ds
+        lays = sorted((tts(th=c["threads"]), c["ranks"] // c["nodes"], c["threads"]) for cid, c in
+                      V.cells("graph-variants", dataset=ds, order="natural", part="nnz", exchange="neighbor",
+                              cg="classic") if top and c["threads"] > 1 and c["ranks"] * c["threads"] == top)
+        need(key + ".top", ["E8"], w, lambda: top)
+        need(key + ".T", ["E8"], w, lambda: sig(tts(), 3))
+        need(key + ".hyb", ["E8", "E6"], w, lambda: "%d$\\times$%d per node" % (lays[0][1], lays[0][2]))
+        need(key + ".hyb.T", ["E8", "E6"], w, lambda: sig(lays[0][0], 3))
+        need(key + ".hyb.gain", ["E8", "E6"], w, lambda: fx(tts() / lays[0][0], 2))
+        need(key + ".hyb.vsnode", ["E8", "E6"], w, lambda: fx(ts() / lays[0][0], 2) if False else
+             fx(med(V, [cid for cid, c in V.cells("graph-variants", dataset=ds, order="natural", part="nnz",
+                                                  exchange="neighbor", cg="classic", threads=1, nodes=1)
+                        if c["ranks"] == cpn][0], "t_solve") / lays[0][0], 2))
+        need(key + ".hyb.nbrs", ["E8"], w, lambda: grp(V.row0(tcell(th=lays[0][2]))["neighbors_max"]))
+        need(key + ".nbrs", ["E8"], w, lambda: grp(V.row0(tcell())["neighbors_max"]))
+        need(key + ".bfs", ["E8", "E12"], w, lambda: fx(tts(order="bfs") / tts(), 1))
+        need(key + ".bfs.a2a", ["E8", "E12"], w, lambda: fx(tts(order="bfs", ex="alltoallv") / tts(), 2))
+        need(key + ".pipe", ["E8"], w, lambda: fx(tts(cg="pipelined") / tts(), 2))
+        need(key + ".rows", ["E8", "E12"], w, lambda: fx(tts(part="rows") / tts(), 2))
 
     # ---- graph serial: BFS against natural order per dataset; sweep extras
     S = RD.choose(results, ["graph-serial"])

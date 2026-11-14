@@ -1001,256 +1001,256 @@
    "waiting_for": ""
   },
   "st.2.classic.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.classic.Stop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.classic.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.pipelined.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.pipelined.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.pipelined.Stop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.pipelined.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.2.pipelined.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.classic.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.classic.Stop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.classic.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.pipelined.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.pipelined.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.pipelined.Stop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.pipelined.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "st.3.pipelined.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.classic.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.classic.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.pipelined.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.pipelined.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.pipelined.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.2.pipelined.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.classic.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.classic.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.pipelined.Ttop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.pipelined.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.pipelined.Etop": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.3.pipelined.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "spread.sent": {
    "filled": true,
@@ -1285,131 +1285,99 @@
    "waiting_for": ""
   },
   "meas.top": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3",
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "meas.where": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3",
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "meas.both": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.top.n2": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "wk.top.n3": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "scale.note": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3",
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "scale.maxcores": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3",
     "E4"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.2.halo": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.2.red": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.2.comp": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.3.halo": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.3.red": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "cm.3.comp": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "var.2.top.best": {
-   "filled": false,
-   "reqs": [
-    "E5",
-    "E8"
-   ],
-   "waiting_for": "vanda variants: 20 of 40 runs recorded"
-  },
-  "var.2.top.spread": {
-   "filled": false,
-   "reqs": [
-    "E5",
-    "E8"
-   ],
-   "waiting_for": "vanda variants: 20 of 40 runs recorded"
-  },
-  "var.3.top.best": {
-   "filled": false,
-   "reqs": [
-    "E5",
-    "E8"
-   ],
-   "waiting_for": "vanda variants: 20 of 40 runs recorded"
-  },
-  "var.3.top.spread": {
-   "filled": false,
-   "reqs": [
-    "E5",
-    "E8"
-   ],
-   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+   "waiting_for": ""
   },
   "var.2.node.best": {
    "filled": true,
@@ -1420,6 +1388,22 @@
    "waiting_for": ""
   },
   "var.2.node.spread": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.2.top.best": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.2.top.spread": {
    "filled": true,
    "reqs": [
     "E5",
@@ -1443,6 +1427,22 @@
    ],
    "waiting_for": ""
   },
+  "var.3.top.best": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.spread": {
+   "filled": true,
+   "reqs": [
+    "E5",
+    "E8"
+   ],
+   "waiting_for": ""
+  },
   "lay.2.1.best": {
    "filled": true,
    "reqs": [
@@ -1458,18 +1458,18 @@
    "waiting_for": ""
   },
   "lay.2.top.best": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "lay.2.top.spread": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "lay.3.1.best": {
    "filled": true,
@@ -1486,25 +1486,25 @@
    "waiting_for": ""
   },
   "lay.3.top.best": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "lay.3.top.spread": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "lay.top.sent": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "gpu.2.cpu.what": {
    "filled": true,
@@ -2259,324 +2259,353 @@
    ],
    "waiting_for": ""
   },
-  "gr.st.com-lj.classic.S": {
-   "filled": false,
+  "gr.st.com-lj.top": {
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.classic.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "gr.st.com-lj.classic.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.st.com-lj.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.st.com-lj.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-lj.pipelined.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-lj.pipelined.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-lj.pipelined.T1": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-lj.pipelined.Enode": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-lj.halo": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-lj.red": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-lj.ghosts": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-lj.nbrs": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.pipelined.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.pipelined.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.pipelined.T1": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-lj.pipelined.Enode": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-orkut.top": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "gr.st.com-orkut.classic.S": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.st.com-orkut.classic.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.st.com-orkut.classic.T1": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.st.com-orkut.classic.Enode": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-orkut.pipelined.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-orkut.pipelined.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-orkut.pipelined.T1": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
-  },
-  "gr.st.com-orkut.pipelined.Enode": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-orkut.halo": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-orkut.red": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-orkut.ghosts": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "gr.comm.com-orkut.nbrs": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
-  "gr.st.top": {
-   "filled": false,
+  "gr.st.com-orkut.pipelined.S": {
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "gr.st.com-orkut.pipelined.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-orkut.pipelined.T1": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.com-orkut.pipelined.Enode": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.top": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "gr.st.note": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "gr.cut.com-lj.natural.rows": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-lj.natural.rows": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.cut.com-lj.natural.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-lj.natural.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.cut.com-lj.bfs.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-lj.bfs.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-lj.best": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-lj.spread": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-lj.top": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.cut.com-orkut.natural.rows": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-orkut.natural.rows": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.cut.com-orkut.natural.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-orkut.natural.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.cut.com-orkut.bfs.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.imb.com-orkut.bfs.nnz": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-orkut.best": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-orkut.spread": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "gr.var.com-orkut.top": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
+  },
+  "gr.var.note": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
   },
   "node.sockets": {
    "filled": true,
@@ -3089,47 +3118,47 @@
    ],
    "waiting_for": ""
   },
-  "pst.2.classic.256.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.2.classic.256.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.2.classic.256.T": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.2.classic.288.S": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.2.classic.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.2.classic.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.2.classic.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.2.pipelined.1.S": {
    "filled": true,
@@ -3404,47 +3433,47 @@
    ],
    "waiting_for": ""
   },
-  "pst.2.pipelined.256.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.2.pipelined.256.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.2.pipelined.256.T": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.2.pipelined.288.S": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.2.pipelined.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.2.pipelined.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.pipelined.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.2.pratio.1": {
    "filled": true,
@@ -3537,19 +3566,19 @@
    ],
    "waiting_for": ""
   },
-  "pst.2.pratio.256": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.2.pratio.288": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.2.pratio.top": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.2.classic.one.ns": {
    "filled": true,
@@ -3580,6 +3609,13 @@
    "waiting_for": ""
   },
   "pst.2.classic.gain.node.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.2.classic.gain.2node.top": {
    "filled": true,
    "reqs": [
     "E3"
@@ -3859,47 +3895,47 @@
    ],
    "waiting_for": ""
   },
-  "pst.3.classic.256.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.3.classic.256.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.3.classic.256.T": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.3.classic.288.S": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.3.classic.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.3.classic.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.3.classic.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.3.pipelined.1.S": {
    "filled": true,
@@ -4174,47 +4210,47 @@
    ],
    "waiting_for": ""
   },
-  "pst.3.pipelined.256.S": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.3.pipelined.256.E": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
-  "pst.3.pipelined.256.T": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.3.pipelined.288.S": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.3.pipelined.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pst.3.pipelined.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.pipelined.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.3.pratio.1": {
    "filled": true,
@@ -4307,19 +4343,19 @@
    ],
    "waiting_for": ""
   },
-  "pst.3.pratio.256": {
-   "filled": false,
-   "reqs": [
-    "E3"
-   ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
-  },
   "pst.3.pratio.288": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pst.3.pratio.top": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
   },
   "pst.3.classic.one.ns": {
    "filled": true,
@@ -4350,6 +4386,13 @@
    "waiting_for": ""
   },
   "pst.3.classic.gain.node.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pst.3.classic.gain.2node.top": {
    "filled": true,
    "reqs": [
     "E3"
@@ -4538,33 +4581,33 @@
    ],
    "waiting_for": ""
   },
-  "pwk.2.classic.256.E": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
-  "pwk.2.classic.256.T": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.2.classic.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pwk.2.classic.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.2.classic.top.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.top.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.2.pipelined.1.E": {
    "filled": true,
@@ -4748,33 +4791,33 @@
    ],
    "waiting_for": ""
   },
-  "pwk.2.pipelined.256.E": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
-  "pwk.2.pipelined.256.T": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.2.pipelined.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pwk.2.pipelined.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.top.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.pipelined.top.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.2.pratio.1": {
    "filled": true,
@@ -4867,19 +4910,19 @@
    ],
    "waiting_for": ""
   },
-  "pwk.2.pratio.256": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.2.pratio.288": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.2.pratio.top": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.2.classic.one.ns": {
    "filled": true,
@@ -4903,6 +4946,13 @@
    "waiting_for": ""
   },
   "pwk.2.classic.2node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.2.classic.top.E2": {
    "filled": true,
    "reqs": [
     "E4"
@@ -5098,33 +5148,33 @@
    ],
    "waiting_for": ""
   },
-  "pwk.3.classic.256.E": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
-  "pwk.3.classic.256.T": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.3.classic.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pwk.3.classic.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.3.classic.top.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.top.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.3.pipelined.1.E": {
    "filled": true,
@@ -5308,33 +5358,33 @@
    ],
    "waiting_for": ""
   },
-  "pwk.3.pipelined.256.E": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
-  "pwk.3.pipelined.256.T": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.3.pipelined.288.E": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "pwk.3.pipelined.288.T": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.top.E": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.pipelined.top.T": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.3.pratio.1": {
    "filled": true,
@@ -5427,19 +5477,19 @@
    ],
    "waiting_for": ""
   },
-  "pwk.3.pratio.256": {
-   "filled": false,
-   "reqs": [
-    "E4"
-   ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
-  },
   "pwk.3.pratio.288": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
+  },
+  "pwk.3.pratio.top": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
   },
   "pwk.3.classic.one.ns": {
    "filled": true,
@@ -5463,6 +5513,13 @@
    "waiting_for": ""
   },
   "pwk.3.classic.2node.E2": {
+   "filled": true,
+   "reqs": [
+    "E4"
+   ],
+   "waiting_for": ""
+  },
+  "pwk.3.classic.top.E2": {
    "filled": true,
    "reqs": [
     "E4"
@@ -5518,6 +5575,20 @@
    ],
    "waiting_for": ""
   },
+  "pcm.2.classic.top.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.top.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
   "pcm.3.classic.2.redms": {
    "filled": true,
    "reqs": [
@@ -5554,6 +5625,20 @@
    "waiting_for": ""
   },
   "pcm.3.classic.2node.imbms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.top.redms": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.top.imbms": {
    "filled": true,
    "reqs": [
     "E5"
@@ -5623,6 +5708,20 @@
    ],
    "waiting_for": ""
   },
+  "var.node.ovl.gain": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.node.ovl.loss": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
   "var.3.node.slab": {
    "filled": true,
    "reqs": [
@@ -5630,14 +5729,91 @@
    ],
    "waiting_for": ""
   },
-  "var.3.node.blocks": {
+  "var.3.top.d1.halo": {
    "filled": true,
    "reqs": [
     "E8"
    ],
    "waiting_for": ""
   },
-  "var.node.ovl.gain": {
+  "var.3.top.d1.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d1.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d2.halo": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d2.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d2.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d3.halo": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d3.red": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.d3.comp": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.top.ovl.gain": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.top.ovl.loss": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.top.slab": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "var.3.node.blocks": {
    "filled": true,
    "reqs": [
     "E8"
@@ -5693,6 +5869,27 @@
    ],
    "waiting_for": ""
   },
+  "pcm.2.classic.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.classic.top.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
   "pcm.2.pipelined.node.halo": {
    "filled": true,
    "reqs": [
@@ -5729,6 +5926,27 @@
    "waiting_for": ""
   },
   "pcm.2.pipelined.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.2.pipelined.top.comp": {
    "filled": true,
    "reqs": [
     "E5"
@@ -5777,6 +5995,27 @@
    ],
    "waiting_for": ""
   },
+  "pcm.3.classic.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.classic.top.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
   "pcm.3.pipelined.node.halo": {
    "filled": true,
    "reqs": [
@@ -5813,6 +6052,27 @@
    "waiting_for": ""
   },
   "pcm.3.pipelined.2node.comp": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pcm.3.pipelined.top.comp": {
    "filled": true,
    "reqs": [
     "E5"
@@ -6170,6 +6430,41 @@
    ],
    "waiting_for": ""
   },
+  "pgs.com-lj.classic.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.classic.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
   "pgs.com-lj.classic.slowdown": {
    "filled": true,
    "reqs": [
@@ -6247,6 +6542,41 @@
    ],
    "waiting_for": ""
   },
+  "pgs.com-lj.pipelined.top.S": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.top.E": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.top.T": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.top.halo": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pipelined.top.red": {
+   "filled": true,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": ""
+  },
   "pgs.com-lj.pipelined.slowdown": {
    "filled": true,
    "reqs": [
@@ -6262,6 +6592,13 @@
    "waiting_for": ""
   },
   "pgs.com-lj.pratio.2node": {
+   "filled": true,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": ""
+  },
+  "pgs.com-lj.pratio.top": {
    "filled": true,
    "reqs": [
     "E3"
@@ -6345,6 +6682,41 @@
    ],
    "waiting_for": ""
   },
+  "pgs.com-orkut.classic.top.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.classic.top.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.classic.top.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.classic.top.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.classic.top.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
   "pgs.com-orkut.classic.slowdown": {
    "filled": true,
    "reqs": [
@@ -6422,6 +6794,41 @@
    ],
    "waiting_for": ""
   },
+  "pgs.com-orkut.pipelined.top.S": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.pipelined.top.E": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.pipelined.top.T": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.pipelined.top.halo": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
+  "pgs.com-orkut.pipelined.top.red": {
+   "filled": false,
+   "reqs": [
+    "E5"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
+  },
   "pgs.com-orkut.pipelined.slowdown": {
    "filled": true,
    "reqs": [
@@ -6442,6 +6849,13 @@
     "E3"
    ],
    "waiting_for": ""
+  },
+  "pgs.com-orkut.pratio.top": {
+   "filled": false,
+   "reqs": [
+    "E3"
+   ],
+   "waiting_for": "vanda graph-strong: 34 of 38 runs recorded"
   },
   "pgs.com-orkut.itratio": {
    "filled": true,
@@ -6705,6 +7119,489 @@
    "reqs": [
     "E5",
     "E8"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.pure.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.pure.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.pure.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.single.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.single.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.single.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.n1.two.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.pure.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.pure.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.pure.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.single.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.single.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.single.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.2.top.two.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.pure.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.pure.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.pure.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.single.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.single.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.single.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.n1.two.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.pure.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.pure.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.pure.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.single.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.single.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.single.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "lay.3.top.two.red": {
+   "filled": true,
+   "reqs": [
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.two.gain": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.2.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.two.gain": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.two.halo": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gpu.3.two.comp": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "spec.gpu.vsnode": {
+   "filled": true,
+   "reqs": [
+    "E7"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.top": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.T": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.hyb.T": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.hyb.gain": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.hyb.vsnode": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.hyb.nbrs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.nbrs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.bfs.a2a": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.pipe": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-lj.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.top": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.T": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.hyb": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.hyb.T": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.hyb.gain": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.hyb.vsnode": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E6"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.hyb.nbrs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.nbrs": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.bfs": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.bfs.a2a": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.pipe": {
+   "filled": true,
+   "reqs": [
+    "E8"
+   ],
+   "waiting_for": ""
+  },
+  "gt.com-orkut.rows": {
+   "filled": true,
+   "reqs": [
+    "E8",
+    "E12"
    ],
    "waiting_for": ""
   },
@@ -7919,54 +8816,54 @@
    "waiting_for": ""
   },
   "strong2": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "strong3": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "weak2": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "weak3": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E4"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "comm": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "variants": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E5",
     "E8"
    ],
-   "waiting_for": "vanda variants: 20 of 40 runs recorded"
+   "waiting_for": ""
   },
   "layout": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E6"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded"
+   "waiting_for": ""
   },
   "gpu": {
    "filled": true,
@@ -7991,27 +8888,27 @@
    "waiting_for": ""
   },
   "graphstrong": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E3"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded"
+   "waiting_for": ""
   },
   "graphpart": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "graphpart72": {
-   "filled": false,
+   "filled": true,
    "reqs": [
     "E8",
     "E12"
    ],
-   "waiting_for": "288-core variants: vanda graph-variants: 40 of 80 runs recorded"
+   "waiting_for": ""
   },
   "graphserial": {
    "filled": true,
@@ -8046,58 +8943,58 @@
    "meta": "figures/fig_serial_tol.meta.json"
   },
   "fig_strong": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E3",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_strong.meta.json"
   },
   "fig_weak": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E4",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda weak: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_weak.meta.json"
   },
   "fig_efficiency": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E3",
     "E4",
     "E14"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded; vanda weak: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_efficiency.meta.json"
   },
   "fig_comm": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E5",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda strong: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_comm.meta.json"
   },
   "fig_layout": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E6",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda layout: 10 of 20 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_layout.meta.json"
   },
   "fig_graph_serial": {
@@ -8113,37 +9010,37 @@
    "meta": "figures/fig_graph_serial.meta.json"
   },
   "fig_graph_strong": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E3",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_graph_strong.meta.json"
   },
   "fig_graph_comm": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E5",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda graph-strong: 32 of 40 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_graph_comm.meta.json"
   },
   "fig_graph_variants": {
-   "filled": false,
-   "partial": true,
+   "filled": true,
+   "partial": false,
    "reqs": [
     "E8",
     "E12",
     "E10",
     "E14"
    ],
-   "waiting_for": "vanda graph-variants: 40 of 80 runs recorded",
+   "waiting_for": "",
    "meta": "figures/fig_graph_variants.meta.json"
   },
   "fig_graph_sweep": {
@@ -8162,14 +9059,14 @@
  "validation_source": "results/validation/vanda/20261112T063938Z.json",
  "requirements": {
   "E3": {
-   "filled": false,
-   "kind": "waiting",
-   "waiting_for": "vanda strong: 32 of 40 runs recorded"
+   "filled": true,
+   "kind": "met",
+   "waiting_for": ""
   },
   "E4": {
-   "filled": false,
-   "kind": "waiting",
-   "waiting_for": "vanda weak: 32 of 40 runs recorded"
+   "filled": true,
+   "kind": "met",
+   "waiting_for": ""
   }
  },
  "graph_validation_source": "results/validation/vanda/20261112T072321Z-graph.json",

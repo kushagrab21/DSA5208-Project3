@@ -1,13 +1,13 @@
 {
  "figure": "fig_serial_tol",
  "script": "scripts/figures.py",
- "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "script_sha256": "5e2d92ca494e0183bd033ad084f4b5fb8124beeb567874597bbf45a197bccf5e",
  "plan": "vanda",
  "cluster": "vanda",
  "groups": [
   "serial-tol"
  ],
- "utc": "2026-11-13T07:29:30Z",
+ "utc": "2026-11-14T06:28:11Z",
  "status": "filled",
  "axes": [
   {
@@ -49,5 +49,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "eb8b0a8a145b5aa7f07e649beb6b6ff5568d4a8b7f2d64f75c6fb5c24c5e0fb9"
+ "image_sha256": "7cd9377149b89ecb988e08b8c037fbc5553823b085e7ee30f798d76926f6fc65"
 }

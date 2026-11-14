@@ -1,14 +1,35 @@
 {
  "figure": "fig_graph_variants",
  "script": "scripts/figures.py",
- "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "script_sha256": "5e2d92ca494e0183bd033ad084f4b5fb8124beeb567874597bbf45a197bccf5e",
  "plan": "vanda",
  "cluster": "vanda",
  "groups": [
   "graph-variants"
  ],
- "utc": "2026-11-13T07:29:32Z",
- "status": "partial",
+ "utc": "2026-11-14T06:28:12Z",
+ "outstanding": [
+  "g-com-orkut-bfs-nnz-alltoallv-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-bfs-nnz-neighbor-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-bfs-nnz-neighbor-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-bfs-nnz-overlap-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-bfs-nnz-overlap-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-alltoallv-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-alltoallv-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-neighbor-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-neighbor-clas-a1-s5-k1-r32x9-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-neighbor-clas-a1-s5-k1-r8x36-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-neighbor-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-overlap-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-nnz-overlap-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-alltoallv-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-alltoallv-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-neighbor-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-neighbor-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-overlap-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
+  "g-com-orkut-natural-rows-overlap-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2"
+ ],
+ "status": "filled",
  "axes": [
   {
    "panel": "com-lj",
@@ -35,8 +56,13 @@
    "scale": "linear"
   }
  ],
- "rows": 120,
+ "rows": 183,
  "sources": [
+  {
+   "path": "results/vanda/1546819.stdct-mgmt-02.graph.csv",
+   "sha256": "8c220fa57a43cecffb6bba7590ba0b63c4bdcf36f06131b9339ee11a50bda1be",
+   "rows_used": 63
+  },
   {
    "path": "results/vanda/1546893.stdct-mgmt-02.graph.csv",
    "sha256": "15357ef4dfb1872ee827b0ce4a370dfa22e58af148299d0fe8c6899625801e31",
@@ -54,8 +80,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "399c278e3ce6a2f37bf00d9fd1fec40e60863ae90b6c5de1b351f73b2bd70f87",
- "waiting_for": [
-  "vanda graph-variants: 40 of 80 runs recorded"
- ]
+ "image_sha256": "6f7471b8c42513a0c4b26073d9e6c2694e5806a80b4b09dbd898434fe6bc1796"
 }

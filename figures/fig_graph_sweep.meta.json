@@ -1,13 +1,13 @@
 {
  "figure": "fig_graph_sweep",
  "script": "scripts/figures.py",
- "script_sha256": "2a77bed89a924fdb8758682d185a0435a31bc41bd5fe3f1681f07410e60cd401",
+ "script_sha256": "5e2d92ca494e0183bd033ad084f4b5fb8124beeb567874597bbf45a197bccf5e",
  "plan": "vanda",
  "cluster": "vanda",
  "groups": [
   "graph-sweep"
  ],
- "utc": "2026-11-13T07:29:32Z",
+ "utc": "2026-11-14T06:28:12Z",
  "status": "filled",
  "axes": [
   {
@@ -97,5 +97,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "b974f01b9a12e7676772c1f9739a59a3ccd82a13a03775fa159d1c40567ed301"
+ "image_sha256": "0d2ec4470d9227a5074661d2548b16692263cf6cd174fb4738c1dc2543549d00"
 }
