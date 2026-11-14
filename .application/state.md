@@ -300,7 +300,7 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   nodes, one of them GPU node GN-A40-066 with the same CPUs and memory). vanda-graph-4node 1546819 exceeded its walltime
   (21 of 40 cells: every com-LiveJournal cell, one com-Orkut cell). vanda-256spread 1549987 exceeded its walltime
   (Poisson and com-LiveJournal shared-node cells recorded, both com-Orkut ones missing).
-- Amendment graph-rerun-2026-11-14 (scripts/amend_vanda_graph_rerun.py, committed 2cd... see git log): the 19 missing
+- Amendment graph-rerun-2026-11-14 (scripts/amend_vanda_graph_rerun.py, committed as e15eeda): the 19 missing
   com-Orkut cells move to vanda-graph-4node-rerun (4 x 72, place=excl), strong cells first, breadth-first cells last.
   Estimate 17,601 s from measured com-LiveJournal cells at 288 x the com-Orkut/com-LiveJournal ratio at 72 (+10 s each,
   +300 s job overhead), walltime 9:50:00 (x2), 1,408 core-h expected, 2,816 at most. Rerun reason per cell. NOT
