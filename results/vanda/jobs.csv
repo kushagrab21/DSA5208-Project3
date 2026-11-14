@@ -74,3 +74,12 @@ pbs_jobid,plan,job,event,utc,nodes,ncpus_per_node,gpus_per_node,host,commit,cell
 1546583.stdct-mgmt-02,vanda,vanda-gpu,final,2026-11-13T04:43:36Z,1,72,2,,,,,,,F,0,0:11:51,14.22,qstat; 12/6 rows
 1546583.stdct-mgmt-02,vanda,vanda-gpu,start,2026-11-12T22:47:09Z,1,72,2,GN-A40-097,,,,,,,,,,
 1546583.stdct-mgmt-02,vanda,vanda-gpu,end,2026-11-12T22:58:59Z,1,72,2,GN-A40-097,,,,,,,,,,
+1546582.stdct-mgmt-02,vanda,vanda-4node,final,2026-11-14T06:05:20Z,4,72,0,,,,,,,F,0,0:03:43,17.84,qstat; 96/96 rows
+1546819.stdct-mgmt-02,vanda,vanda-graph-4node,final,2026-11-14T06:05:20Z,4,72,0,,,,,,,F,-29,1:10:22,337.76,qstat; 63/120 rows; FAILED (exit -29); walltime exceeded; missing records
+1549987.stdct-mgmt-02,vanda,vanda-256spread,final,2026-11-14T06:05:20Z,8,32,0,,,,,,,F,-29,0:56:20,240.36,qstat; 32/36 rows; FAILED (exit -29); walltime exceeded; missing records
+1546582.stdct-mgmt-02,vanda,vanda-4node,start,2026-11-14T04:43:48Z,4,72,0,CN-053,,,,,,,,,,
+1549987.stdct-mgmt-02,vanda,vanda-256spread,start,2026-11-14T04:44:16Z,8,32,0,CN-133,,,,,,,,,,
+1546582.stdct-mgmt-02,vanda,vanda-4node,end,2026-11-14T04:47:26Z,4,72,0,CN-053,,,,,,,,,,
+1546819.stdct-mgmt-02,vanda,vanda-graph-4node,start,2026-11-14T04:47:39Z,4,72,0,CN-053,,,,,,,,,,
+1549987.stdct-mgmt-02,vanda,vanda-256spread,end,2026-11-14T05:40:31Z,8,32,0,CN-133,,,,,,,,,,
+1546819.stdct-mgmt-02,vanda,vanda-graph-4node,end,2026-11-14T05:57:51Z,4,72,0,CN-053,,,,,,,,,,
