@@ -347,9 +347,6 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   references, appendix from p. 30. One page 17 % empty, every float within a page of its first mention.
 
 ## Next step
-Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
-vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.
-Child (when cluster rows exist): scripts/make_report.sh; language pass on 6, 7, 8.8-8.9, 9 and the Summary; write the
-four interpretation boxes from the tables under the same rules; fix
-whatever requirements_check.py reports; render for the user. Open user decisions: code route (PDF appendix is in
-place; GitHub link optional), first full render acceptance, the Canvas upload.
+Parent: merge the new README section (README step 5, "Add the runs still outstanding", is stale and should go or be
+rewritten), push to the public repository, render for the user's acceptance, then the user's Canvas upload (PDF only,
+by 17 Nov 23:59 SGT). No cluster work is planned: vanda-graph-4node-rerun stays unsubmitted.
