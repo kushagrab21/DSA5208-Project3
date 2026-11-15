@@ -1,0 +1,27 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions. Commit only your paths.
+
+YOUR PREVIOUS TURN (build-task-15.txt) WAS CUT OFF by a network loss on this Mac ("Can't reach the API server").
+Your work in progress is still in the tree, uncommitted: 10 files, mainly scripts/report_macros.py, report/generated/*
+and report/DSA5208_Project3_Report.tex.
+1. First run `git diff --stat` and read your diff, so you know which of the 30 cold-reader items you had already done.
+   Do not redo or discard the finished work.
+2. Re-read /Users/kushagra/Desktop/final_assignment/.application/build-task-15.txt in full. It is the binding brief, and
+   the 30 findings are pasted in it verbatim. Finish every item in it, the analysis items A-D first. Follow its RETURN
+   section.
+
+TWO ADDITIONS FOR SUBMISSION (the user: "make everything ready for submission")
+3. Section 11: add the public repository as a plain sentence. The code is also at
+   https://github.com/kushagrab21/DSA5208-Project3. The code stays in the PDF appendix too, because the brief allows
+   either.
+4. Section 10, AI declaration: replace the jargon "a coordinating session and a delegated builder session" (the cold reader
+   flagged it as unclear for this reader) with plain words, keeping the user's approved meaning:
+   "We used Claude Code (Anthropic, Claude Opus 5.5), in one session that planned and checked the work and one that wrote
+   the code and the report, to plan the work, write and test the C++ solver and its checks, run the experiments on the
+   NUS HPC clusters, and draft and revise this report, including a paragraph-by-paragraph language revision done by the
+   AI under our direction. We directed the work and are responsible for the content and quality of this submission."
+   Put the same wording in the README's "Declaration of AI use".
+   Do NOT otherwise edit README.md: the parent is merging a new section into it after your turn.
+
+Commit often (after A-D, then after the rest), so another network loss cannot cost the work again.

@@ -309,3 +309,38 @@ Due 17 Nov 2026 23:59 SGT (extended twice for Vanda downtime). The parent is the
 - Turn 13 accepted (d932896): results/, figures, PDF and report/generated tracked; README rewritten; 194 files, ~3.5 MB; secrets 0. Parent: process/ copy via scripts/sync_process_notes.sh.
 - 13 Nov: user: "ok make it public and put it". Scan before publishing: no emails, password values, IPs or third-party names in tree or history. The NUS account name stays (PBS project string, record paths). The user was told and approved public. Repo kushagrab21/DSA5208-Project3 created PUBLIC with full history.
 - 13 Nov: README reordered at the user's request (reproduce first, ASCII architecture diagram, the three 'why' sections cut to one short 'Why the results can be trusted' list near the end, over-verification detail removed). Diagram checked against the generated PBS scripts (only GPU jobs build; CPU timed jobs run the timing gate on the validated binary). Report rebuilt: 82 pp. Pushed.
+- 13 Nov ~17:00 IST: still no >=256-core job started (4node ~29 h, 256spread ~18 h queued; batch_cpu 219 queued). User cannot email via Outlook; offered a Canvas Inbox message instead (the user would send it). Default plan: wait until Sun 16 Nov evening, then final pass on <=144-core data with a plain statement that the runs never left the queue.
+- 13 Nov ~17:30 IST: at the user's request ("use chrome connector and send"), sent the Canvas Inbox message to Anthony Chen only (course DSA5208), subject "Project 3: 256-core jobs on Vanda not starting": status up to 144 cores, two jobs queued since 12/13 Nov; asked (1) a queue or reservation, (2) whether 144 cores is acceptable if the jobs do not start before 17 Nov. Confirmed in the Sent folder. Next: watch the Canvas inbox for his reply.
+- 14 Nov 00:40 IST (03:10 SGT): watcher saw all 3 jobs 'unknown'. Cause: Vanda's PBS server stdct-mgmt-02 refuses connections (qstat: cannot connect to server, errno 15010). The login node works. No new job output since 13 Nov. No maintenance notice in the motd (only a /scratch purge; our files are in ~/p3). Restarted watcher: waits for PBS to return, checking every 10 min for 12 h. Lecture 12: 'If Vanda has more downtime, I will extend the deadline accordingly'.
+- 14 Nov ~00:55 IST: WEB CHECK-IN DONE for SQ 4802 / AI 2382, DEL 13:25 -> SIN 21:55, PNR 7FONNF. Seat 16D (no free seats left; random free seat assigned, no paid add-ons), boarding 12:25, T3. Slip saved as ~/Downloads/3_Checkin_Slip_SQ4802_DEL-SIN_14Nov2026_Seat16D.pdf. The physical boarding pass is collected at the counter (international). Baggage per site: 30 kg check-in, 7 kg cabin. The user typed the FIN and clicked the dangerous-goods Agree (the classifier refused my consent click). SGAC (air arrival, Student's Pass holder): required. Singpass/Myinfo login page is open for the user.
+- 14 Nov 07:33 IST: the PBS watcher fired falsely (its SSH said 'Connection closed', and the grep missed it). Checked once: login OK, PBS still down (qstat errno 15010, about 7 h since 03:10 SGT). New watcher (stricter: needs a real 'batch_cpu <n>' queue line), every 10 min for 16 h.
+- 14 Nov ~08:00 IST: Chrome extension reconnected by opening its options page from the terminal. SGAC (resident form) filled: arrival 14 Nov, name BHATNAGAR KUSHAGRA, DOB 23/06/2003, email bhatnagar.kushagra.m@gmail.com. Left for the user: the FIN, the health answer, and Next then Submit.
+- 14 Nov 08:17 IST: at the user's request, emailed the flight documents to bhatnagar.kushagra.m@gmail.com (from the same account): e-ticket, check-in slip, Student's Pass, IPA letter, passport pages 1-2, plus a flight summary. Confirmed in Sent. SGAC auto-acknowledgement from ICA already in the inbox, so the SGAC was submitted. Temp copies deleted. Browser tabs closed.
+- 14 Nov ~11:30 IST (14:00 SGT): Prof Chen replied on Canvas: batch_cpu is correct; 144 cores is OK if the jobs don't start;
+  "for your 256 core run, please request 4 nodes x 64 cores instead of 8 x 32". PBS back after a ~10 h outage. All three
+  jobs ran: vanda-4node exit 0, 96/96, so strong/weak/variants/layout are complete to 288 cores (329/350 cells overall).
+  graph-4node and 256spread hit walltime (partial). Records fetched and committed. Remaining waiting values: 43 gr.* at 288.
+  Child turn 14 launched (build-task-14.txt): prepare a missing-cells graph rerun (not submitted), make the report read
+  correctly with or without it, final text pass on the 288 data, margins.
+- Turn 14 accepted (e15eeda, ccf37ef, 08d4ec3): report complete to 288 cores. REQUIREMENTS PASS for the first time (0 hand-typed,
+  nothing waiting, all E rows filled). 90 pp, report pp. 1-29, 2.8 cm margins. Scoped claims: "efficiency lost inside the node"
+  kept (3D 0.26 on 1/2/4 nodes); pipelined slower at all counts (kept); communication share grows to 12.4% halo and 15.0%
+  reductions on 4 nodes, 3D (changed). Graph values use the largest complete core count per graph (com-Orkut 144/72).
+  Graph rerun prepared, NOT submitted: vanda-graph-4node-rerun, 19 com-Orkut cells, walltime 9:50, ~1,408 core-h expected
+  (2,816 worst). Five BFS cells take ~13,800 s of the ~17,600 s estimate. Pushed. Cold read of the final text launched (fresh agent).
+  Open for the user: submit the 10 h rerun, a split non-BFS rerun (~2 h), or none (the report is complete without it).
+- 14 Nov ~12:10 IST: user: "yes skip". The graph rerun will NOT be submitted.
+- Final cold read (fresh agent, pp. 1-29): every rubric item findable, no placeholders. 30 items, including: the 288 "none
+  lost between nodes = memory regime" claim contradicted by superlinear computation (4.94x for 4x cores; 588 GB/s per node
+  implied); com-Orkut's 1,024 iterations possibly a cap; pipelined faster at weak P=2; graph serial runs used fixed
+  iterations; unreached vertices vs the CG reach limit. User: "yes send them to the builder". Child turn 15 launched
+  (build-task-15.txt).
+- 15 Nov 13:06: child turn 15 was cut off by a network loss (ENOTFOUND), with partial uncommitted work (10 files). The user: "just complete the git and the report part now and make everything ready for submission". Relaunched as build-task-15b.txt (resume from the diff, finish task 15, add the GitHub link to Section 11, plain AI declaration). The README Q&A draft is in .application/readme_qa_draft.md, to be merged by the parent after the child's turn.
+- 15 Nov ~13:30: child turn 15b accepted (42fdb99, cf622e3, bdbcb23): all 30 cold-reader items resolved.
+  - Item 1: a cache gain between nodes replaces "none lost between nodes" (the conclusion changed).
+  - Item 30: 1,024 is a mean, not a cap.
+  - Item 15: narrowed.
+  - Rounding rule: computed from the printed values.
+  - GitHub link added to Section 11. AI declaration in plain words.
+  Parent: README with the Q&A section (filled from the corrected report) and step 5 replaced by "What was not run".
+  Report rebuilt: REQUIREMENTS PASS, 93 pp, 0 waiting marks. Submission PDF copied to submission/.

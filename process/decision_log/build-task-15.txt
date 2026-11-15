@@ -1,0 +1,172 @@
+ROLE
+Delegated builder (child), DSA5208 Project 3, continuing your session, workspace /Users/kushagra/Desktop/final_assignment/build.
+Same exclusions: no cluster contact, no remotes, no messages, no Canvas. Commit only your paths.
+
+CONTEXT
+- The parent accepted turn 14 (e15eeda, ccf37ef, 08d4ec3). The user decided "skip": vanda-graph-4node-rerun will NOT be
+  submitted. The report stands with com-Orkut at 144/72 cores, as generated. Leave the amendment in the plan as written,
+  but make sure no text promises that the rerun will happen.
+- A cold-reader check followed. A fresh agent read pp. 1-29 only, as the grader would, and recomputed ratios. Its findings
+  are below VERBATIM. The cold reader is a proxy and can be wrong.
+
+TASK: resolve every item under the same binding rules (../assumption_drill/report_language_pass/ASSUMPTIONS.md and
+03_DRILL.md, and the visual-markers drill). For each item:
+- verify it against the records, code or plan first;
+- mark it REAL, PARTLY REAL or NOT REAL;
+- fix the claim, not just its words;
+- fix it in the generator where the text is generated.
+No unmeasured facts. 0 hand-typed numbers. No semicolons.
+
+THE ITEMS THAT COULD CHANGE A CONCLUSION (do these first, with evidence)
+A. Item 1, the superlinear computation from 72 to 288 cores.
+   - Check the per-rank computation time in the records of 1546582 against the 1-node and 2-node runs.
+   - Candidate causes to test from what was recorded:
+     (i) the per-rank working set at 288 ranks: 4 vectors x 8 B x N/P, and per socket, against the 67.5 MB L3 specification;
+     (ii) a different node type: one node of 1546582 was GN-A40-066. Is its computation time per rank different from the CN
+         nodes? Check per-rank or per-node timings if recorded;
+     (iii) the bytes model at small boxes.
+   - Then rewrite the 6.1, 9 and Summary claim so it follows from the numbers. For example: per-rank computation fell
+     superlinearly, probably because ..., which offset the growing communication, so the efficiency stayed at 0.26.
+     If the cause is not established, say so and say what would settle it.
+   - Fix the "memory regime" sentence and the "what limited scaling" conclusion. If the 588 GB/s per node implied at 288
+     cores (0.96 of the specified peak) is right, the effective-bandwidth reading must account for it, which a cache effect
+     would.
+B. Item 30, the 1,024 iterations on com-Orkut.
+   - Check the code (src/, label.cpp or the CG driver) and the records for an iteration cap, and whether those systems
+     reached 1e-8.
+   - If 1,024 is a cap, every claim that uses com-Orkut's iteration count, accuracy or "solved to 1e-8" must say so. That
+     includes 8.2, 8.7, 8.10, the sqrt(dmax) claim and the Summary.
+C. Items 2, 3, 5 and 9: pipelined vs classic everywhere, how the graph runs were timed, and reduction share vs time. Make
+   each claim exactly as wide as the data.
+D. Item 15, unreached vertices vs the CG reach limit (iterations vs graph distance). Check whether the thinned graphs'
+   iteration counts are below their diameter or eccentricity where measurable from what we have. If you cannot separate
+   the two, say so and narrow the sparsity claim.
+Then items 4, 6-8, 10-14 and 16-29. For the rounding items (11-13), make the printed values consistent with the printed
+inputs: print one more digit where needed, or compute the ratio from the rounded values the reader sees. Choose one rule
+and say which.
+
+RETURN
+- Per item: REAL / PARTLY / NOT REAL, the evidence, what changed.
+- For A and B: the finding in two or three sentences, and whether a conclusion changed.
+- PDF path, page count, where the report ends.
+- requirements_check result (it must still PASS).
+- Keep state.md current. Commit.
+
+=== COLD-READER FINDINGS (verbatim) ===
+Verdict per section
+- Summary (p.1): numbers accurate. The weak-scaling efficiency "measured from two ranks" (0.25) will puzzle a reader who then
+  finds 0.16/0.17 in Table 10 and Fig. 5. The last sentence is a slogan.
+- §1 Algorithm (pp.1-3): clear and complete, nothing to flag.
+- §2 Parallel design (pp.3-5): clear. I recomputed Table 1 and every row is correct. One sentence overreaches ("halo stays
+  small").
+- §3 Validation (pp.5-7): strong. Observed orders, bounds (1) and tolerance ratios all reproduce.
+- §4 Hardware (pp.8-9): thorough. It says graph runs are timed to a tolerance, which conflicts with Fig. 9. One meta sentence.
+- §5 Serial (pp.9-11): sound. The fitted slopes 0.98/0.98 reproduce exactly from Table 8.
+- §6 MPI scaling (pp.11-17): Tables 9-12 mostly reproduce. The 288-core reading ("none lost between nodes = memory regime")
+  is contradicted by Table 11. The share given for pipelined reductions misleads, and the 9.9 % uses the wrong convention.
+- §7 MPI+OpenMP, GPU (pp.17-18): covers the rubric. The GPU result is stated twice, and a few ratios are 0.01 off.
+- §8 Graphs (pp.18-27): rich. 8.8-8.9 repeat themselves. "Fastest combination" ignores the hybrid layouts, and unreached
+  vertices are put down to sparsity without ruling out the CG reach limit.
+- §9 Discussion (p.27-28): answers the rubric. "Faster at every core count" is contradicted by weak scaling at P=2. Repeats
+  12.4 %/15.0 %.
+- §10-11 (pp.28-29): fine.
+- References (p.29): [4] is never cited by number, and Lecture 9 (cited in §7) is missing from the list.
+
+Rubric: all items findable (algorithm pp.1-5; serial pp.9-11; MPI to 288 strong/weak S/E communication Tables 9-12, graph
+Table 18; MPI+X and GPU Tables 13-14; discussion p.27-28; terms defined, one gap: efficiency "measured from two ranks";
+validation §3 and §8.4). Placeholders: none.
+
+Flagged items (section | quote | letter | fix), most important first
+1. §6.1 p.12 (and §9 p.28, Summary) | "Almost all of the efficiency is lost inside the first node, and none is lost between
+   nodes up to 288 cores." / "This is the memory regime of the cost model (Section 2.5)." / "What limited scaling in our
+   runs was memory bandwidth inside the node: the efficiency of the first node was kept on four nodes." | g | Table 11
+   does not support this reading:
+   - from 72 to 288 cores (4x the cores), computation falls 4.94x: 13.503->2.733 ms in 3D and 13.165->2.665 ms in 2D;
+   - over the same step the communication share rises 9.8 %->27.4 % (3D) and 2.6 %->19.9 % (2D);
+   - at 288 cores the computation alone implies 96 B x 66.9M / 2.733 ms / 4 nodes = 588 GB/s per node, which is 0.96 of
+     the specified peak (0.98 in 2D), against the 0.71 the report quotes for a full node.
+   Fix: say the flat efficiency comes from superlinear computation offsetting growing communication, and give the cause
+   or say it was not established.
+2. §9 p.28 | "It was faster than pipelined CG at every core count we ran, because the memory traffic that pipelined CG adds
+   costs more than the reduction time it hides while the reductions take only the shares given above (Section 6)." | g |
+   Table 10 2D P=2 has pipelined 0.799 s vs classic 0.851 s (ratio 0.94, stated in §6.3). Restrict the claim to strong
+   scaling, or add "except with 2 ranks in weak scaling".
+3. §4 p.8 and §9 p.28 | "The graph runs instead solve every system to a relative residual of 1 x 10-8 (Section 8.2) and
+   report the time per system." / "The graph runs were timed to a tolerance." | g | The Fig. 9 caption says "100
+   iterations on one system per point", so the serial graph runs used a fixed iteration count. Say so in both places.
+4. §6.3 p.16 | "The weak-scaling runs, which all ran in one job on one node, show this." | g | Weak scaling runs to 288
+   cores on 4 nodes. Write "The weak-scaling runs up to 72 ranks, which ran in one job on one node".
+5. §6.3 p.15 | "Pipelined CG cuts the share of the reductions, at 288 cores to 12.3 % in 3D and 7.9 % in 2D, but it is
+   slower than classic CG at every core count up to 288." | g/c | 12.3 % of 5.42 ms is 0.67 ms, more than classic's
+   0.563 ms. In 3D it therefore hid no reduction time, which undercuts "costs more than the reduction time it hides" (§6.4,
+   §9). Give the times in ms and a source table.
+6. §6.4 p.17 | "The non-blocking halo exchange is up to 4.2 % faster than the blocking one in some combinations at 288 cores
+   and up to 9.9 % slower in others, ..." | g | Table 12 gives 3.543/3.192 = 1.110, so it is 11.0 % slower. 9.9 % is
+   1 - 3.192/3.543. Use one convention.
+7. §8.9 p.26-27 | "On com-LiveJournal at 288 cores the fastest combination is the natural order with equal nonzeros, the
+   neighbourhood collective and classic CG, and the slowest takes 32.40 times as long." / "On com-Orkut at 72 cores the
+   fastest is the natural order with equal nonzeros, the neighbourhood collective and classic CG ..." | g | Fig. 12 and
+   Table 20 show faster layouts (8x9 at 3.64 s vs 5.55 s, 2x36 at 14.8 s vs 27.6 s). Add "with one rank per core", and
+   print 32.4, not 32.40.
+8. §8.9 p.27 | "On com-LiveJournal at 288 cores the largest gain again comes from fewer ranks with more threads." | g | On one
+   node com-LiveJournal gained more from the partition (2.03x) than from the layout (1.10x). Drop "again" or write "as on
+   com-Orkut".
+9. §9 p.28 | "The reductions grow with the number of nodes, most clearly in 2D, and at larger core counts they, not the
+   memory traffic, would set the limit, ..." | g | In 3D the reduction time falls (0.79->0.79->0.56 ms, §6.3). Say their
+   share grows, and their time grows only in 2D.
+10. §8.10 p.27 | "... com-Amazon, com-LiveJournal, com-Youtube and com-Orkut are labelled 2.7 to 6.9 times as accurately as
+    the majority baseline (Table 16)." | g | 0.886/0.322 = 2.75 and 0.835/0.122 = 6.84, so write "2.8 to 6.8".
+11. §6.2, §6.3, §6.1 (pp.13, 16) | "grows by a factor of only 1.10 on two nodes" / "The one-core ratios of Table 9, 1.10 in
+    2D and 1.08 in 3D, ..." / "so their ratio, 16.6, ..." | g (within rounding) | Recomputed: 3.77/3.41 = 1.11,
+    30.5/28.4 = 1.07, 438/26.3 = 16.7. Match the printed values or print more digits.
+12. §7 pp.17-18 | "... and the slowest takes 1.24 and 1.09 times as long (Table 13 and Figure 7)." / "Two GPUs on one node
+    are 1.97 times as fast as one in 2D but only 1.77 times in 3D." | g (within rounding) | 1.81/1.47 = 1.23,
+    1.47/1.34 = 1.10, 1.20/0.611 = 1.96. Table 14's 2.20 recomputes to 1.34/0.611 = 2.19.
+13. §8.8 p.24 | "At those largest counts classic CG reaches a speedup of 18.6 on com-LiveJournal and 14.0 on com-Orkut,
+    efficiencies of 0.06 and 0.10, and on one full node the efficiencies are 0.27 and 0.30." | g (within rounding) |
+    595/42.7 = 13.9 and 103/(72x5.40) = 0.265. In Table 18, 118/8.01 = 14.7 (printed 14.8) and 617/34.6 = 17.8 (printed
+    17.9).
+14. §2.5 p.5 | "The halo of the grid stays small because it is the surface of a box (Table 1), not because the product is
+    matrix-free: ..." | g | Table 1 shows a 3D slab at 288 ranks with a halo of 100 % of its points. Say "the halo of a
+    block or column".
+15. §8.6 p.22 | "On these three sparse graphs most of the accuracy lost is unreached vertices: com-Amazon loses 0.928,
+    com-DBLP 0.563 and com-Youtube 0.398." | c | The numbers are total losses, not the unreached shares. List the unreached
+    shares (0.928, 0.685, 0.352) beside the losses. Also, thinned com-Amazon needs about 9 iterations per system
+    (113/12.7), and by §8.2 that alone leaves vertices beyond distance 8 unreached. Separate disconnection from this reach
+    limit before blaming sparsity (this also affects §8.10).
+16. §8.9 p.27 | "The threads of a rank share its ghosts, while more ranks multiply them." | e/c | Table 20 shows ghosts per
+    rank rising with fewer ranks (484,388->2,056,701 on com-LiveJournal). State what falls (edge cut and neighbours) with
+    the numbers.
+17. Summary p.1 | "With the work per core fixed, the efficiency on 288 cores, measured from two ranks, is 0.25 in 3D and
+    0.25 in 2D." | a/b | Table 10 and Fig. 5 show 0.17/0.16. Define E2 = T(2)/T(P) and give the reason in a clause
+    (the anomalous one-rank time).
+18. §9 p.28 | "In the measured 3D runs at 288 cores on Vanda the halo exchange took 12.4 % and the reductions 15.0 % of the
+    time." | f | Third statement (Summary, §6.3). Cite §6.3, and add the 2D split (2.9 %, 17.0 %), which better answers
+    "which part communicates most".
+19. §7 p.18 | "One GPU is 1.16 times as fast as the fastest CPU node in 3D and 1.12 times in 2D, about the ratio of their
+    specified memory bandwidths, 1.13 (Section 4)." | f | Repeats the paragraph above Table 14. Start with "These ratios
+    are close to ...".
+20. §8.8 p.25 | "... and the ghost exchange and the reductions take 50 % and 38 % of the time." / "... and the ghost
+    exchange and the reductions take 67 % and 26 % of its time." | f | Both pairs are in the Figure 11 paragraph. State
+    them once.
+21. §8.9 p.26 | "The com-Orkut runs at 288 cores did not finish within the time limit of their job, so its comparison is at
+    72 cores." | f | Already in §8.8. Replace with "(Section 8.8)".
+22. §6.1 p.12 | "... so the efficiency stays at 0.26 on 144 cores and at 0.26 on 288." | f | The 288 efficiency is already
+    in 6.1's first paragraph. Keep only the two time ratios.
+23. §8.8 p.24 | "The one-core runs on com-Orkut were solved once (Section 4)." | f | Already in §4 and Table 7. Drop it or
+    move it to the Table 18 caption.
+24. §8.10 p.27 | "... so for labelling by diffusion a missing edge matters most in a network that has few." | e | Drop the
+    clause, since the measured comparison before it already says this.
+25. Summary p.1 and §8.10 p.27 | "How sparse a network is decides how robust the labelling is." | e | Replace with the
+    measured contrast (at p = 1/8, com-Amazon 1.000->0.072, com-Orkut 0.835->0.725).
+26. §4 p.8 | "... which Section 6.1 mentions in one sentence." | e | Drop the meta clause.
+27. §6.1 p.13 | "From 18 to 36 cores the time falls only by a factor of 1.14, against the ideal two, and from 36 to 72
+    cores it halves (2.01)." | a | Name the series (3D, classic CG).
+28. §2.1 p.3 and §7 p.17 | "... domain decomposition in the sense of Lecture 12" / "Lecture 9 asks four questions of an
+    MPI+OpenMP program, ..." | a/c | Cite [4] by number, and add Lecture 9 to the References.
+29. §8.4 p.21 | "The growth that we measured during development is listed with G1 in the validation program (Appendix A)."
+    | a | The reader skips the appendix. Give the numbers or drop the sentence.
+30. §8.10 p.27 | "... and 1,024 on com-Orkut, with 33,313." | c | 1,024 is exactly 2^10. Confirm it is not an iteration
+    cap (the text says every system was solved to 1 x 10-8) and say so.
+No semicolons in the prose, and no strings of choppy short sentences.
+=== END ===

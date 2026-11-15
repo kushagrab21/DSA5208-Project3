@@ -7,7 +7,7 @@
  "groups": [
   "graph-variants"
  ],
- "utc": "2026-11-15T05:12:46Z",
+ "utc": "2026-11-15T05:24:03Z",
  "outstanding": [
   "g-com-orkut-bfs-nnz-alltoallv-pipe-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
   "g-com-orkut-bfs-nnz-neighbor-clas-a1-s5-k1-r288x1-N4-tol1e-08-rhs2",
@@ -80,5 +80,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "84ec345a8399b3b44d03b9e7d6eb711f10757e4d9629d0969b57f9d4984ee6b2"
+ "image_sha256": "32c378b1e58fe93f1cbeb48fed08223acb7e761993be04181e7696134d6932a3"
 }
