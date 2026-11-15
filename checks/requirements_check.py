@@ -146,7 +146,7 @@ def hand_typed_numbers(tex):
     for name, n in (("val", 1), ("req", 1), ("label", 1), ("ref", 1), ("eqref", 1), ("cite", 1), ("input", 1),
                     ("includegraphics", 1), ("lstinputlisting", 1), ("hspace", 1), ("vspace", 1), ("setlength", 2),
                     ("algotitle", 1), ("figslot", 2), ("figslotfloat", 2), ("interpslot", 1), ("src", 1), ("pending", 1),
-                    ("draftreview", 1), ("revised", 1),
+                    ("draftreview", 1), ("revised", 1), ("url", 1),
                     ("texorpdfstring", 0)):
         b = remove_cmd(b, name, n)
     b = re.sub(r"\\begin\{(?:tabular|tabularx|minipage|thebibliography)\}(?:\{[^}]*\})+", " ", b)

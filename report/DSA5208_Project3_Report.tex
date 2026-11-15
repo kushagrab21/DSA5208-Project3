@@ -601,7 +601,7 @@ did not rerun them with the ranks spread over both sockets, which would show how
 Between nodes the time keeps halving. In the same series, going from one node to two divides the time by
 \val{pst.3.classic.gain.node.2node} and going from two to four by \val{pst.3.classic.gain.2node.top}, both close to the
 ideal factor of two. This does not mean that nothing is lost between nodes. Communication takes a growing share of the
-time (Table~\ref{tab:comm}), and the computation makes up for it: from one node to four, with
+time (Section~\ref{sec:comm}), and the computation makes up for it: from one node to four, with
 \val{pst.3.classic.cgain.cores} times the cores, it falls by a factor of \val{pst.3.classic.cgain.node.top} in 3D and
 \val{pst.2.classic.cgain.node.top} in 2D. Per unknown of a rank and per iteration it costs
 \val{pst.3.classic.node.cns}\,ns on one node, \val{pst.3.classic.2node.cns}\,ns on two and
@@ -632,8 +632,7 @@ Weak scaling keeps about \val{weak.per2} unknowns per rank in 2D (base $n=\val{w
 and $n=\val{wk.top.n3}$ in 3D. The number of iterations is fixed, so this measures the cost of one iteration, while to a
 fixed tolerance the iteration count would also grow with $n$ (Section~\ref{sec:serial}). With classic CG the efficiency
 at \val{meas.top} cores\val{meas.where} is \val{wk.2.classic.Etop} in 2D and \val{wk.3.classic.Etop} in 3D, measured
-from the one-rank time. Table~\ref{tab:weak} gives the times and efficiencies, and Figure~\ref{fig:fig_efficiency}
-plots the efficiencies of both scaling experiments.
+from the one-rank time. Table~\ref{tab:weak} gives the times and efficiencies.
 
 With the work per rank fixed, the 3D time rises (Figure~\ref{fig:fig_weak}) from \val{pwk.3.classic.one.T}\,s on one rank to
 \val{pwk.3.classic.half.T}\,s with \val{node.half} ranks sharing one socket, stays at \val{pwk.3.classic.node.T}\,s on
@@ -650,7 +649,7 @@ core held fixed, 2D (left) and 3D (right). A flat line is perfect scaling.\val{s
 efficiency against the one-rank time, which is anomalously low (Section~\ref{sec:weak}).\val{spread.tabnote}}\label{tab:weak}
 \end{table}
 
-\figslot{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments and both CG
+\figslotfloat{fig_efficiency}{0.98\linewidth}{Parallel efficiency against cores for both scaling experiments and both CG
 variants on \val{cl.strong}. The dotted line is perfect efficiency. Points up to \val{cpn} cores are inside one
 node\val{scale.beyond}.\val{spread.cap}}
 
@@ -664,11 +663,12 @@ unknowns did not gain from the cache (Section~\ref{sec:serial}), so we cannot co
 efficiency from two ranks instead, as $E_2=T(2)/T(P)$. It is \val{pwk.2.classic.node.E2} in 2D and \val{pwk.3.classic.node.E2} in 3D on
 one node and \val{pwk.2.classic.top.E2} and \val{pwk.3.classic.top.E2} on four, close to the one-node strong-scaling
 efficiency of \val{pst.2.classic.node.E} and \val{pst.3.classic.node.E}, as expected if both are set by the same memory
-bandwidth. The computation of these ranks costs the same per unknown on every node count (Section~\ref{sec:strong}),
+bandwidth. Figure~\ref{fig:fig_efficiency} plots the efficiencies of both scaling experiments, measured from the
+one-rank time. The computation of these ranks costs the same per unknown on every node count (Section~\ref{sec:strong}),
 so the small growth beyond one node is communication, and up to \val{topcores} cores it costs little next to the
 memory limit.
 
-\subsection{The cost of communication}
+\subsection{The cost of communication}\label{sec:comm}
 Figure~\ref{fig:fig_comm} splits the classic strong-scaling runs into computation, halo exchange and reductions per
 iteration, and Table~\ref{tab:comm} gives the split at one node and at \val{meas.top} cores, together with the number of
 messages and halo values per exchange. At \val{meas.top} cores\val{meas.where} the halo exchange takes \val{cm.3.halo}
@@ -678,7 +678,7 @@ of the 3D run time and \val{cm.2.halo} of the 2D one, and the reductions take \v
 for classic CG with blocking halo exchange on \val{cl.strong}. At one rank there is no halo exchange or reduction to
 time.\val{spread.cap}}
 
-\begin{table}[H]\centering\footnotesize
+\begin{table}[htbp]\centering\footnotesize
 \adjustbox{max width=\linewidth}{\input{generated/tab_comm.tex}}
 \caption{Time per iteration (ms) by part on \val{cl.strong}, classic CG with blocking halo exchange, at one node and at
 \val{meas.top} cores, with the messages and halo values per exchange of the rank with the most.\val{spread.tabnote}}
@@ -765,7 +765,7 @@ in a few cases but not consistently, probably for the reason given in Section~\r
 % ======================================================================================================
 \section{MPI with OpenMP threads, and the GPU}\label{sec:mpix}
 \req{E6}\req{E7}
-Lecture~9 asks four questions of an MPI+OpenMP program, and the design of Section~\ref{sec:design} already answers the
+Lecture~9~\cite{l9} asks four questions of an MPI+OpenMP program, and the design of Section~\ref{sec:design} already answers the
 first three for our solver.
 \begin{enumerate}[label=(\arabic*)]
 \item What is parallelised across ranks, and what across threads?\\
@@ -818,9 +818,9 @@ using \val{gpu.2.cpu.what} (\val{gpu.2.cpu.tab}).
 \caption{GPU runs against the fastest one-node CPU run of the same grid, \val{iters} iterations.}\label{tab:gpu}
 \end{table}
 
-One GPU is \val{gpu.3.vsnode} times as fast as the fastest CPU node in 3D and \val{gpu.2.vsnode} times in 2D, about
-the ratio of their specified memory bandwidths, \val{spec.gpu.vsnode} (Section~\ref{sec:env}). That fits both being
-limited by memory bandwidth, although we did not measure the bandwidth the GPU achieved. Two GPUs on one node are
+These ratios are close to the ratio of the specified memory bandwidths of the GPU and a CPU node,
+\val{spec.gpu.vsnode} (Section~\ref{sec:env}), which fits both being limited by memory bandwidth, although we did not
+measure the bandwidth that the GPU achieved. Two GPUs on one node are
 \val{gpu.2.two.gain} times as fast as one in 2D but only \val{gpu.3.two.gain} times in 3D. The difference is the halo,
 which travels from each GPU to the host and back: it takes \val{gpu.3.two.halo}\,ms per iteration in 3D against
 \val{gpu.2.two.halo}\,ms in 2D, beside \val{gpu.3.two.comp} and \val{gpu.2.two.comp}\,ms of computation. An MPI library
@@ -946,10 +946,10 @@ deliberately broken version of the ghost exchange, as for the Poisson solver.
 vertex orders, in \val{gr.val.layouts} configurations. The product $(L+aI)v$ equals the one-rank product to
 \val{gr.val.spmv}, against a tolerance of \val{gr.val.spmvtol}, and after \val{gr.val.iters} iterations of classic or
 pipelined CG the iterates agree to \val{gr.val.x}, against \val{gr.val.xtol}. The comparison stops after
-\val{gr.val.iters} iterations because beyond that the rounding differences between two correct runs grow quickly on
-this graph. They grow in the same way between one and two threads on one rank, where no ghost is exchanged, so a longer
-comparison would measure rounding rather than correctness. The growth that we measured during development
-is listed with G1 in the validation program (Appendix~\ref{app:code}). Run to convergence, the answers of the parallel
+\val{gr.val.iters} iterations because in development runs, which we did not record, the rounding differences between
+two correct runs grew quickly beyond that on this graph, and grew in the same way between one and two threads on one
+rank, where no ghost is exchanged, so a longer comparison would measure rounding rather than correctness. Run to
+convergence, the answers of the parallel
 runs, classic and pipelined, differ from the one-rank classic answer by at most \val{gr.val.conv}, below the smallest of
 their condition-number bounds, \val{gr.val.bound}, computed as in \eqref{eq:v5} with the condition number bounded by
 \eqref{eq:graphkappa}.
@@ -1104,13 +1104,12 @@ collective and the natural order, on up to \val{gr.st.com-lj.top} cores for com-
 against the cores, and Table~\ref{tab:graphstrong} gives the speedups. At those largest counts classic CG reaches a
 speedup of \val{gr.st.com-lj.classic.S} on com-LiveJournal and \val{gr.st.com-orkut.classic.S} on com-Orkut,
 efficiencies of \val{gr.st.com-lj.classic.E} and \val{gr.st.com-orkut.classic.E}, and on one full node the efficiencies
-are \val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}. The one-core runs on com-Orkut were
-solved once (Section~\ref{sec:timing}).
+are \val{gr.st.com-lj.classic.Enode} and \val{gr.st.com-orkut.classic.Enode}.
 
 \begin{table}[H]\centering\small
 \input{generated/tab_graphstrong.tex}
 \caption{Graph strong scaling on \val{cl.gr.strong}: time per system $T$ on one core and on the largest core count,
-speedup $S$ and efficiency $E$.}\label{tab:graphstrong}
+speedup $S$ and efficiency $E$. The one-core runs on com-Orkut were solved once (Section~\ref{sec:timing}).}\label{tab:graphstrong}
 \end{table}
 
 \figslotfloat{fig_graph_comm}{0.98\linewidth}{Time per iteration of graph CG on \val{cl.gr.strong} in local products and
@@ -1123,18 +1122,17 @@ A rank there exchanges with up to \val{gr.comm.com-orkut.nbrs} others on com-Ork
 \val{gr.comm.com-orkut.ghosts} ghosts, because a graph with hubs connects almost every rank to almost every other.
 
 On two nodes the graph runs are slower than on one. With classic CG, two nodes take
-\val{pgs.com-orkut.classic.slowdown} times as long as one on com-Orkut (\val{pgs.com-lj.classic.slowdown} on
-com-LiveJournal), and the ghost exchange and the reductions take \val{pgs.com-orkut.classic.2node.halo} and
-\val{pgs.com-orkut.classic.2node.red} of the time. Pipelined CG is the faster method there, at
+\val{pgs.com-orkut.classic.slowdown} times as long as one on com-Orkut, the largest count for that graph, with the
+shares of the ghost exchange and the reductions given above, and \val{pgs.com-lj.classic.slowdown} times as long on
+com-LiveJournal. Pipelined CG is the faster method there, at
 \val{pgs.com-orkut.pratio.2node} of the classic time on com-Orkut and \val{pgs.com-lj.pratio.2node} on com-LiveJournal,
 because hiding a reduction behind the product is worth more than its extra vector traffic once each reduction waits for
 the network. It also needs \val{pgs.com-orkut.itratio} times as many iterations as classic CG on com-Orkut
 (\val{pgs.com-lj.itratio} on com-LiveJournal), a cost of its less exact recurrences.
 
 On four nodes com-LiveJournal gains nothing over one node. Classic CG takes \val{pgs.com-lj.classic.top.T}\,s per
-system, against \val{pgs.com-lj.classic.node.T}\,s on one node and \val{pgs.com-lj.classic.2node.T}\,s on two, and the
-ghost exchange and the reductions take \val{pgs.com-lj.classic.top.halo} and \val{pgs.com-lj.classic.top.red} of its
-time. Pipelined CG, the faster method on two nodes, takes \val{pgs.com-lj.pratio.top} times the classic time on four,
+system, against \val{pgs.com-lj.classic.node.T}\,s on one node and \val{pgs.com-lj.classic.2node.T}\,s on two, with
+the shares of the ghost exchange and the reductions given above. Pipelined CG, the faster method on two nodes, takes \val{pgs.com-lj.pratio.top} times the classic time on four,
 with \val{pgs.com-lj.pipelined.top.halo} of its time in the ghost exchange. With communication taking nearly all of the
 time, the result depends on how the exchange behaves on the nodes and network paths of each job, and each core count
 ran in a single job, so we cannot say how much of the difference between two and four nodes, or between the two CG
@@ -1162,8 +1160,8 @@ row labels, rows and nnz are the partitions by equal rows and equal nonzeros, bf
 alltoallv, neighbor and overlap are the all-to-all exchange, the neighbourhood collective and its non-blocking form.}
 
 Table~\ref{tab:graphpart} gives each graph at the largest core count at which every combination was recorded.\val{gr.var.note}
-On com-LiveJournal at \val{gr.var.com-lj.top} cores the fastest combination is \val{gr.var.com-lj.best}, and the
-slowest takes \val{gr.var.com-lj.spread} times as long. On com-Orkut at \val{gr.var.com-orkut.top} cores the fastest is
+On com-LiveJournal at \val{gr.var.com-lj.top} cores the fastest combination with one rank per core is \val{gr.var.com-lj.best}, and the
+slowest takes \val{gr.var.com-lj.spread} times as long. On com-Orkut at \val{gr.var.com-orkut.top} cores the fastest with one rank per core is
 \val{gr.var.com-orkut.best} and the slowest takes \val{gr.var.com-orkut.spread} times as long. At
 \val{gr.var.com-lj.top} cores the natural order cuts \val{gr.cut.com-lj.natural.nnz} of com-LiveJournal's edges and the
 breadth-first order \val{gr.cut.com-lj.bfs.nnz}, and equal rows leave a nonzero imbalance of
@@ -1190,9 +1188,14 @@ Fewer ranks with more threads help as well. Two ranks of \val{node.half} threads
 \val{gv.com-orkut.node.cut.nat} to \val{gv.com-orkut.node.cut.hyb} and its neighbours per rank to
 \val{gv.com-orkut.node.nbrs.hyb}, and solve \val{gv.com-orkut.node.hybrid} times as fast, more than equal nonzeros gain
 on that graph, while on com-LiveJournal the layout gains only \val{gv.com-lj.node.hybrid} times, less than the
-partition. The threads of a rank share its ghosts, while more ranks multiply them.
+partition, although its edge cut falls from \val{gv.com-lj.node.cut.nat} to \val{gv.com-lj.node.cut.hyb}. With fewer
+ranks the busiest rank holds more ghosts, \val{gv.com-orkut.node.ghosts.hyb} against
+\val{gv.com-orkut.node.ghosts.nat} on com-Orkut, because it owns a larger part of the graph, but all ranks together hold
+\val{gv.com-orkut.node.gsum.hyb} ghosts instead of \val{gv.com-orkut.node.gsum.nat}, so an exchange moves far fewer
+values.
 
-On com-LiveJournal at \val{gt.com-lj.top} cores the largest gain again comes from fewer ranks with more threads.
+On com-LiveJournal at \val{gt.com-lj.top} cores the largest gain comes from fewer ranks with more threads, as on
+com-Orkut on one node.
 With \val{gt.com-lj.hyb} a system takes \val{gt.com-lj.hyb.T}\,s, \val{gt.com-lj.hyb.gain} times as fast as with one
 rank per core, because each rank then exchanges with \val{gt.com-lj.hyb.nbrs} others instead of \val{gt.com-lj.nbrs}.
 Even this layout makes four nodes only \val{gt.com-lj.hyb.vsnode} times as fast as one node of pure MPI. The
@@ -1269,16 +1272,18 @@ Vanda jobs that validated and then timed it, so it was never tuned for the GPU.
 % ======================================================================================================
 \section{Declaration of AI use}
 \req{E15}
-We used Claude Code (Anthropic, Claude Opus 5.5) as a coordinating session and a delegated builder session to plan the
-work, write and test the C++ solver and its checks, run the experiments on the NUS HPC clusters, and draft and revise this
-report, including a paragraph-by-paragraph language revision done by the AI under our direction. We directed the work and
+We used Claude Code (Anthropic, Claude Opus 5.5), in one session that planned and checked the work and one that wrote
+the code and the report, to plan the work, write and test the C++ solver and its checks, run the experiments on the
+NUS HPC clusters, and draft and revise this report, including a paragraph-by-paragraph language revision done by the
+AI under our direction. We directed the work and
 are responsible for the content and quality of this submission.
 
 % ======================================================================================================
 \section{Submission contents and how to run}\label{sec:submit}
 \req{E16}\req{E17}
-The source code is listed in full in Appendix~\ref{app:code}, together with the README, which explains how to build,
-validate and run it. The program builds with CMake or with one \code{mpicxx} line per binary (\code{scripts/build.sh}),
+The code is in the public repository \url{https://github.com/kushagrab21/DSA5208-Project3} and is also listed in
+full in Appendix~\ref{app:code}, together with the README, which explains how to build, validate and run it. The
+program builds with CMake or with one \code{mpicxx} line per binary (\code{scripts/build.sh}),
 \code{p3cg -{}-help} lists its options, and \code{checks/validate.py} runs the validation tests of
 Section~\ref{sec:validation}.
 
@@ -1296,6 +1301,7 @@ cluster and are not part of the package, and no log files or terminal output are
 gradient algorithm. \emph{Parallel Computing} 40(7), 2014.
 \bibitem{yl} J.~Yang and J.~Leskovec. Defining and evaluating network communities based on ground-truth.
 \emph{IEEE International Conference on Data Mining (ICDM)}, 2012.
+\bibitem{l9} A.~Chen. DSA5208 Lecture 9: OpenMP. NUS, 2026.
 \bibitem{l12} A.~Chen. DSA5208 Lecture 12: The design of parallel algorithms. NUS, 2026.
 \end{thebibliography}
 

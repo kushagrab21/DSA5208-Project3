@@ -125,7 +125,7 @@ iteration or one non-blocking one. The same program therefore produces every com
 
 ## Declaration of AI use
 
-We used Claude Code (Anthropic, Claude Opus 5.5) as a coordinating session and a delegated builder session to plan the
-work, write and test the C++ solver and its checks, run the experiments on the NUS HPC clusters, and draft and revise
-this report, including a paragraph-by-paragraph language revision done by the AI under our direction. We directed the
-work and are responsible for the content and quality of this submission.
+We used Claude Code (Anthropic, Claude Opus 5.5), in one session that planned and checked the work and one that wrote
+the code and the report, to plan the work, write and test the C++ solver and its checks, run the experiments on the
+NUS HPC clusters, and draft and revise this report, including a paragraph-by-paragraph language revision done by the
+AI under our direction. We directed the work and are responsible for the content and quality of this submission.

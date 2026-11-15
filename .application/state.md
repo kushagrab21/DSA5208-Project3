@@ -318,6 +318,34 @@ submit vanda-4node, vanda-gpu, vanda-1node-scaling, vanda-serial, vanda-2node, v
   floats [htbp] where [H] left gaps; every float within a page of its first mention, one page 19 % empty.
 - requirements_check: PASS (0 hand-typed numbers, 0 waiting, 0 log files); every selftest passes.
 
+## Turn 15 (14-15 Nov 2026): third cold-reader check resolved, submission additions
+- The user skipped vanda-graph-4node-rerun. The amendment stays in the plan as written. No text promises a rerun: the
+  graph notes only say the com-Orkut runs at 288 cores did not finish within their job's time limit.
+- A (item 1): from 1 to 4 nodes the strong-scaling computation per unknown of a rank falls (3D 14.5 -> 13.6 -> 11.8 ns,
+  computation x4.94 for x4 cores), while the weak-scaling ranks on the same nodes and in the same jobs stay at
+  14.8-15.0 ns, so node type (GN-A40-066) is not the cause. One vector per rank is 1.86 MB at 288 cores, about one
+  core's 1.88 MB share of the socket cache, and each classic CG loop reads the vector the previous loop wrote, so the
+  96 B model probably overcounts memory traffic (implied 588 GB/s per node, 0.96 of peak, against 459 for the weak
+  runs). 6.1, 2.5, 6.2, Section 9 and the Summary now say a probable cache gain offset the growing communication. The
+  cause was not measured (hardware counters would settle it). New values pst/pwk.<d>.classic.<role>.{cns,vec,cbw,cpk}.
+- B (item 30): NOT a cap. 1,024 is the mean over 10 systems (1,001 to 1,047 each, all converged, cap 100,000). 8.10
+  says so (gw.<ds>.itmin/itmax, gr.maxit, which waits unless every tolerance run converged).
+- C: cg.slower is generated from the runs (strong: every run; weak: except 2D at 2 and 4 ranks). Table comm has
+  pipelined rows, and 6.3 gives reduction times in ms (pipelined shorter in 2D, longer in 3D at 288). Graph serial
+  runs are fixed-iteration (Section 4 and 9). Section 9: reduction share grows, time only in 2D.
+- D (item 15): unreached vertices cannot be separated from the CG reach limit with our records (thinned com-Amazon
+  stops after 1-21 iterations per system); 8.6 and 8.10 say so.
+- Rounding rule (items 10-13): a ratio, share or difference of printed values is computed from the printed values
+  (sh, shf in report_macros.py), applied to the scaling tables, layout, GPU, graph strong and variant ratios.
+- Others: overlap gain and loss relative to the blocking time (11.0 %), "with one rank per core", ghosts total vs per
+  rank, repeated statements cut, G1 growth sentence narrowed, Lecture 9 and 12 cited, spread.except without the
+  meta clause.
+- Submission: Section 11 gives https://github.com/kushagrab21/DSA5208-Project3 (requirements_check now ignores
+  \url{}). Section 10 and the README's AI declaration use the user's plain wording. README otherwise untouched (the
+  parent merges a section); its step 5 ("Add the runs still outstanding") is stale.
+- requirements_check: PASS (0 hand-typed numbers). Selftests pass. 92 pages, body ends on p. 30 with the
+  references, appendix from p. 30. One page 17 % empty, every float within a page of its first mention.
+
 ## Next step
 Parent (turn 8): sync vanda; cluster/ops/submit.sh vanda vanda-256spread; keep vanda-4node / vanda-graph-4node /
 vanda-gpu queued; fetch and make_report when rows arrive. Turn 9: the cold-reader check of the revised report.
