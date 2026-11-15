@@ -110,6 +110,18 @@ def sig(x, s=3):
     return fx(x, d)
 
 
+def sh(x, s=3):
+    """The number that sig(x, s) prints. Rounding rule of the report: a ratio, share or difference of values that the
+    report prints is computed from the printed values, so a reader who recomputes it from them gets the same digits."""
+    t = sig(x, s)
+    return x if t.startswith("$") else float(t.replace("{,}", ""))
+
+
+def shf(x, d=2):
+    """The number that fx(x, d) prints (see sh)."""
+    return float(fx(x, d).replace("{,}", ""))
+
+
 def put(key, val, reqs=(), filled=True, waiting=""):
     V[key] = str(val) if filled else "\\pending{%s}" % key
     STATUS["values"][key] = {"filled": bool(filled), "reqs": list(reqs), "waiting_for": waiting}
@@ -715,14 +727,16 @@ def cluster_values(out, results, figures):
                 for i, (p, _) in enumerate(series[("classic", "blocking")]):
                     row = [grp(p) + ("$^{\\dagger}$" if p in shared else "")]
                     for v in series:
-                        t1, tp = series[v][0][1], series[v][i][1]
+                        t1, tp = sh(series[v][0][1]), sh(series[v][i][1])
                         S = t1 / tp
                         E = S / p if group == "strong" else t1 / tp
                         row += [sig(tp, 3)] + ([fx(S, 1)] if group == "strong" else []) + [fx(E, 2)]
                     rows.append(row)
                 for v, tag in ((("classic", "blocking"), "classic"), (("pipelined", "overlap"), "pipelined")):
-                    t1, (ptop, ttop) = series[v][0][1], series[v][-1]
+                    t1, (ptop, ttop) = sh(series[v][0][1]), series[v][-1]
+                    ttop = sh(ttop)
                     t72 = dict(series[v]).get(D.plan["cores_per_node"])
+                    t72 = sh(t72) if t72 else t72
                     key = "%s.%d.%s" % ({"strong": "st", "weak": "wk"}[group], d, tag)
                     put(key + ".Ttop", sig(ttop, 3), reqs)
                     put(key + ".T1", sig(t1, 3), reqs)
@@ -806,9 +820,8 @@ def cluster_values(out, results, figures):
     sup = sorted(Dsw.superseded())
     if sup:
         c0 = Dsw.plan["cells"][sup[0]]
-        put("spread.except", " The one exception is a run at %d cores on %d nodes $\\times$ %d cores shared with other "
-            "jobs, which Section~\\ref{sec:strong} mentions in one sentence." %
-            (c0["ranks"], c0["nodes"], c0["ranks"] // c0["nodes"]), ["E3", "E4"])
+        put("spread.except", " The one exception is a run at %d cores on %d nodes $\\times$ %d cores that shared its "
+            "nodes with other jobs." % (c0["ranks"], c0["nodes"], c0["ranks"] // c0["nodes"]), ["E3", "E4"])
     top = Dsw.top_cells("strong", dim=3, cg="classic", halo="blocking")
     if Dsw.complete("strong", "weak") and top:
         tc = top[0][1]
@@ -822,7 +835,7 @@ def cluster_values(out, results, figures):
             put("meas.both", " A further run at %d cores, on %d nodes $\\times$ %d cores shared with other jobs and "
                 "with ranks not bound to cores, reached a 3D classic efficiency of %s." % (
                     spc[0][1]["ranks"], spc[0][1]["nodes"], spc[0][1]["ranks"] // spc[0][1]["nodes"],
-                    fx(Dsw.med(one) / (spc[0][1]["ranks"] * Dsw.med(spc[0][0])), 2)), ["E3"])
+                    fx(sh(Dsw.med(one)) / (spc[0][1]["ranks"] * sh(Dsw.med(spc[0][0]))), 2)), ["E3"])
         else:
             put("meas.both", "", ["E3"])
         wt = {}
@@ -868,24 +881,26 @@ def cluster_values(out, results, figures):
         rows = []
         D = D.filled_view()  # the largest recorded count, whole nodes or the shared-node insurance run
         for d in (2, 3):
-            cs = sorted(D.cells("strong", dim=d, cg="classic", halo="blocking"), key=lambda t: t[1]["ranks"])
-            top = cs[-1][1]["ranks"]
-            for cid, c in cs:
-                if c["ranks"] not in (cpn, top):
-                    continue
-                r = D.row0(cid)
-                it = float(r["iters"])
-                tc, th, tr = (D.med(cid, k) for k in ("t_compute", "t_halo", "t_reduce"))
-                tt = D.med(cid)
-                rows.append(["%dD" % d, grp(c["ranks"]) + ("$^{\\dagger}$" if c.get("placement") else ""), fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
-                             fx(1e3 * tr / it, 3), fx(100 * (th + tr) / tt, 1) + "\\,\\%",
-                             r["msgs_per_exch"], grp(int(r["doubles_per_exch_max"]))])
-                if c["ranks"] == top:
-                    put("cm.%d.halo" % d, fx(100 * th / tt, 1) + "\\,\\%", reqs)
-                    put("cm.%d.red" % d, fx(100 * tr / tt, 1) + "\\,\\%", reqs)
-                    put("cm.%d.comp" % d, fx(100 * tc / tt, 1) + "\\,\\%", reqs)
-        table(out, "comm", ["grid", "cores", "computation", "halo exchange", "reductions", "communication share", "messages",
-                            "halo values"], rows, "lrrrrrrr", reqs)
+            for cg, halo in (("classic", "blocking"), ("pipelined", "overlap")):
+                cs = sorted(D.cells("strong", dim=d, cg=cg, halo=halo), key=lambda t: t[1]["ranks"])
+                top = cs[-1][1]["ranks"]
+                for cid, c in cs:
+                    if c["ranks"] not in (cpn, top):
+                        continue
+                    r = D.row0(cid)
+                    it = float(r["iters"])
+                    tc, th, tr = (D.med(cid, k) for k in ("t_compute", "t_halo", "t_reduce"))
+                    tt = D.med(cid)
+                    rows.append(["%dD" % d, cg, grp(c["ranks"]) + ("$^{\\dagger}$" if c.get("placement") else ""),
+                                 fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
+                                 fx(1e3 * tr / it, 3), fx(100 * (th + tr) / tt, 1) + "\\,\\%",
+                                 r["msgs_per_exch"], grp(int(r["doubles_per_exch_max"]))])
+                    if c["ranks"] == top and cg == "classic":
+                        put("cm.%d.halo" % d, fx(100 * th / tt, 1) + "\\,\\%", reqs)
+                        put("cm.%d.red" % d, fx(100 * tr / tt, 1) + "\\,\\%", reqs)
+                        put("cm.%d.comp" % d, fx(100 * tc / tt, 1) + "\\,\\%", reqs)
+        table(out, "comm", ["grid", "CG", "cores", "computation", "halo exchange", "reductions", "communication share",
+                            "messages", "halo values"], rows, "llrrrrrrr", reqs)
     else:
         w = wait("strong")
         for d in (2, 3):
@@ -894,19 +909,20 @@ def cluster_values(out, results, figures):
         Dv = D.filled_view()
         rows = []
         for d in (2, 3):
-            cs = sorted(Dv.cells("strong", dim=d, cg="classic", halo="blocking"), key=lambda t: t[1]["ranks"])
-            for cid, c in cs:
-                if c["ranks"] not in (cpn, 2 * cpn):
-                    continue
-                r = Dv.row0(cid)
-                it = float(r["iters"])
-                tc, th, tr = (Dv.med(cid, k) for k in ("t_compute", "t_halo", "t_reduce"))
-                tt = Dv.med(cid)
-                rows.append(["%dD" % d, grp(c["ranks"]), fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
-                             fx(1e3 * tr / it, 3), fx(100 * (th + tr) / tt, 1) + "\\,\\%",
-                             r["msgs_per_exch"], grp(int(r["doubles_per_exch_max"]))])
-        table(out, "comm", ["grid", "cores", "computation", "halo exchange", "reductions", "communication share", "messages",
-                            "halo values"], rows, "lrrrrrrr", reqs, False, w, partial=bool(rows))
+            for cg, halo in (("classic", "blocking"), ("pipelined", "overlap")):
+                cs = sorted(Dv.cells("strong", dim=d, cg=cg, halo=halo), key=lambda t: t[1]["ranks"])
+                for cid, c in cs:
+                    if c["ranks"] not in (cpn, 2 * cpn):
+                        continue
+                    r = Dv.row0(cid)
+                    it = float(r["iters"])
+                    tc, th, tr = (Dv.med(cid, k) for k in ("t_compute", "t_halo", "t_reduce"))
+                    tt = Dv.med(cid)
+                    rows.append(["%dD" % d, cg, grp(c["ranks"]), fx(1e3 * tc / it, 3), fx(1e3 * th / it, 3),
+                                 fx(1e3 * tr / it, 3), fx(100 * (th + tr) / tt, 1) + "\\,\\%",
+                                 r["msgs_per_exch"], grp(int(r["doubles_per_exch_max"]))])
+        table(out, "comm", ["grid", "CG", "cores", "computation", "halo exchange", "reductions", "communication share",
+                            "messages", "halo values"], rows, "llrrrrrrr", reqs, False, w, partial=bool(rows))
 
     # ---- variants (E5, E8)
     D = Dvar
@@ -925,7 +941,7 @@ def cluster_values(out, results, figures):
                             t = D.med(cs[0][0])
                             it = float(D.row0(cs[0][0])["iters"])
                             row.append(fx(1e3 * t / it, 3))
-                            best.setdefault(p, []).append((t, dc, cg, halo))
+                            best.setdefault(p, []).append((shf(1e3 * t / it, 3), dc, cg, halo))
                         rows.append(row)
             for p in Ps:
                 b = sorted(best[p])
@@ -957,7 +973,7 @@ def cluster_values(out, results, figures):
                             t = D.med(cs[0])
                             it = float(D.row0(cs[0])["iters"])
                             rows.append(["%dD" % d, "%dD" % dc, cg, HALO_WORD[halo], fx(1e3 * t / it, 3)])
-                            best.append((t, dc, cg, halo))
+                            best.append((shf(1e3 * t / it, 3), dc, cg, halo))
                 best.sort()
                 put("var.%d.node.best" % d, "%dD decomposition with %s CG and %s halo exchange" %
                     (best[0][1], best[0][2], "blocking" if best[0][3] == "blocking" else "non-blocking"), reqs)
@@ -992,7 +1008,7 @@ def cluster_values(out, results, figures):
                             D.cells("layout", dim=d, nodes=nn))
                 for tag in (["1"] if nn == 1 else []) + (["top"] if nn == nodes[-1] else []):
                     put("lay.%d.%s.best" % (d, tag), "%d$\\times$%d" % (ts[0][1], ts[0][2]), reqs)
-                    put("lay.%d.%s.spread" % (d, tag), fx(ts[-1][0] / ts[0][0], 2), reqs)
+                    put("lay.%d.%s.spread" % (d, tag), fx(sh(ts[-1][0]) / sh(ts[0][0]), 2), reqs)
         put("lay.top.sent", (" On %s the fastest layouts are %s in 3D and %s in 2D, and the slowest takes %s and %s "
                              "times as long." % (nodes_phrase(nodes[-1]), V["lay.3.top.best"], V["lay.2.top.best"],
                                                  V["lay.3.top.spread"], V["lay.2.top.spread"]))
@@ -1009,7 +1025,7 @@ def cluster_values(out, results, figures):
                 if tag == "1" and one_ok:
                     ts = sorted((D.med(cid), c["ranks"], c["threads"]) for cid, c in one if c["dim"] == d)
                     put("lay.%d.1.best" % d, "%d$\\times$%d" % (ts[0][1], ts[0][2]), reqs)
-                    put("lay.%d.1.spread" % d, fx(ts[-1][0] / ts[0][0], 2), reqs)
+                    put("lay.%d.1.spread" % d, fx(sh(ts[-1][0]) / sh(ts[0][0]), 2), reqs)
                     continue
                 pend("lay.%d.%s.best" % (d, tag), reqs, w)
                 pend("lay.%d.%s.spread" % (d, tag), reqs, w)
@@ -1061,10 +1077,10 @@ def cluster_values(out, results, figures):
                                 (d, c["gpus"]))
                     continue
                 t = G.med(cid)
-                rows.append(["%dD" % d, str(c["gpus"]), sig(t, 3), sig(cpu_best, 3), fx(cpu_best / t, 2)])
+                rows.append(["%dD" % d, str(c["gpus"]), sig(t, 3), sig(cpu_best, 3), fx(sh(cpu_best) / sh(t), 2)])
                 if c["gpus"] == 1:
                     put("gpu.%d.t" % d, sig(t, 3), reqs)
-                    put("gpu.%d.vsnode" % d, fx(cpu_best / t, 2), reqs)
+                    put("gpu.%d.vsnode" % d, fx(sh(cpu_best) / sh(t), 2), reqs)
         table(out, "gpu", hd, rows, "lrrrr", reqs)
     else:
         w = "; ".join(([] if one_done else ["%s gpu: the 1-GPU runs (job vanda-gpu1)" % G.cluster]) +
@@ -1251,7 +1267,7 @@ def graph_values(out, results):
                 put("gr.keep.%s.unr" % d, fx(float(q8["unreached"]), 3), R12)
                 put("gr.keep.%s.itratio" % d, fx(ips / (float(q8["iters"]) / float(q8["rhs"])), 1), R12)
                 put("gr.keep.%s.deg" % d, fx(float(q8["avg_degree"]), 1), R12)
-                put("gr.keep.%s.loss" % d, fx(acc - float(q8["accuracy"]), 3), R12)
+                put("gr.keep.%s.loss" % d, fx(shf(acc, 3) - shf(float(q8["accuracy"]), 3), 3), R12)
             put("gr.acc.%s" % d, fx(acc, 3), R11)
             put("gr.maj.%s" % d, fx(float(q["majority"]), 3), R11)
         lo, hi = min(accs, key=accs.get), max(accs, key=accs.get)
@@ -1325,20 +1341,20 @@ def graph_values(out, results):
             for cg in ("classic", "pipelined"):
                 cids = [per[cg][k] for k in sorted(per[cg]) if k <= P]
                 Dst.check_same_build(cids, "graph-strong %s %s" % (d, cg))
-                t1, tp = Dst.med(per[cg][1], "t_solve"), Dst.med(per[cg][P], "t_solve")
+                t1, tp = sh(Dst.med(per[cg][1], "t_solve")), sh(Dst.med(per[cg][P], "t_solve"))
                 cpn0 = Dst.plan["cores_per_node"]
                 rows.append([dsn(d), cg, sig(t1, 3), grp(P), sig(tp, 3), fx(t1 / tp, 1), fx(t1 / tp / P, 2)])
                 put("gr.st.%s.%s.S" % (d, cg), fx(t1 / tp, 1), rq)
                 put("gr.st.%s.%s.E" % (d, cg), fx(t1 / tp / P, 2), rq)
                 put("gr.st.%s.%s.T1" % (d, cg), sig(t1, 3), rq)
-                put("gr.st.%s.%s.Enode" % (d, cg), fx(t1 / Dst.med(per[cg][cpn0], "t_solve") / cpn0, 2)
+                put("gr.st.%s.%s.Enode" % (d, cg), fx(t1 / sh(Dst.med(per[cg][cpn0], "t_solve")) / cpn0, 2)
                     if cpn0 in per[cg] else "--", rq)
                 if cg == "classic":
                     c0 = per[cg][P]
                     r = Dst.row0(c0)
                     tot = Dst.med(c0, "t_total")
-                    put("gr.comm.%s.halo" % d, "%s\\%%" % fx(100 * Dst.med(c0, "t_halo") / tot, 0), ["E5"])
-                    put("gr.comm.%s.red" % d, "%s\\%%" % fx(100 * Dst.med(c0, "t_reduce") / tot, 0), ["E5"])
+                    put("gr.comm.%s.halo" % d, "%s\\,\\%%" % fx(100 * Dst.med(c0, "t_halo") / tot, 0), ["E5"])
+                    put("gr.comm.%s.red" % d, "%s\\,\\%%" % fx(100 * Dst.med(c0, "t_reduce") / tot, 0), ["E5"])
                     put("gr.comm.%s.ghosts" % d, grp(r["ghosts_max"]), ["E5"])
                     put("gr.comm.%s.nbrs" % d, grp(r["neighbors_max"]), ["E5"])
         short = [d for d in GP.STRONG_DATASETS if tops[d][0] < planned_top]
@@ -1390,7 +1406,7 @@ def graph_values(out, results):
                     for cg in ("classic", "pipelined"):
                         cc = Dvar.cells("graph-variants", dataset=d, threads=1, ranks=top, order=o, part=p,
                                         exchange=e, cg=cg)
-                        best.append((Dvar.med(cc[0][0], "t_solve"), o, p, e, cg))
+                        best.append((sh(Dvar.med(cc[0][0], "t_solve")), o, p, e, cg))
             best.sort()
             words = {"rows": "equal rows", "nnz": "equal nonzeros", "alltoallv": "the all-to-all exchange",
                      "neighbor": "the neighbourhood collective", "overlap": "the overlapped neighbourhood collective",
@@ -1398,11 +1414,11 @@ def graph_values(out, results):
             b0 = best[0]
             put("gr.var.%s.best" % d, "%s with %s, %s and %s CG" % (words[b0[1]], words[b0[2]], words[b0[3]], b0[4]),
                 rq)
-            put("gr.var.%s.spread" % d, fx(best[-1][0] / best[0][0], 2), rq)
+            put("gr.var.%s.spread" % d, sig(best[-1][0] / best[0][0], 3), rq)
             put("gr.var.%s.top" % d, top, rq)
         short = [d for d in GP.STRONG_DATASETS if vtops[d] < planned]
-        put("gr.var.note", "".join(" The %s runs at %d cores did not finish within the time limit of their job, so its "
-                                   "comparison is at %d cores." % (dsn(d), planned, vtops[d]) for d in short), rq)
+        put("gr.var.note", "".join(" For %s that count is %d cores (Section~\\ref{sec:graphstrong})." %
+                                   (dsn(d), vtops[d]) for d in short), rq)
         table(out, "graphpart", ["dataset", "cores", "order, partition", "edges cut", "max ghosts", "max neighbours",
                                  "nnz imbalance", "time/solve (s)"], rows, "lrlrrrrr", rq)
     else:
@@ -1458,7 +1474,7 @@ def partial_values(out, results):
     w = "%s calibration (results/%s/calibration.json)" % (NM[D.cluster], D.cluster)
     need("cal.core", ["E5"], w, lambda: fx(cal["bw_core_gbs"], 1))
     need("cal.node", ["E5"], w, lambda: grp(round(cal["bw_node_gbs"])))
-    need("cal.ratio", ["E5"], w, lambda: fx(cal["bw_node_gbs"] / cal["bw_core_gbs"], 1))
+    need("cal.ratio", ["E5"], w, lambda: fx(round(cal["bw_node_gbs"]) / shf(cal["bw_core_gbs"], 1), 1))
     bpp = D.plan["model"]["bytes_per_point_iter"]
     put("cg.bytes.classic", int(bpp["classic"]), ["E5"])
     put("cg.bytes.pipelined", int(bpp["pipelined"]), ["E5"])
@@ -1512,8 +1528,10 @@ def partial_values(out, results):
                 cs = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg=cg, halo=halo))
                 w = "; ".join(D.waiting(group))
                 t1 = med(D, cs.get(1))
+                t1 = sh(t1) if t1 else t1
                 for P in sorted(cs):
                     tp = med(D, cs[P])
+                    tp = sh(tp) if tp else tp
                     for nm in names(P):
                         key = "%s.%d.%s.%s" % (tag, d, cg, nm)
                         if group == "strong":
@@ -1534,7 +1552,7 @@ def partial_values(out, results):
             for P in sorted(set(cl) & set(pi) | {1, cpn, 2 * cpn}):
                 for nm in names(P):
                     need("%s.%d.pratio.%s" % (tag, d, nm), reqs, "; ".join(D.waiting(group)),
-                         lambda: fx(med(D, pi[P]) / med(D, cl[P]), 2))
+                         lambda: fx(sh(med(D, pi[P])) / sh(med(D, cl[P])), 2))
             # cost per core, unknown and iteration of classic CG at one and two ranks; weak efficiency from two ranks
             for P in (1, 2):
                 need("%s.%d.classic.%s.ns" % (tag, d, role.get(P, str(P))), reqs, "; ".join(D.waiting(group)),
@@ -1544,15 +1562,43 @@ def partial_values(out, results):
                 for P in sorted(set((cpn, 2 * cpn, TOP))):
                     for nm in rnames(P):
                         need("pwk.%d.classic.%s.E2" % (d, nm), reqs, "; ".join(D.waiting(group)),
-                             lambda: fx(med(D, cl[2]) / med(D, cl[P]), 2))
+                             lambda: fx(sh(med(D, cl[2])) / sh(med(D, cl[P])), 2))
             if group == "strong":
                 for a, b, nb in ((cpn // 4, cpn // 2, "half"), (cpn // 2, cpn, "node"), (cpn, 2 * cpn, "2node"),
                                  (2 * cpn, TOP, "top")):
                     need("pst.%d.classic.gain.%s.%s" % (d, role[a], nb), reqs, "; ".join(D.waiting(group)),
-                         lambda: fx(med(D, cl[a]) / med(D, cl[b]), 2))
+                         lambda: fx(sh(med(D, cl[a])) / sh(med(D, cl[b])), 2))
             else:
                 need("pwk.%d.classic.ratio.2node.node" % d, reqs, "; ".join(D.waiting(group)),
-                     lambda: fx(med(D, cl[2 * cpn]) / med(D, cl[cpn]), 2))
+                     lambda: fx(sh(med(D, cl[2 * cpn])) / sh(med(D, cl[cpn])), 2))
+    # where pipelined CG was not slower than classic CG (printed time ratio at most 1.00), so that the text claims
+    # "slower" exactly as widely as the runs show it
+    if D.complete("strong") and D.complete("weak"):
+        exc = {}
+        for group in ("strong", "weak"):
+            for d in (2, 3):
+                cl = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg="classic", halo="blocking"))
+                pi = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg="pipelined", halo="overlap"))
+                for P in sorted(set(cl) & set(pi)):
+                    if med(D, pi[P]) is None or med(D, cl[P]) is None:  # e.g. a shared-node run stands in for it
+                        continue
+                    r = fx(sh(med(D, pi[P])) / sh(med(D, cl[P])), 2)
+                    if float(r) <= 1.0:
+                        exc.setdefault(group, {}).setdefault(d, []).append((P, r))
+
+        def where(group):
+            if group not in exc:
+                return "in every %s-scaling run" % group
+            ds = sorted(exc[group])
+            runs = listing(["the %dD run%s with %s rank%s" % (d, "s" if len(exc[group][d]) > 1 else "",
+                                                              listing([str(P) for P, r in exc[group][d]]),
+                                                              "" if [P for P, r in exc[group][d]] == [1] else "s")
+                            for d in ds])
+            rs = listing([r for d in ds for P, r in exc[group][d]])
+            return "in every %s-scaling run except %s, where it took %s times the classic time" % (group, runs, rs)
+        put("cg.slower", " %s and %s" % (where("strong"), where("weak")), ["E3", "E4"])
+    else:
+        pend("cg.slower", ["E3", "E4"], "; ".join(D.waiting("strong") + D.waiting("weak")))
     # reduction time per iteration against the imbalance of the computation (slowest rank's computation minus the
     # mean over ranks), strong classic runs
     for d in (2, 3):
@@ -1564,6 +1610,40 @@ def partial_values(out, results):
                      lambda: fx(ms("t_reduce"), 2))
                 need("pcm.%d.classic.%s.imbms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
                      lambda: fx(ms("t_compute_max") - ms("t_compute"), 2))
+        cp = dict((c["ranks"], cid) for cid, c in D.cells("strong", dim=d, cg="pipelined", halo="overlap"))
+        for P in sorted(set((cpn, 2 * cpn, TOP))):
+            for nm in rnames(P):  # the reduction time left after the overlap: posting the reduction and the wait
+                need("pcm.%d.pipelined.%s.redms" % (d, nm), ["E5"], "; ".join(D.waiting("strong")),
+                     lambda: fx(1e3 * med(D, cp[P], "t_reduce") / int(D.row0(cp[P])["iters"]), 2))
+    # computation per unknown of a rank and iteration (mean over ranks of t_compute), strong against weak classic
+    # runs: the strong ranks' boxes shrink with P, the weak ranks' boxes do not; with one vector of a rank in MB and
+    # the bandwidth per node that the computation would draw at the cost model's bytes per point
+    peak_node = 2 * SPEC["cpu.channels"] * 8 * SPEC["cpu.mts"] / 1000.0
+    put("spec.cpu.cachecore", fx(SPEC["cpu.cache_mb"] / (cpn // socks[0]), 2) if len(socks) == 1 else "--",
+        ["E10"])
+    for group, tag in (("strong", "pst"), ("weak", "pwk")):
+        w = "; ".join(D.waiting(group))
+        for d in (2, 3):
+            cs = dict((c["ranks"], cid) for cid, c in D.cells(group, dim=d, cg="classic", halo="blocking"))
+            per = lambda P: int(D.row0(cs[P])["unknowns"]) / float(P)  # noqa: E731
+            cms = lambda P: med(D, cs[P], "t_compute") / int(D.row0(cs[P])["iters"])  # noqa: E731 (s per iter)
+            for P in sorted(set((cpn, 2 * cpn, TOP))):
+                for nm in rnames(P):
+                    key = "%s.%d.classic.%s" % (tag, d, nm)
+                    need(key + ".cns", ["E5"], w, lambda: fx(1e9 * cms(P) / per(P), 1))
+                    need(key + ".vec", ["E5"], w, lambda: fx(8 * per(P) / 1e6, 2 if per(P) < 1e6 else 1))
+                    need(key + ".cbw", ["E5"], w, lambda: grp(round(
+                        bpp["classic"] * int(D.row0(cs[P])["unknowns"]) / cms(P) / 1e9 / (P // cpn))))
+                    need(key + ".cpk", ["E5"], w, lambda: fx(
+                        bpp["classic"] * int(D.row0(cs[P])["unknowns"]) / cms(P) / 1e9 / (P // cpn) / peak_node, 2))
+            if group == "strong":
+                need("pst.%d.classic.cgain.node.top" % d, ["E5"], w, lambda: fx(cms(cpn) / cms(TOP), 2))
+                need("pst.%d.classic.cgain.cores" % d, ["E5"], w, lambda: TOP // cpn if TOP in cs else None)
+            else:
+                need("pwk.%d.classic.cns.lo" % d, ["E5"], w, lambda: fx(min(
+                    1e9 * cms(P) / per(P) for P in set((cpn, 2 * cpn, TOP))), 1))
+                need("pwk.%d.classic.cns.hi" % d, ["E5"], w, lambda: fx(max(
+                    1e9 * cms(P) / per(P) for P in set((cpn, 2 * cpn, TOP))), 1))
     # method comparison: where the time of the 3D decompositions goes (classic CG, blocking exchange), one node and
     # the largest count
     vtop = max(c["ranks"] for cid, c in D.cells("variants"))
@@ -1576,8 +1656,9 @@ def partial_values(out, results):
         vt = {}
         for cid, c in D.cells("variants", ranks=P):
             if cid in D.cell_rows:
-                vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = med(D, cid)
-        gains = [vt[(d, dc, cg, "blocking")] / vt[(d, dc, cg, "overlap")] - 1 for (d, dc, cg, h) in vt
+                vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = shf(1e3 * med(D, cid) / int(D.row0(cid)["iters"]), 3)
+        # the change of time from the blocking to the non-blocking exchange, relative to the blocking time
+        gains = [1 - vt[(d, dc, cg, "overlap")] / vt[(d, dc, cg, "blocking")] for (d, dc, cg, h) in vt
                  if h == "overlap" and (d, dc, cg, "blocking") in vt]
         need("var.%s.ovl.gain" % tag, ["E8"], "variants", lambda: fx(100 * max(gains), 1) + "\\,\\%"
              if gains else None)
@@ -1588,12 +1669,12 @@ def partial_values(out, results):
     vt = {}
     for cid, c in D.cells("variants", ranks=cpn):
         if cid in D.cell_rows:
-            vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = med(D, cid)
+            vt[(c["dim"], c["decomp"], c["cg"], c["halo"])] = shf(1e3 * med(D, cid) / int(D.row0(cid)["iters"]), 3)
     need("var.3.node.slab", ["E8"], "variants", lambda: fx(vt[(3, 1, "classic", "blocking")] /
                                                            vt[(3, 2, "classic", "blocking")], 2))
     need("var.3.node.blocks", ["E8"], "variants", lambda: fx(vt[(3, 3, "classic", "blocking")] /
                                                              vt[(3, 2, "classic", "blocking")], 3))
-    gains = [vt[(d, dc, cg, "blocking")] / vt[(d, dc, cg, "overlap")] - 1 for (d, dc, cg, h) in vt
+    gains = [1 - vt[(d, dc, cg, "overlap")] / vt[(d, dc, cg, "blocking")] for (d, dc, cg, h) in vt
              if h == "overlap" and (d, dc, cg, "blocking") in vt]
     need("var.node.ovl.gain", ["E8"], "variants", lambda: fx(100 * max(gains), 1) + "\\,\\%" if gains else None)
     c2 = [t for k, t in vt.items() if k[0] == 2 and k[2] == "classic"]
@@ -1631,6 +1712,7 @@ def partial_values(out, results):
         V_ser_nsnnz2.append(Ds.med(cs2[-1][0]) / (float(r2["iters"]) * int(r2["nonzeros"])))
     import make_graph_plan as MG
     put("gr.smax", max(MG.S_VALUES), ["E11"])
+    put("gr.keepmin", "$1/%d$" % round(1 / min(MG.KEEP_VALUES)), ["E12"])
     put("gr.amax", "%g" % max(MG.A_VALUES), ["E11"])
     put("gr.rand", fx(1.0 / 10, 3), ["E11"])
     put("node.cpn", cpn, ["E5"])
@@ -1644,21 +1726,22 @@ def partial_values(out, results):
         for cg in ("classic", "pipelined"):
             cs = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg=cg, threads=1))
             t1 = med(G, cs.get(1), "t_solve")
+            t1 = sh(t1) if t1 else t1
             for P, rn in [(P, rn) for P in sorted(set((cpn, 2 * cpn, TOP))) for rn in rnames(P)]:
                 key = "pgs.%s.%s.%s" % (ds, cg, rn)
-                need(key + ".S", ["E3"], w, lambda: fx(t1 / med(G, cs[P], "t_solve"), 1))
-                need(key + ".E", ["E3"], w, lambda: fx(t1 / med(G, cs[P], "t_solve") / P, 2))
+                need(key + ".S", ["E3"], w, lambda: fx(t1 / sh(med(G, cs[P], "t_solve")), 1))
+                need(key + ".E", ["E3"], w, lambda: fx(t1 / sh(med(G, cs[P], "t_solve")) / P, 2))
                 need(key + ".T", ["E3"], w, lambda: sig(med(G, cs[P], "t_solve"), 3))
                 for col, nm in (("t_halo", "halo"), ("t_reduce", "red")):
                     need(key + "." + nm, ["E5"], w,
                          lambda: fx(100 * med(G, cs[P], col) / med(G, cs[P]), 0) + "\\,\\%")
             need("pgs.%s.%s.slowdown" % (ds, cg), ["E3"], w,
-                 lambda: fx(med(G, cs[2 * cpn], "t_solve") / med(G, cs[cpn], "t_solve"), 2))
+                 lambda: fx(sh(med(G, cs[2 * cpn], "t_solve")) / sh(med(G, cs[cpn], "t_solve")), 2))
         cl = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg="classic", threads=1))
         pi = dict((c["ranks"], cid) for cid, c in G.cells("graph-strong", dataset=ds, cg="pipelined", threads=1))
         for P, rn in [(P, rn) for P in sorted(set((cpn, 2 * cpn, TOP))) for rn in rnames(P)]:
             need("pgs.%s.pratio.%s" % (ds, rn), ["E3"], w,
-                 lambda: fx(med(G, pi[P], "t_solve") / med(G, cl[P], "t_solve"), 2))
+                 lambda: fx(sh(med(G, pi[P], "t_solve")) / sh(med(G, cl[P], "t_solve")), 2))
         need("pgs.%s.itratio" % ds, ["E3"], w,
              lambda: fx(float(G.row0(pi[1])["iters"]) / float(G.row0(cl[1])["iters"]), 2))
 
@@ -1672,8 +1755,8 @@ def partial_values(out, results):
                                               threads=th, nodes=1) if c["ranks"] == rpn]
             return cs[0] if cs and cs[0] in V.cell_rows else None
 
-        def ts(**kw):
-            return med(V, cell(**kw), "t_solve")
+        def ts(**kw):  # as printed (sig 3), so that a ratio matches the table (rounding rule, see sh)
+            return sh(med(V, cell(**kw), "t_solve"))
 
         def r0(**kw):
             return V.row0(cell(**kw))
@@ -1693,6 +1776,8 @@ def partial_values(out, results):
             need("%s.cut.%s" % (key, nm), ["E8", "E12"], w,
                  lambda: fx(100 * float(r0(**kw)["cut_fraction"]), 0) + "\\,\\%")
             need("%s.nbrs.%s" % (key, nm), ["E8"], w, lambda: grp(r0(**kw)["neighbors_max"]))
+            need("%s.ghosts.%s" % (key, nm), ["E8"], w, lambda: grp(r0(**kw)["ghosts_max"]))
+            need("%s.gsum.%s" % (key, nm), ["E8"], w, lambda: grp(r0(**kw)["ghosts_sum"]))
         need(key + ".halo", ["E5", "E8"], w,
              lambda: fx(100 * med(V, cell(), "t_halo") / med(V, cell()), 0) + "\\,\\%")
         for (o, p, rpn, th) in (("natural", "rows", cpn, 1), ("natural", "nnz", cpn, 1), ("bfs", "nnz", cpn, 1),
@@ -1731,7 +1816,7 @@ def partial_values(out, results):
     Gd = RD.choose(results, ["gpu"])
     for d in (2, 3):
         g = dict((c["gpus"], cid) for cid, c in Gd.cells("gpu", dim=d) if cid in Gd.cell_rows)
-        need("gpu.%d.two.gain" % d, ["E7"], "gpu", lambda: fx(Gd.med(g[1]) / Gd.med(g[2]), 2))
+        need("gpu.%d.two.gain" % d, ["E7"], "gpu", lambda: fx(sh(Gd.med(g[1])) / sh(Gd.med(g[2])), 2))
         need("gpu.%d.two.halo" % d, ["E7"], "gpu", lambda: fx(1e3 * Gd.med(g[2], "t_halo") /
                                                               int(Gd.row0(g[2])["iters"]), 2))
         need("gpu.%d.two.comp" % d, ["E7"], "gpu", lambda: fx(1e3 * Gd.med(g[2], "t_compute") /
@@ -1752,7 +1837,7 @@ def partial_values(out, results):
             return cs[0] if cs and cs[0] in V.cell_rows else None
 
         def tts(**kw):
-            return med(V, tcell(**kw), "t_solve")
+            return sh(med(V, tcell(**kw), "t_solve"))
         key = "gt.%s" % ds
         lays = sorted((tts(th=c["threads"]), c["ranks"] // c["nodes"], c["threads"]) for cid, c in
                       V.cells("graph-variants", dataset=ds, order="natural", part="nnz", exchange="neighbor",
@@ -1763,9 +1848,9 @@ def partial_values(out, results):
         need(key + ".hyb.T", ["E8", "E6"], w, lambda: sig(lays[0][0], 3))
         need(key + ".hyb.gain", ["E8", "E6"], w, lambda: fx(tts() / lays[0][0], 2))
         need(key + ".hyb.vsnode", ["E8", "E6"], w, lambda: fx(ts() / lays[0][0], 2) if False else
-             fx(med(V, [cid for cid, c in V.cells("graph-variants", dataset=ds, order="natural", part="nnz",
-                                                  exchange="neighbor", cg="classic", threads=1, nodes=1)
-                        if c["ranks"] == cpn][0], "t_solve") / lays[0][0], 2))
+             fx(sh(med(V, [cid for cid, c in V.cells("graph-variants", dataset=ds, order="natural", part="nnz",
+                                                     exchange="neighbor", cg="classic", threads=1, nodes=1)
+                           if c["ranks"] == cpn][0], "t_solve")) / lays[0][0], 2))
         need(key + ".hyb.nbrs", ["E8"], w, lambda: grp(V.row0(tcell(th=lays[0][2]))["neighbors_max"]))
         need(key + ".nbrs", ["E8"], w, lambda: grp(V.row0(tcell())["neighbors_max"]))
         need(key + ".bfs", ["E8", "E12"], w, lambda: fx(tts(order="bfs") / tts(), 1))
@@ -1820,6 +1905,13 @@ def partial_values(out, results):
             need("gw.%s.%s.it" % (ds, nm), ["E11", "E12"], w,
                  lambda: grp(round(float(W.row0(cs[k])["iters"]) / W.plan["cells"][cs[k]]["rhs"])))
         need("gw.%s.amin" % ds, ["E11"], w, lambda: "%g" % avals[0])
+        need("gw.%s.itmin" % ds, ["E11", "E12"], w, lambda: grp(W.row0(cs[(1.0, 5, 1.0)])["iters_min"]))
+        need("gw.%s.itmax" % ds, ["E11", "E12"], w, lambda: grp(W.row0(cs[(1.0, 5, 1.0)])["iters_max"]))
+        kmin = min(MG.KEEP_VALUES)
+        need("gr.keep.%s.itmin" % ds, ["E12"], w, lambda: grp(W.row0(cs[(1.0, 5, kmin)])["iters_min"]))
+        need("gr.keep.%s.itmax" % ds, ["E12"], w, lambda: grp(W.row0(cs[(1.0, 5, kmin)])["iters_max"]))
+        # after k iterations only vertices within distance k - 1 of a seed can be non-zero (Section 8.2)
+        need("gr.keep.%s.reach" % ds, ["E12"], w, lambda: grp(int(W.row0(cs[(1.0, 5, kmin)])["iters_max"]) - 1))
         need("gw.%s.it" % ds, ["E11", "E12"], w,
              lambda: grp(round(float(W.row0(cs[(1.0, 5, 1.0)])["iters"]) / 10)))
         need("gw.%s.deg" % ds, ["E11", "E12"], w, lambda: fx(float(W.row0(cs[(1.0, 5, 1.0)])["avg_degree"]), 1))
@@ -1828,13 +1920,19 @@ def partial_values(out, results):
             (float(W.row0(cs[(1.0, 5, 1.0)])["iters"]) / 10) / math.sqrt(2 * int(W.row0(cs[(1.0, 5, 1.0)])[
                 "max_degree"]) + 1), 1))
 
+    # the iteration cap of the runs to a tolerance, and whether every such run converged
+    tolrows = [r for g in ("graph-strong", "graph-variants", "graph-sweep") for cid in W.plan["groups"][g]["cells"]
+               for r in W.cell_rows.get(cid, []) if r.get("mode") == "tol"]
+    # (waits, so the text that says every system reached the tolerance cannot print, unless every run converged)
+    need("gr.maxit", ["E11"], w, lambda: grp(max(int(r["iters_req"]) for r in tolrows))
+         if tolrows and all(r["converged"] == "1" for r in tolrows) else None)
     # accuracy over the majority baseline, the range over the four graphs the conclusions name
     lifts = []
     for ds in ("com-amazon", "com-lj", "com-youtube", "com-orkut"):
         try:
             cs = dict(((c["a"], c["s"], c["keep"]), cid) for cid, c in W.cells("graph-sweep", dataset=ds))
             r = W.row0(cs[(1.0, 5, 1.0)])
-            lifts.append(float(r["accuracy"]) / float(r["majority"]))
+            lifts.append(shf(float(r["accuracy"]), 3) / shf(float(r["majority"]), 3))
         except (KeyError, TypeError, ZeroDivisionError):
             pass
     need("gr.lift.range", ["E11"], "; ".join(W.waiting("graph-sweep")),

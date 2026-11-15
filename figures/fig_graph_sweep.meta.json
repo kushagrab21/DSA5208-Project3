@@ -7,7 +7,7 @@
  "groups": [
   "graph-sweep"
  ],
- "utc": "2026-11-14T06:28:12Z",
+ "utc": "2026-11-15T05:09:44Z",
  "status": "filled",
  "axes": [
   {
@@ -97,5 +97,5 @@
  "clusters": [
   "vanda"
  ],
- "image_sha256": "0d2ec4470d9227a5074661d2548b16692263cf6cd174fb4738c1dc2543549d00"
+ "image_sha256": "fc7fac9b1ff3b39adc525c9b76e9657c88b77ceff2254474c56bcdc1a560828d"
 }
